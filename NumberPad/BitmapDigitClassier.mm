@@ -10,8 +10,6 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import "BitmapDigitClassifier.h"
 
-#import <opencv2/opencv.hpp>
-
 // Call CGPathApplyBlock to use a block to loop through the elements of a CGPath
 typedef void(^CGPathApplyEnumerationHandler)(const CGPathElement *element);
 

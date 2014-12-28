@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AE04E7541A4DE6F40077D2E3 /* DTWDigitClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE04E7531A4DE6F40077D2E3 /* DTWDigitClassifier.swift */; };
+		AE04E7551A4DE6F40077D2E3 /* DTWDigitClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE04E7531A4DE6F40077D2E3 /* DTWDigitClassifier.swift */; };
 		AEC9EEC01A3CDC4A002C7B08 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */; };
 		AEC9EEC21A3CDC4A002C7B08 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEC11A3CDC4A002C7B08 /* ViewController.swift */; };
 		AEC9EEC51A3CDC4A002C7B08 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AEC9EEC31A3CDC4A002C7B08 /* Main.storyboard */; };
@@ -14,7 +16,6 @@
 		AEC9EED61A3CDC4A002C7B08 /* NumberPadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EED51A3CDC4A002C7B08 /* NumberPadTests.swift */; };
 		AEC9EEE01A3CEB3A002C7B08 /* StrokeGestureRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEDF1A3CEB3A002C7B08 /* StrokeGestureRecognizer.swift */; };
 		AEC9EEFF1A3F87F0002C7B08 /* BitmapDigitClassier.mm in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEFE1A3F87F0002C7B08 /* BitmapDigitClassier.mm */; };
-		AEC9EF021A3F993D002C7B08 /* opencv2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEC9EF011A3F993D002C7B08 /* opencv2.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -28,6 +29,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		AE04E7531A4DE6F40077D2E3 /* DTWDigitClassifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DTWDigitClassifier.swift; sourceTree = "<group>"; };
 		AEC9EEBA1A3CDC4A002C7B08 /* NumberPad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NumberPad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC9EEBE1A3CDC4A002C7B08 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -41,7 +43,6 @@
 		AEC9EEE21A3CEC7F002C7B08 /* NumberPad-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NumberPad-Bridging-Header.h"; sourceTree = "<group>"; };
 		AEC9EEFE1A3F87F0002C7B08 /* BitmapDigitClassier.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = BitmapDigitClassier.mm; sourceTree = "<group>"; };
 		AEC9EF001A3F880A002C7B08 /* BitmapDigitClassifier.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BitmapDigitClassifier.h; sourceTree = "<group>"; };
-		AEC9EF011A3F993D002C7B08 /* opencv2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = opencv2.framework; path = ThirdParty/opencv2.framework; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -49,7 +50,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AEC9EF021A3F993D002C7B08 /* opencv2.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -86,6 +86,7 @@
 			children = (
 				AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */,
 				AEC9EEC11A3CDC4A002C7B08 /* ViewController.swift */,
+				AE04E7531A4DE6F40077D2E3 /* DTWDigitClassifier.swift */,
 				AEC9EEDF1A3CEB3A002C7B08 /* StrokeGestureRecognizer.swift */,
 				AEC9EEC31A3CDC4A002C7B08 /* Main.storyboard */,
 				AEC9EF001A3F880A002C7B08 /* BitmapDigitClassifier.h */,
@@ -100,7 +101,6 @@
 		AEC9EEBD1A3CDC4A002C7B08 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				AEC9EF011A3F993D002C7B08 /* opencv2.framework */,
 				AEC9EEBE1A3CDC4A002C7B08 /* Info.plist */,
 			);
 			name = "Supporting Files";
@@ -225,6 +225,7 @@
 				AEC9EEC21A3CDC4A002C7B08 /* ViewController.swift in Sources */,
 				AEC9EEFF1A3F87F0002C7B08 /* BitmapDigitClassier.mm in Sources */,
 				AEC9EEC01A3CDC4A002C7B08 /* AppDelegate.swift in Sources */,
+				AE04E7541A4DE6F40077D2E3 /* DTWDigitClassifier.swift in Sources */,
 				AEC9EEE01A3CEB3A002C7B08 /* StrokeGestureRecognizer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -233,6 +234,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AE04E7551A4DE6F40077D2E3 /* DTWDigitClassifier.swift in Sources */,
 				AEC9EED61A3CDC4A002C7B08 /* NumberPadTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -343,10 +345,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/ThirdParty",
-				);
 				INFOPLIST_FILE = NumberPad/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -360,10 +358,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/ThirdParty",
-				);
 				INFOPLIST_FILE = NumberPad/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";

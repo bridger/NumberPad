@@ -1,0 +1,57 @@
+import json
+
+with open("/Users/bridger/Desktop/ujipenchars2.txt") as f:
+  content = f.readlines()
+  
+  currentCharacter = None
+  strokesLeft = 0
+  currentDigit = []
+  library = {}
+  
+  for line in content:
+    
+    if line.startswith('// ASCII char: '):
+      newChar = line[len('// ASCII char: ')]
+      if newChar in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
+        currentCharacter  = newChar
+        continue
+      currentCharacter = None
+      continue
+    
+    if currentCharacter != None:
+      
+      if line.startswith('  NUMSTROKES '):
+        strokesLeft = int(line[len('  NUMSTROKES ')])
+        continue
+      
+      if line.startswith('  POINTS '):
+        allCoordinates = line.split(' ')[5:]
+        stroke = []
+        it = iter(allCoordinates)
+        
+        while True:
+          xString = next(it, None)
+          yString = next(it, None)
+          
+          if xString == None or yString == None:
+            break
+          
+          stroke.append( [int(xString), int(yString)] )
+        
+        currentDigit.append(stroke)
+        strokesLeft -= 1
+        if strokesLeft == 0:
+          # Add it to the library
+          existingSamples = library.get(currentCharacter, None)
+          if existingSamples != None:
+            existingSamples.append(currentDigit)
+          else:
+            library[currentCharacter] = [currentDigit]
+          
+          currentDigit = []
+  
+  with open('/Users/bridger/Desktop/ujipenchars2.json', 'w') as outfile:
+    json.dump({"rawData" : library} , outfile)
+    
+    
+    
