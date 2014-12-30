@@ -6,7 +6,9 @@ with open("/Users/bridger/Desktop/ujipenchars2.txt") as f:
   currentCharacter = None
   strokesLeft = 0
   currentDigit = []
-  library = {}
+  trainLibrary = {}
+  testLibrary = {}
+  writerCharacterCount = 0
   
   for line in content:
     
@@ -14,6 +16,7 @@ with open("/Users/bridger/Desktop/ujipenchars2.txt") as f:
       newChar = line[len('// ASCII char: ')]
       if newChar in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
         currentCharacter  = newChar
+        writerCharacterCount += 1
         continue
       currentCharacter = None
       continue
@@ -25,7 +28,9 @@ with open("/Users/bridger/Desktop/ujipenchars2.txt") as f:
         continue
       
       if line.startswith('  POINTS '):
-        allCoordinates = line.split(' ')[5:]
+        splitLine = line.split(' ')
+        print "Stroke has points: " + splitLine[3]
+        allCoordinates = splitLine[5:]
         stroke = []
         it = iter(allCoordinates)
         
@@ -42,16 +47,23 @@ with open("/Users/bridger/Desktop/ujipenchars2.txt") as f:
         strokesLeft -= 1
         if strokesLeft == 0:
           # Add it to the library
-          existingSamples = library.get(currentCharacter, None)
+          
+          theLibrary = trainLibrary
+          if writerCharacterCount > 36 * 10:
+            theLibrary = testLibrary
+          
+          existingSamples = theLibrary.get(currentCharacter, None)
           if existingSamples != None:
             existingSamples.append(currentDigit)
           else:
-            library[currentCharacter] = [currentDigit]
+            theLibrary[currentCharacter] = [currentDigit]
           
           currentDigit = []
   
-  with open('/Users/bridger/Desktop/ujipenchars2.json', 'w') as outfile:
-    json.dump({"rawData" : library} , outfile)
+  with open('/Users/bridger/Desktop/ujipenchars2_train.json', 'w') as outfile:
+    json.dump({"rawData" : trainLibrary} , outfile)
+  with open('/Users/bridger/Desktop/ujipenchars2_test.json', 'w') as outfile:
+    json.dump({"rawData" : testLibrary} , outfile)
     
     
     

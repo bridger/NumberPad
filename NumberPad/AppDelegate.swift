@@ -20,9 +20,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         self.rootViewController = window?.rootViewController as ViewController
         
-        loadData("ujipenchars2.json")
+        if let path = NSBundle.mainBundle().pathForResource("ujipenchars2", ofType: "json") {
+            loadData(path)
+        }
 //        if let newestDataName = newestSavedData() {
-//            loadData(newestDataName)
+//            loadData(documentsDirectory().stringByAppendingPathComponent(newestDataName))
 //        }
         return true
     }
@@ -50,21 +52,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         NSJSONSerialization.dataWithJSONObject(dataToSave, options: nil, error: nil)!.writeToFile(documentName, atomically: false)
     }
     
-    func loadData(filename: String) {
-        let path = self.documentsDirectory().stringByAppendingPathComponent(filename)
-        if let data = NSData(contentsOfFile: path) {
-            if let json: AnyObject = NSJSONSerialization.JSONObjectWithData(data, options: nil, error: nil) {
-                if let jsonLibrary = json as? [String: DTWDigitClassifier.JSONCompatibleLibrary] {
-                    self.rootViewController.digitClassifier.loadData(jsonLibrary, loadNormalizedData: false)
-                } else {
-                    println("Unable to read file \(filename) as compatible json")
-                }
-            } else {
-                println("Unable to read file \(filename) as json")
-            }
-            
-        } else {
-            println("Unable to read file \(filename)")
+    func loadData(path: String) {
+        if let jsonLibrary = DTWDigitClassifier.jsonLibraryFromFile(path) {
+            self.rootViewController.digitClassifier.loadData(jsonLibrary, loadNormalizedData: false)
         }
     }
     

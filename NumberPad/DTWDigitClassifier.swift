@@ -10,6 +10,7 @@ import UIKit
 
 typealias DigitStrokes = [[CGPoint]]
 typealias DigitLabel = String
+typealias PrototypeLibrary = [DigitLabel: [DigitStrokes]]
 
 func euclidianDistance(a: CGPoint, b: CGPoint) -> CGFloat {
     return sqrt( pow(a.x - b.x, 2) + pow(a.y - b.y, 2) )
@@ -17,8 +18,8 @@ func euclidianDistance(a: CGPoint, b: CGPoint) -> CGFloat {
 
 class DTWDigitClassifier {
     
-    var normalizedPrototypeLibrary: [DigitLabel: [DigitStrokes]] = [:]
-    var rawPrototypeLibrary: [DigitLabel: [DigitStrokes]] = [:]
+    var normalizedPrototypeLibrary: PrototypeLibrary = [:]
+    var rawPrototypeLibrary: PrototypeLibrary = [:]
     
     func learnDigit(label: DigitLabel, digit: DigitStrokes) {
         addToLibrary(&self.rawPrototypeLibrary, label: label, digit: digit)
@@ -31,18 +32,40 @@ class DTWDigitClassifier {
         var minDistance: CGFloat?
         var minLabel: DigitLabel?
         
+        let queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0)
+        let serialResultsQueue = dispatch_queue_create("collect_results", nil)
+        
+        let serviceGroup = dispatch_group_create()
+        
         for (label, prototypes) in self.normalizedPrototypeLibrary {
-            for prototype in prototypes {
-                if prototype.count == digit.count {
-                    
-                    let score = classificationScore(normalizedDigit, prototype: prototype)
-                    if minDistance == nil || score < minDistance! {
-                        minDistance = score
-                        minLabel = label
+            dispatch_group_async(serviceGroup, queue) {
+                var localMinDistance: CGFloat?
+                var localMinLabel: DigitLabel?
+                
+                for prototype in prototypes {
+                    if prototype.count == digit.count {
+                        let score = self.classificationScore(normalizedDigit, prototype: prototype)
+                        if localMinDistance == nil || score < localMinDistance! {
+                            if score == 0 {
+                                println("Found a suspiciously perfect match")
+                            }
+                            localMinDistance = score
+                            localMinLabel = label
+                        }
+                    }
+                }
+                
+                dispatch_group_async(serviceGroup, serialResultsQueue) {
+                    if localMinDistance != nil && (minDistance == nil || localMinDistance! < minDistance) {
+                        minDistance = localMinDistance
+                        minLabel = localMinLabel
                     }
                 }
             }
         }
+        
+        dispatch_group_wait(serviceGroup,DISPATCH_TIME_FOREVER);
+        //println("Returning label \(minLabel) which has a distance of \(minDistance)")
         
         return minLabel
     }
@@ -50,7 +73,7 @@ class DTWDigitClassifier {
     typealias JSONCompatiblePoint = [CGFloat]
     typealias JSONCompatibleLibrary = [DigitLabel: [[[JSONCompatiblePoint]]] ]
     func dataToSave(saveRawData: Bool, saveNormalizedData: Bool) -> [String: JSONCompatibleLibrary] {
-        func libraryToJson(library: [DigitLabel: [DigitStrokes]]) -> JSONCompatibleLibrary {
+        func libraryToJson(library: PrototypeLibrary) -> JSONCompatibleLibrary {
             var jsonLibrary: JSONCompatibleLibrary = [:]
             for (label, prototypes) in library {
                 
@@ -78,21 +101,41 @@ class DTWDigitClassifier {
         return dictionary
     }
     
-    func loadData(jsonData: [String: JSONCompatibleLibrary], loadNormalizedData: Bool) {
-        func jsonToLibrary(json: JSONCompatibleLibrary) -> [DigitLabel: [DigitStrokes]] {
-            var newLibrary: [DigitLabel: [DigitStrokes]] = [:]
-            for (label, prototypes) in json {
-                newLibrary[label] = prototypes.map { (prototype: [[JSONCompatiblePoint]]) -> DigitStrokes in
-                    return prototype.map { (points: [JSONCompatiblePoint]) -> [CGPoint] in
-                        return points.map { (point: JSONCompatiblePoint) -> CGPoint in
-                            return CGPointMake(point[0], point[1])
-                        }
+    class func jsonLibraryFromFile(path: String) -> [String: JSONCompatibleLibrary]? {
+        let filename = path.lastPathComponent
+        if let data = NSData(contentsOfFile: path) {
+            if let json: AnyObject = NSJSONSerialization.JSONObjectWithData(data, options: nil, error: nil) {
+                if let jsonLibrary = json as? [String: JSONCompatibleLibrary] {
+                    return jsonLibrary
+                } else {
+                    println("Unable to read file \(filename) as compatible json")
+                }
+            } else {
+                println("Unable to read file \(filename) as json")
+            }
+        } else {
+            println("Unable to read file \(filename)")
+        }
+        
+        return nil
+    }
+    
+    class func jsonToLibrary(json: JSONCompatibleLibrary) -> PrototypeLibrary {
+        var newLibrary: PrototypeLibrary = [:]
+        for (label, prototypes) in json {
+            newLibrary[label] = prototypes.map { (prototype: [[JSONCompatiblePoint]]) -> DigitStrokes in
+                return prototype.map { (points: [JSONCompatiblePoint]) -> [CGPoint] in
+                    return points.map { (point: JSONCompatiblePoint) -> CGPoint in
+                        return CGPointMake(point[0], point[1])
                     }
                 }
             }
-            
-            return newLibrary
         }
+        
+        return newLibrary
+    }
+    
+    func loadData(jsonData: [String: JSONCompatibleLibrary], loadNormalizedData: Bool) {
         
         // Clear the existing library
         self.normalizedPrototypeLibrary = [:]
@@ -100,11 +143,11 @@ class DTWDigitClassifier {
         var loadedNormalizedData = false
         
         if let jsonData = jsonData["rawData"] {
-            self.rawPrototypeLibrary = jsonToLibrary(jsonData)
+            self.rawPrototypeLibrary = DTWDigitClassifier.jsonToLibrary(jsonData)
         }
         if loadNormalizedData {
             if let jsonData = jsonData["normalizedData"] {
-                self.normalizedPrototypeLibrary = jsonToLibrary(jsonData)
+                self.normalizedPrototypeLibrary = DTWDigitClassifier.jsonToLibrary(jsonData)
                 loadedNormalizedData = true
             }
         }
@@ -120,7 +163,7 @@ class DTWDigitClassifier {
     }
     
     
-    func addToLibrary(inout library: [DigitLabel: [DigitStrokes]], label: DigitLabel, digit: DigitStrokes) {
+    func addToLibrary(inout library: PrototypeLibrary, label: DigitLabel, digit: DigitStrokes) {
         if library[label] != nil {
             library[label]!.append(digit)
         } else {
@@ -183,6 +226,9 @@ class DTWDigitClassifier {
                 prototypeIndex++
                 result += diagonal
             }
+            if !isfinite(result) {
+                println("Uh oh. Found a nan")
+            }
             pathLength++;
         }
         
@@ -201,8 +247,6 @@ class DTWDigitClassifier {
         return result / CGFloat(pathLength)
     }
     
-    
-    
     func normalizeDigit(inputDigit: DigitStrokes) -> DigitStrokes {
         // Resize the point list to have a center of mass at the origin and unit standard deviation on both axis
         //    scaled_x = (symbol.x - mean(symbol.x)) * (h/5)/std2(symbol.x) + h/2;
@@ -217,7 +261,10 @@ class DTWDigitClassifier {
             for point in subPath {
                 if let lastPoint = lastPoint {
                     let midPoint = CGPointMake((point.x + lastPoint.x) / 2.0, (point.y + lastPoint.y) / 2.0)
-                    let distanceScore = euclidianDistance(point, lastPoint)
+                    var distanceScore = euclidianDistance(point, lastPoint)
+                    if distanceScore == 0 {
+                        distanceScore = 0.1 // Otherwise, we will get NaN because of the weighting
+                    }
                     
                     let temp = distanceScore + totalDistance
                     
@@ -232,6 +279,10 @@ class DTWDigitClassifier {
                     yDeviation = yDeviation + totalDistance * yDelta * yR;
                     
                     totalDistance = temp;
+                    
+                    if !isfinite(xMean) || !isfinite(yMean) {
+                        println("Found a nan")
+                    }
                 } else {
                     lastPoint = point
                 }
@@ -250,10 +301,13 @@ class DTWDigitClassifier {
         if !isfinite(yScale) {
              yScale = 1
         }
+        let scale = min(xScale, yScale)
         
         return inputDigit.map { subPath in
             return subPath.map { point in
-                return CGPointMake((point.x - xMean) * xScale, (point.y - yMean) * yScale)
+                let x = (point.x - xMean) * scale
+                let y = (point.y - yMean) * scale
+                return CGPointMake(x, y)
             }
         }
     }
