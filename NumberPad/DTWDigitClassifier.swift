@@ -13,7 +13,13 @@ typealias DigitLabel = String
 typealias PrototypeLibrary = [DigitLabel: [DigitStrokes]]
 
 func euclidianDistance(a: CGPoint, b: CGPoint) -> CGFloat {
-    return sqrt( pow(a.x - b.x, 2) + pow(a.y - b.y, 2) )
+    return sqrt( euclidianDistanceSquared(a, b) )
+}
+
+func euclidianDistanceSquared(a: CGPoint, b: CGPoint) -> CGFloat {
+    let dx = a.x - b.x
+    let dy = a.y - b.y
+    return dx*dx + dy*dy
 }
 
 class DTWDigitClassifier {
@@ -177,19 +183,19 @@ class DTWDigitClassifier {
         // TODO: Assert that samples.count == prototype.count
         var result: CGFloat = 0
         for (index, stroke) in enumerate(sample) {
-            result += self.greedyDynamicTimeWarp(stroke, prototype: prototype[index], cost: euclidianDistance)
+            result += self.greedyDynamicTimeWarp(stroke, prototype: prototype[index])
         }
         return result / CGFloat(sample.count)
     }
     
     // TODO: Can we mark the inputs as constant in swift?
-    func greedyDynamicTimeWarp(sample: [CGPoint], prototype: [CGPoint], cost: (CGPoint, CGPoint) -> CGFloat) -> CGFloat {
+    func greedyDynamicTimeWarp(sample: [CGPoint], prototype: [CGPoint]) -> CGFloat {
         
         let windowWidth: CGFloat = 0.5 * CGFloat(sample.count)
         let slope: CGFloat = CGFloat(sample.count) / CGFloat(prototype.count)
         
         var pathLength = 1
-        var result: CGFloat = cost(sample[0], prototype[0])
+        var result: CGFloat = euclidianDistance(sample[0], prototype[0])
         
         var sampleIndex: Int = 0
         var prototypeIndex: Int = 0
@@ -202,45 +208,55 @@ class DTWDigitClassifier {
             // You can think of slope * CGFloat(prototypeIndex) as being the perfectly diagonal pairing
             var up = CGFloat.max
             if CGFloat(sampleIndex + 1) < slope * CGFloat(prototypeIndex) + windowWidth {
-                up = cost(sample[sampleIndex + 1], prototype[prototypeIndex])
+                up = euclidianDistanceSquared(sample[sampleIndex + 1], prototype[prototypeIndex])
             }
             var right = CGFloat.max
             if CGFloat(sampleIndex) < slope * CGFloat(prototypeIndex + 1) + windowWidth {
-                right = cost(sample[sampleIndex], prototype[prototypeIndex + 1])
+                right = euclidianDistanceSquared(sample[sampleIndex], prototype[prototypeIndex + 1])
             }
             var diagonal = CGFloat.max
             if (CGFloat(sampleIndex + 1) < slope * CGFloat(prototypeIndex + 1) + windowWidth &&
                 CGFloat(sampleIndex + 1) > slope * CGFloat(prototypeIndex + 1) - windowWidth) {
-                diagonal = cost(sample[sampleIndex + 1], prototype[prototypeIndex + 1])
+                diagonal = euclidianDistanceSquared(sample[sampleIndex + 1], prototype[prototypeIndex + 1])
+            }
+            
+            // TODO: The right is the least case is repeated twice. Any way to fix that?
+            if up < diagonal {
+                if up < right {
+                    // up is the least
+                    sampleIndex++
+                    result += sqrt(up)
+                } else {
+                    // right is the least
+                    prototypeIndex++
+                    result += sqrt(right)
+                }
+            } else {
+                // diagonal or right is the least
+                if diagonal < right {
+                    // diagonal is the least
+                    sampleIndex++
+                    prototypeIndex++
+                    result += sqrt(diagonal)
+                } else {
+                    // right is the least
+                    prototypeIndex++
+                    result += sqrt(right)
+                }
             }
 
-            switch min(up, diagonal, right) {
-            case up:
-                sampleIndex++
-                result += up
-            case right:
-                prototypeIndex++
-                result += right
-            default: // diagonal
-                sampleIndex++
-                prototypeIndex++
-                result += diagonal
-            }
-            if !isfinite(result) {
-                println("Uh oh. Found a nan")
-            }
             pathLength++;
         }
         
         // At most one of the following while loops will execute, finishing the path with a vertical or horizontal line along the boundary
         while sampleIndex + 1 < sample.count {
             sampleIndex++
-            result += cost(sample[sampleIndex], prototype[prototypeIndex])
+            result += euclidianDistance(sample[sampleIndex], prototype[prototypeIndex])
             pathLength++;
         }
         while prototypeIndex + 1 < prototype.count {
             prototypeIndex++
-            result += cost(sample[sampleIndex], prototype[prototypeIndex])
+            result += euclidianDistance(sample[sampleIndex], prototype[prototypeIndex])
             pathLength++;
         }
         
