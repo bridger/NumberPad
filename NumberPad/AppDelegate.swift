@@ -20,7 +20,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         self.rootViewController = window?.rootViewController as ViewController
         
-        if let path = NSBundle.mainBundle().pathForResource("ujipenchars2", ofType: "json") {
+        if let path = NSBundle.mainBundle().pathForResource("bridger_train", ofType: "json") {
             loadData(path)
         }
 //        if let newestDataName = newestSavedData() {

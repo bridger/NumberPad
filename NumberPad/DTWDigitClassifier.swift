@@ -35,7 +35,7 @@ class DTWDigitClassifier {
     }
     
     // Can be called from the background
-    func classifyDigit(digit: DigitStrokes, votesCounted: Int = 5, scoreCutoff: CGFloat = 0.9) -> DigitLabel? {
+    func classifyDigit(digit: DigitStrokes, votesCounted: Int = 5, scoreCutoff: CGFloat = 0.8) -> DigitLabel? {
         let normalizedDigit = normalizeDigit(digit)
         
         var bestMatches = SortedMinArray<CGFloat, DigitLabel>(capacity: votesCounted)
