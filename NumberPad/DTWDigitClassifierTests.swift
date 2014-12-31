@@ -10,11 +10,10 @@ import UIKit
 import XCTest
 
 class DTWDigitClassifierTests: XCTestCase {
-   
+    
     let digitClassifier = DTWDigitClassifier()
     
     func testUjiPenDataClassification() {
-        
         let digitClassifier = DTWDigitClassifier()
         
         let bundle = NSBundle(forClass: self.dynamicType)
@@ -33,6 +32,8 @@ class DTWDigitClassifierTests: XCTestCase {
             for (label, testDigits) in testData {
                 var labelCorrect = 0
                 var labelTotal = 0
+                let startDigitTime = NSDate()
+                
                 for testDigit in testDigits {
                     labelTotal++
                     
@@ -43,7 +44,9 @@ class DTWDigitClassifierTests: XCTestCase {
                 }
                 
                 let accuracy = Double(labelCorrect) / Double(labelTotal)
-                println("Accuracy score for \(label) is \(accuracy)% (\(labelCorrect)/\(labelTotal)).")
+                let elapsedTime = NSDate().timeIntervalSinceDate(startDigitTime)
+                println(String(format: "Accuracy score for %@ is %.3f%% (%d/%d). Took %d seconds", label, accuracy, labelCorrect, labelTotal, Int(elapsedTime)))
+                
                 aggregateCorrect += labelCorrect
                 aggregateTotal += labelTotal
             }
@@ -53,6 +56,4 @@ class DTWDigitClassifierTests: XCTestCase {
             println("Accuracy score for all training data is \(accuracy)% (\(aggregateCorrect)/\(aggregateTotal)). All tests took \(elapsedTime) seconds.")
         }
     }
-    
-    
 }

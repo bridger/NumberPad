@@ -6,7 +6,8 @@
 //  Copyright (c) 2014 Bridger Maxwell. All rights reserved.
 //
 
-import UIKit
+import CoreGraphics
+import Foundation
 
 typealias DigitStrokes = [[CGPoint]]
 typealias DigitLabel = String
@@ -43,28 +44,29 @@ class DTWDigitClassifier {
         
         let serviceGroup = dispatch_group_create()
         
-        for (label, prototypes) in self.normalizedPrototypeLibrary {
+        for label in self.normalizedPrototypeLibrary.keys {
             dispatch_group_async(serviceGroup, queue) {
-                var localMinDistance: CGFloat?
-                var localMinLabel: DigitLabel?
-                
-                for prototype in prototypes {
-                    if prototype.count == digit.count {
-                        let score = self.classificationScore(normalizedDigit, prototype: prototype)
-                        if localMinDistance == nil || score < localMinDistance! {
-                            if score == 0 {
-                                println("Found a suspiciously perfect match")
+                if let prototypes = self.normalizedPrototypeLibrary[label] {
+                    var localMinDistance: CGFloat?
+                    var localMinLabel: DigitLabel?
+                    for prototype in prototypes {
+                        if prototype.count == digit.count {
+                            let score = self.classificationScore(normalizedDigit, prototype: prototype)
+                            if localMinDistance == nil || score < localMinDistance! {
+                                if score == 0 {
+                                    println("Found a suspiciously perfect match")
+                                }
+                                localMinDistance = score
+                                localMinLabel = label
                             }
-                            localMinDistance = score
-                            localMinLabel = label
                         }
                     }
-                }
-                
-                dispatch_group_async(serviceGroup, serialResultsQueue) {
-                    if localMinDistance != nil && (minDistance == nil || localMinDistance! < minDistance) {
-                        minDistance = localMinDistance
-                        minLabel = localMinLabel
+                    
+                    dispatch_group_async(serviceGroup, serialResultsQueue) {
+                        if localMinDistance != nil && (minDistance == nil || localMinDistance! < minDistance) {
+                            minDistance = localMinDistance
+                            minLabel = localMinLabel
+                        }
                     }
                 }
             }
@@ -180,7 +182,7 @@ class DTWDigitClassifier {
 
     
     func classificationScore(sample: DigitStrokes, prototype: DigitStrokes) -> CGFloat {
-        // TODO: Assert that samples.count == prototype.count
+        assert(sample.count == prototype.count, "To compare two digits, they must have the same number of strokes")
         var result: CGFloat = 0
         for (index, stroke) in enumerate(sample) {
             result += self.greedyDynamicTimeWarp(stroke, prototype: prototype[index])
@@ -296,9 +298,7 @@ class DTWDigitClassifier {
                     
                     totalDistance = temp;
                     
-                    if !isfinite(xMean) || !isfinite(yMean) {
-                        println("Found a nan")
-                    }
+                    assert(isfinite(xMean) && isfinite(yMean), "Found a nan!")
                 } else {
                     lastPoint = point
                 }

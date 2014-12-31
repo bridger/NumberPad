@@ -69,6 +69,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
             
             let point = recognizer.locationInView(self.scrollView)
             self.currentStroke!.addPoint(point)
+            self.resultLabel.text = ""
             
         } else if recognizer.state == UIGestureRecognizerState.Changed {
             if let currentStroke = self.currentStroke {
