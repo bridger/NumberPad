@@ -60,6 +60,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
         let strokeRecognizer = StrokeGestureRecognizer()
         self.scrollView.addGestureRecognizer(strokeRecognizer)
         strokeRecognizer.addTarget(self, action: "handleStroke:")
+        
+        self.labelSelector.selectedSegmentIndex = 10
     }
 
     func handleStroke(recognizer: StrokeGestureRecognizer) {

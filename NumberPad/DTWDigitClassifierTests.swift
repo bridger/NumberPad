@@ -11,9 +11,64 @@ import XCTest
 
 class DTWDigitClassifierTests: XCTestCase {
     
-    let digitClassifier = DTWDigitClassifier()
+    func testParameters() {
+        let digitClassifier = DTWDigitClassifier()
+        
+        let bundle = NSBundle(forClass: self.dynamicType)
+        let trainingJsonData = DTWDigitClassifier.jsonLibraryFromFile(bundle.pathForResource("ujipenchars2_train", ofType: "json")!)
+        XCTAssertNotNil(trainingJsonData,  "Could not load training data")
+        
+        let testJsonData = DTWDigitClassifier.jsonLibraryFromFile(bundle.pathForResource("ujipenchars2_test", ofType: "json")!)
+        XCTAssertNotNil(testJsonData,  "Could not load test data")
+        let testData = DTWDigitClassifier.jsonToLibrary(testJsonData!["rawData"]!)
+        
+        digitClassifier.loadData(trainingJsonData!, loadNormalizedData: false)
+        
+        for (votesCounted: Int, scoreCutoff: CGFloat) in [(5, 0.7), (5, 0.8), (5, 0.9), (5, 1.0) ] {
+            println("\n\n\nTesting votesCounted=\(votesCounted) scoreCutoff=\(scoreCutoff)")
+            
+            let startTime = NSDate()
+            var aggregateCorrect = 0
+            var aggregateTotal = 0
+            
+            for (label, testDigits) in testData {
+                var labelCorrect = 0
+                var labelTotal = 0
+                var labelWrong = 0
+                var labelUnclassified = 0
+                let startDigitTime = NSDate()
+                
+                for testDigit in testDigits {
+                    labelTotal++
+                    
+                    let classification = digitClassifier.classifyDigit(testDigit, votesCounted: votesCounted, scoreCutoff: scoreCutoff)
+                    if classification == label {
+                        labelCorrect += 1
+                    } else if classification == nil {
+                        labelUnclassified += 1
+                    } else {
+                        labelWrong += 1
+                    }
+                }
+                
+                let accuracy = Double(labelCorrect) / Double(labelTotal)
+                let elapsedTime = NSDate().timeIntervalSinceDate(startDigitTime)
+                println(String(format: "Accuracy score for %@ is %.3f%% (%d/%d). %d wrong. %d unknown. Took %d seconds", label, accuracy, labelCorrect, labelTotal, labelWrong, labelUnclassified, Int(elapsedTime)))
+                
+                aggregateCorrect += labelCorrect
+                aggregateTotal += labelTotal
+            }
+            
+            let accuracy = Double(aggregateCorrect) / Double(aggregateTotal)
+            let elapsedTime = NSDate().timeIntervalSinceDate(startTime)
+            println("Accuracy score for (\(votesCounted), \(scoreCutoff)) is \(accuracy)% (\(aggregateCorrect)/\(aggregateTotal)). All tests took \(elapsedTime) seconds.")
+            
+        }
+        
+        
+    }
     
-    func testUjiPenDataClassification() {
+    func testPerformanceAndAccuracy() {
         let digitClassifier = DTWDigitClassifier()
         
         let bundle = NSBundle(forClass: self.dynamicType)
@@ -29,19 +84,32 @@ class DTWDigitClassifierTests: XCTestCase {
             let startTime = NSDate()
             var aggregateCorrect = 0
             var aggregateTotal = 0
+            
             for (label, testDigits) in testData {
                 var labelCorrect = 0
                 var labelTotal = 0
                 let startDigitTime = NSDate()
                 
+                let serviceGroup = dispatch_group_create()
+                let queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0)
+                let serialResultsQueue = dispatch_queue_create("collect_results", nil)
+
                 for testDigit in testDigits {
                     labelTotal++
                     
-                    let classification = digitClassifier.classifyDigit(testDigit)
-                    if classification == label {
-                        labelCorrect++
+                    dispatch_group_async(serviceGroup, queue) {
+                        let classification = digitClassifier.classifyDigit(testDigit)
+                        
+                        if classification == label {
+                            dispatch_group_async(serviceGroup, serialResultsQueue) {
+                                labelCorrect += 1
+                            }
+                        }
                     }
                 }
+                
+                // Wait for all results
+                dispatch_group_wait(serviceGroup, DISPATCH_TIME_FOREVER);
                 
                 let accuracy = Double(labelCorrect) / Double(labelTotal)
                 let elapsedTime = NSDate().timeIntervalSinceDate(startDigitTime)

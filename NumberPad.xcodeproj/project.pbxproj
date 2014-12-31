@@ -13,6 +13,10 @@
 		AE3DD23A1A52784A007D1500 /* ujipenchars2.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD2391A52784A007D1500 /* ujipenchars2.json */; };
 		AE3DD23D1A52785D007D1500 /* ujipenchars2_test.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD23B1A52785D007D1500 /* ujipenchars2_test.json */; };
 		AE3DD23E1A52785D007D1500 /* ujipenchars2_train.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD23C1A52785D007D1500 /* ujipenchars2_train.json */; };
+		AE3DD23F1A528233007D1500 /* ujipenchars2_test.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD23B1A52785D007D1500 /* ujipenchars2_test.json */; };
+		AE3DD2411A537C0A007D1500 /* SortedMinArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3DD2401A537C0A007D1500 /* SortedMinArray.swift */; };
+		AE3DD2421A537C0A007D1500 /* SortedMinArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3DD2401A537C0A007D1500 /* SortedMinArray.swift */; };
+		AE3DD2441A544C02007D1500 /* SortedMinArrayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3DD2431A544C02007D1500 /* SortedMinArrayTests.swift */; };
 		AEC9EEC01A3CDC4A002C7B08 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */; };
 		AEC9EEC21A3CDC4A002C7B08 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEC11A3CDC4A002C7B08 /* ViewController.swift */; };
 		AEC9EEC51A3CDC4A002C7B08 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AEC9EEC31A3CDC4A002C7B08 /* Main.storyboard */; };
@@ -38,6 +42,8 @@
 		AE3DD2391A52784A007D1500 /* ujipenchars2.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = ujipenchars2.json; path = Data/ujipenchars2.json; sourceTree = SOURCE_ROOT; };
 		AE3DD23B1A52785D007D1500 /* ujipenchars2_test.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = ujipenchars2_test.json; path = Data/ujipenchars2_test.json; sourceTree = SOURCE_ROOT; };
 		AE3DD23C1A52785D007D1500 /* ujipenchars2_train.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = ujipenchars2_train.json; path = Data/ujipenchars2_train.json; sourceTree = SOURCE_ROOT; };
+		AE3DD2401A537C0A007D1500 /* SortedMinArray.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SortedMinArray.swift; sourceTree = "<group>"; };
+		AE3DD2431A544C02007D1500 /* SortedMinArrayTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SortedMinArrayTests.swift; sourceTree = "<group>"; };
 		AEC9EEBA1A3CDC4A002C7B08 /* NumberPad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NumberPad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC9EEBE1A3CDC4A002C7B08 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -96,6 +102,8 @@
 				AEC9EEC11A3CDC4A002C7B08 /* ViewController.swift */,
 				AE04E7531A4DE6F40077D2E3 /* DTWDigitClassifier.swift */,
 				AE3DD2331A52100E007D1500 /* DTWDigitClassifierTests.swift */,
+				AE3DD2401A537C0A007D1500 /* SortedMinArray.swift */,
+				AE3DD2431A544C02007D1500 /* SortedMinArrayTests.swift */,
 				AEC9EEDF1A3CEB3A002C7B08 /* StrokeGestureRecognizer.swift */,
 				AEC9EEC31A3CDC4A002C7B08 /* Main.storyboard */,
 				AEC9EF001A3F880A002C7B08 /* BitmapDigitClassifier.h */,
@@ -218,6 +226,7 @@
 				AEC9EEC51A3CDC4A002C7B08 /* Main.storyboard in Resources */,
 				AE3DD23A1A52784A007D1500 /* ujipenchars2.json in Resources */,
 				AEC9EEC71A3CDC4A002C7B08 /* Images.xcassets in Resources */,
+				AE3DD23F1A528233007D1500 /* ujipenchars2_test.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -240,6 +249,7 @@
 				AEC9EEC21A3CDC4A002C7B08 /* ViewController.swift in Sources */,
 				AEC9EEFF1A3F87F0002C7B08 /* BitmapDigitClassier.mm in Sources */,
 				AEC9EEC01A3CDC4A002C7B08 /* AppDelegate.swift in Sources */,
+				AE3DD2411A537C0A007D1500 /* SortedMinArray.swift in Sources */,
 				AE04E7541A4DE6F40077D2E3 /* DTWDigitClassifier.swift in Sources */,
 				AEC9EEE01A3CEB3A002C7B08 /* StrokeGestureRecognizer.swift in Sources */,
 			);
@@ -252,6 +262,8 @@
 				AE04E7551A4DE6F40077D2E3 /* DTWDigitClassifier.swift in Sources */,
 				AE3DD2341A52100E007D1500 /* DTWDigitClassifierTests.swift in Sources */,
 				AEC9EED61A3CDC4A002C7B08 /* NumberPadTests.swift in Sources */,
+				AE3DD2421A537C0A007D1500 /* SortedMinArray.swift in Sources */,
+				AE3DD2441A544C02007D1500 /* SortedMinArrayTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -366,7 +378,6 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "NumberPad/NumberPad-Bridging-Header.h";
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
 			};
 			name = Debug;
 		};

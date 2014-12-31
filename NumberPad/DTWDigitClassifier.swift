@@ -34,48 +34,39 @@ class DTWDigitClassifier {
         addToLibrary(&self.normalizedPrototypeLibrary, label: label, digit: normalizedDigit)
     }
     
-    func classifyDigit(digit: DigitStrokes) -> DigitLabel? {
+    // Can be called from the background
+    func classifyDigit(digit: DigitStrokes, votesCounted: Int = 5, scoreCutoff: CGFloat = 0.9) -> DigitLabel? {
         let normalizedDigit = normalizeDigit(digit)
-        var minDistance: CGFloat?
-        var minLabel: DigitLabel?
         
-        let queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0)
-        let serialResultsQueue = dispatch_queue_create("collect_results", nil)
-        
-        let serviceGroup = dispatch_group_create()
-        
-        for label in self.normalizedPrototypeLibrary.keys {
-            dispatch_group_async(serviceGroup, queue) {
-                if let prototypes = self.normalizedPrototypeLibrary[label] {
-                    var localMinDistance: CGFloat?
-                    var localMinLabel: DigitLabel?
-                    for prototype in prototypes {
-                        if prototype.count == digit.count {
-                            let score = self.classificationScore(normalizedDigit, prototype: prototype)
-                            if localMinDistance == nil || score < localMinDistance! {
-                                if score == 0 {
-                                    println("Found a suspiciously perfect match")
-                                }
-                                localMinDistance = score
-                                localMinLabel = label
-                            }
-                        }
-                    }
-                    
-                    dispatch_group_async(serviceGroup, serialResultsQueue) {
-                        if localMinDistance != nil && (minDistance == nil || localMinDistance! < minDistance) {
-                            minDistance = localMinDistance
-                            minLabel = localMinLabel
-                        }
+        var bestMatches = SortedMinArray<CGFloat, DigitLabel>(capacity: votesCounted)
+        for (label, prototypes) in self.normalizedPrototypeLibrary {
+            var localMinDistance: CGFloat?
+            var localMinLabel: DigitLabel?
+            for prototype in prototypes {
+                if prototype.count == digit.count {
+                    let score = self.classificationScore(normalizedDigit, prototype: prototype)
+                    if score < scoreCutoff {
+                        bestMatches.add(score, element: label)
                     }
                 }
             }
         }
         
-        dispatch_group_wait(serviceGroup,DISPATCH_TIME_FOREVER);
-        //println("Returning label \(minLabel) which has a distance of \(minDistance)")
+        var votes: [DigitLabel: Int] = [:]
+        for (score, label) in bestMatches {
+            votes[label] = (votes[label] ?? 0) + 1
+        }
         
-        return minLabel
+        var maxVotes: Int?
+        var maxVotedLabel: DigitLabel?
+        for (label, labelVotes) in votes {
+            if maxVotes == nil || labelVotes > maxVotes! {
+                maxVotedLabel = label
+                maxVotes = labelVotes
+            }
+        }
+        
+        return maxVotedLabel
     }
     
     typealias JSONCompatiblePoint = [CGFloat]
@@ -190,9 +181,7 @@ class DTWDigitClassifier {
         return result / CGFloat(sample.count)
     }
     
-    // TODO: Can we mark the inputs as constant in swift?
     func greedyDynamicTimeWarp(sample: [CGPoint], prototype: [CGPoint]) -> CGFloat {
-        
         let windowWidth: CGFloat = 0.5 * CGFloat(sample.count)
         let slope: CGFloat = CGFloat(sample.count) / CGFloat(prototype.count)
         
