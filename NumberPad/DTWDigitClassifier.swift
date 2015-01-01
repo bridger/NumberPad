@@ -34,8 +34,10 @@ class DTWDigitClassifier {
         addToLibrary(&self.normalizedPrototypeLibrary, label: label, digit: normalizedDigit)
     }
     
+    // Returns the label, as well as a confidence in the label
     // Can be called from the background
-    func classifyDigit(digit: DigitStrokes, votesCounted: Int = 5, scoreCutoff: CGFloat = 0.8) -> DigitLabel? {
+    typealias Classification = (Label: DigitLabel, Confidence: CGFloat)
+    func classifyDigit(digit: DigitStrokes, votesCounted: Int = 5, scoreCutoff: CGFloat = 0.8) -> Classification? {
         let normalizedDigit = normalizeDigit(digit)
         
         var bestMatches = SortedMinArray<CGFloat, DigitLabel>(capacity: votesCounted)
@@ -65,8 +67,15 @@ class DTWDigitClassifier {
                 maxVotes = labelVotes
             }
         }
+        if let maxVotedLabel = maxVotedLabel {
+            for (score, label) in bestMatches {
+                if label == maxVotedLabel {
+                    return (maxVotedLabel, score)
+                }
+            }
+        }
         
-        return maxVotedLabel
+        return nil
     }
     
     typealias JSONCompatiblePoint = [CGFloat]

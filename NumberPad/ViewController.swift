@@ -36,7 +36,6 @@ class Stroke {
     }
 }
 
-
 class ViewController: UIViewController, UIGestureRecognizerDelegate {
     var scrollView: UIScrollView!
     var currentStroke: Stroke?
@@ -44,7 +43,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
     var digitClassifier: DTWDigitClassifier
     @IBOutlet weak var labelSelector: UISegmentedControl!
     @IBOutlet weak var resultLabel: UILabel!
-    
 
     required init(coder aDecoder: NSCoder) {
         self.digitClassifier = DTWDigitClassifier()
@@ -81,7 +79,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
         } else if recognizer.state == UIGestureRecognizerState.Ended {
             if let currentStroke = self.currentStroke {
                 
-                // TODO: If this was far enough away from the last stroke, then all previous strokes should be saved
                 var wasFarAway = false
                 if let lastStroke = self.previousStrokes.last {
                     if let lastStrokeLastPoint = lastStroke.points.last {
@@ -97,16 +94,16 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
                     if let currentLabel = self.labelSelector.titleForSegmentAtIndex(selectedSegment) {
                         
                         if currentLabel == "Test" {
-                            var currentDigit: DigitStrokes = []
+                            var allStrokes: DigitStrokes = []
                             if !wasFarAway {
                                 for previousStroke in self.previousStrokes {
-                                    currentDigit.append(previousStroke.points)
+                                    allStrokes.append(previousStroke.points)
                                 }
                             }
-                            currentDigit.append(currentStroke.points)
+                            allStrokes.append(currentStroke.points)
                             
-                            if let classification = self.digitClassifier.classifyDigit(currentDigit) {
-                                self.resultLabel.text = classification
+                            if let writtenNumber = self.readNumberFromStrokes(allStrokes) {
+                                self.resultLabel.text = "\(writtenNumber)"
                             } else {
                                 self.resultLabel.text = "Unknown"
                             }
@@ -124,7 +121,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
                                 
                                 self.digitClassifier.learnDigit(currentLabel, digit: lastDigit)
                                 if let classification = self.digitClassifier.classifyDigit(lastDigit) {
-                                    self.resultLabel.text = classification
+                                    self.resultLabel.text = classification.Label
                                 } else {
                                     self.resultLabel.text = "Unknown"
                                 }
@@ -136,6 +133,63 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
                 previousStrokes.append(self.currentStroke!)
             }
         }
+    }
+    
+    // If any one stroke can't be classified, this will return nil
+    func readNumberFromStrokes(strokes: [[CGPoint]]) -> Int? {
+        
+        var labels: [DigitLabel] = []
+        
+        var lastStrokeClassification: DTWDigitClassifier.Classification? = nil
+        var lastStrokeNeedClassifying = false
+        for index in 0..<strokes.count {
+            // We need to decide if we want classify this stroke by itself, or with the last stroke
+            let singleStrokeDigit = strokes[index]
+            let singleStrokeClassification = self.digitClassifier.classifyDigit([singleStrokeDigit])
+            if singleStrokeClassification == nil {
+                println("Could not classify stroke \(index) on its own")
+            }
+            
+            if lastStrokeNeedClassifying {
+                if let twoStrokeClassification = self.digitClassifier.classifyDigit([strokes[index-1], strokes[index]]) {
+                    var mustMatch = lastStrokeClassification == nil || singleStrokeClassification == nil;
+                    if (mustMatch || twoStrokeClassification.Confidence < lastStrokeClassification!.Confidence || twoStrokeClassification.Confidence < singleStrokeClassification!.Confidence) {
+                        
+                        // Sweet, the double stroke classification is the best one
+                        lastStrokeClassification = nil
+                        lastStrokeNeedClassifying = false
+                        labels.append(twoStrokeClassification.Label)
+                        continue
+                    }
+                }
+                
+                // If we made it to here, then trying to classify it together with the last stroke didn't work. That means we must commit the single-stroke classification for lastStroke, and wait until next iteration to get the final work on the current stroke
+                if let lastStrokeClassification = lastStrokeClassification {
+                    labels.append(lastStrokeClassification.Label)
+                } else {
+                    println("Could not classify stroke \(index - 1)")
+                    // Uh oh, the last stroke couldn't be classified at all. Bail?
+                    return nil
+                }
+            }
+            
+            lastStrokeClassification = singleStrokeClassification
+            lastStrokeNeedClassifying = true
+        }
+        
+        if lastStrokeNeedClassifying {
+            if let lastStrokeClassification = lastStrokeClassification {
+                labels.append(lastStrokeClassification.Label)
+            } else {
+                // Uh oh, the last stroke couldn't be classified at all. Bail?
+                println("Could not classify the last stroke")
+                return nil
+            }
+        }
+        
+        // Translate from labels to an integer
+        let combinedLabels = labels.reduce("", +)
+        return combinedLabels.toInt()
     }
     
     

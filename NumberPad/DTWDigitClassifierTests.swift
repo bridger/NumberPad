@@ -39,7 +39,7 @@ class DTWDigitClassifierTests: XCTestCase {
                 for testDigit in testDigits {
                     labelTotal++
                     
-                    let classification = digitClassifier.classifyDigit(testDigit, votesCounted: votesCounted, scoreCutoff: scoreCutoff)
+                    let classification = digitClassifier.classifyDigit(testDigit, votesCounted: votesCounted, scoreCutoff: scoreCutoff)?.Label
                     if classification == label {
                         labelCorrect += 1
                     } else if classification == nil {
@@ -98,7 +98,7 @@ class DTWDigitClassifierTests: XCTestCase {
                     labelTotal++
                     
                     dispatch_group_async(serviceGroup, queue) {
-                        let classification = digitClassifier.classifyDigit(testDigit)
+                        let classification = digitClassifier.classifyDigit(testDigit)?.Label
                         
                         dispatch_group_async(serviceGroup, serialResultsQueue) {
                             if classification == label {
