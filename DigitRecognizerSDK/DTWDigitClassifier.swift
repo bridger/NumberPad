@@ -9,26 +9,29 @@
 import CoreGraphics
 import Foundation
 
-typealias DigitStrokes = [[CGPoint]]
-typealias DigitLabel = String
-typealias PrototypeLibrary = [DigitLabel: [DigitStrokes]]
-
-func euclidianDistance(a: CGPoint, b: CGPoint) -> CGFloat {
+public func euclidianDistance(a: CGPoint, b: CGPoint) -> CGFloat {
     return sqrt( euclidianDistanceSquared(a, b) )
 }
 
-func euclidianDistanceSquared(a: CGPoint, b: CGPoint) -> CGFloat {
+public func euclidianDistanceSquared(a: CGPoint, b: CGPoint) -> CGFloat {
     let dx = a.x - b.x
     let dy = a.y - b.y
     return dx*dx + dy*dy
 }
 
-class DTWDigitClassifier {
+public class DTWDigitClassifier {
+    public typealias DigitStrokes = [[CGPoint]]
+    public typealias DigitLabel = String
+    public typealias PrototypeLibrary = [DigitLabel: [DigitStrokes]]
     
     var normalizedPrototypeLibrary: PrototypeLibrary = [:]
     var rawPrototypeLibrary: PrototypeLibrary = [:]
     
-    func learnDigit(label: DigitLabel, digit: DigitStrokes) {
+    public init() {
+        
+    }
+    
+    public func learnDigit(label: DigitLabel, digit: DigitStrokes) {
         addToLibrary(&self.rawPrototypeLibrary, label: label, digit: digit)
         let normalizedDigit = normalizeDigit(digit)
         addToLibrary(&self.normalizedPrototypeLibrary, label: label, digit: normalizedDigit)
@@ -36,8 +39,8 @@ class DTWDigitClassifier {
     
     // Returns the label, as well as a confidence in the label
     // Can be called from the background
-    typealias Classification = (Label: DigitLabel, Confidence: CGFloat)
-    func classifyDigit(digit: DigitStrokes, votesCounted: Int = 5, scoreCutoff: CGFloat = 0.8) -> Classification? {
+    public typealias Classification = (Label: DigitLabel, Confidence: CGFloat)
+    public func classifyDigit(digit: DigitStrokes, votesCounted: Int = 5, scoreCutoff: CGFloat = 0.8) -> Classification? {
         let normalizedDigit = normalizeDigit(digit)
         
         var bestMatches = SortedMinArray<CGFloat, DigitLabel>(capacity: votesCounted)
@@ -78,9 +81,9 @@ class DTWDigitClassifier {
         return nil
     }
     
-    typealias JSONCompatiblePoint = [CGFloat]
-    typealias JSONCompatibleLibrary = [DigitLabel: [[[JSONCompatiblePoint]]] ]
-    func dataToSave(saveRawData: Bool, saveNormalizedData: Bool) -> [String: JSONCompatibleLibrary] {
+    public typealias JSONCompatiblePoint = [CGFloat]
+    public typealias JSONCompatibleLibrary = [DigitLabel: [[[JSONCompatiblePoint]]] ]
+    public func dataToSave(saveRawData: Bool, saveNormalizedData: Bool) -> [String: JSONCompatibleLibrary] {
         func libraryToJson(library: PrototypeLibrary) -> JSONCompatibleLibrary {
             var jsonLibrary: JSONCompatibleLibrary = [:]
             for (label, prototypes) in library {
@@ -109,7 +112,7 @@ class DTWDigitClassifier {
         return dictionary
     }
     
-    class func jsonLibraryFromFile(path: String) -> [String: JSONCompatibleLibrary]? {
+    public class func jsonLibraryFromFile(path: String) -> [String: JSONCompatibleLibrary]? {
         let filename = path.lastPathComponent
         if let data = NSData(contentsOfFile: path) {
             if let json: AnyObject = NSJSONSerialization.JSONObjectWithData(data, options: nil, error: nil) {
@@ -128,7 +131,7 @@ class DTWDigitClassifier {
         return nil
     }
     
-    class func jsonToLibrary(json: JSONCompatibleLibrary) -> PrototypeLibrary {
+    public class func jsonToLibrary(json: JSONCompatibleLibrary) -> PrototypeLibrary {
         var newLibrary: PrototypeLibrary = [:]
         for (label, prototypes) in json {
             newLibrary[label] = prototypes.map { (prototype: [[JSONCompatiblePoint]]) -> DigitStrokes in
@@ -143,8 +146,7 @@ class DTWDigitClassifier {
         return newLibrary
     }
     
-    func loadData(jsonData: [String: JSONCompatibleLibrary], loadNormalizedData: Bool) {
-        
+    public func loadData(jsonData: [String: JSONCompatibleLibrary], loadNormalizedData: Bool) {
         // Clear the existing library
         self.normalizedPrototypeLibrary = [:]
         self.rawPrototypeLibrary = [:]
@@ -171,7 +173,7 @@ class DTWDigitClassifier {
     }
     
     
-    func addToLibrary(inout library: PrototypeLibrary, label: DigitLabel, digit: DigitStrokes) {
+    public func addToLibrary(inout library: PrototypeLibrary, label: DigitLabel, digit: DigitStrokes) {
         if library[label] != nil {
             library[label]!.append(digit)
         } else {

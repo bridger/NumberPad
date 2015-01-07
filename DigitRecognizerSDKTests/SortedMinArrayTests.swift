@@ -8,9 +8,9 @@
 
 import UIKit
 import XCTest
+import DigitRecognizerSDK
 
 class SortedMinArrayTests: XCTestCase {
-    
     func getElementsAndValues<D, T>(minArray: SortedMinArray<D, T>) -> (values: [D], elements: [T]) {
         var values: [D] = []
         var elements: [T] = []

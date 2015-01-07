@@ -8,6 +8,7 @@
 
 import UIKit
 import XCTest
+import DigitRecognizerSDK
 
 class DTWDigitClassifierTests: XCTestCase {
     

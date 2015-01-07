@@ -4,6 +4,16 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
+		<key>DigitRecognizer.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>1</integer>
+		</dict>
+		<key>DigitRecognizerSDK.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>2</integer>
+		</dict>
 		<key>NumberPad.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
@@ -12,6 +22,26 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
+		<key>AE5554601A5CB9D3007DCF1D</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>AE5554741A5CB9D3007DCF1D</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>AE5554C01A5CBBF7007DCF1D</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>AE5554CA1A5CBBF7007DCF1D</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
 		<key>AEC9EEB91A3CDC4A002C7B08</key>
 		<dict>
 			<key>primary</key>

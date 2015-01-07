@@ -7,30 +7,58 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AE04E7541A4DE6F40077D2E3 /* DTWDigitClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE04E7531A4DE6F40077D2E3 /* DTWDigitClassifier.swift */; };
-		AE04E7551A4DE6F40077D2E3 /* DTWDigitClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE04E7531A4DE6F40077D2E3 /* DTWDigitClassifier.swift */; };
-		AE3DD2341A52100E007D1500 /* DTWDigitClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3DD2331A52100E007D1500 /* DTWDigitClassifierTests.swift */; };
-		AE3DD23A1A52784A007D1500 /* ujipenchars2.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD2391A52784A007D1500 /* ujipenchars2.json */; };
-		AE3DD23D1A52785D007D1500 /* ujipenchars2_test.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD23B1A52785D007D1500 /* ujipenchars2_test.json */; };
-		AE3DD23E1A52785D007D1500 /* ujipenchars2_train.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD23C1A52785D007D1500 /* ujipenchars2_train.json */; };
-		AE3DD23F1A528233007D1500 /* ujipenchars2_test.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD23B1A52785D007D1500 /* ujipenchars2_test.json */; };
-		AE3DD2411A537C0A007D1500 /* SortedMinArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3DD2401A537C0A007D1500 /* SortedMinArray.swift */; };
-		AE3DD2421A537C0A007D1500 /* SortedMinArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3DD2401A537C0A007D1500 /* SortedMinArray.swift */; };
-		AE3DD2441A544C02007D1500 /* SortedMinArrayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3DD2431A544C02007D1500 /* SortedMinArrayTests.swift */; };
-		AE3DD2491A5494B7007D1500 /* bridger_test.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD2471A5494B7007D1500 /* bridger_test.json */; };
-		AE3DD24A1A5494B7007D1500 /* bridger_test.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD2471A5494B7007D1500 /* bridger_test.json */; };
-		AE3DD24B1A5494B7007D1500 /* bridger_train.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD2481A5494B7007D1500 /* bridger_train.json */; };
-		AE3DD24C1A5494B7007D1500 /* bridger_train.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD2481A5494B7007D1500 /* bridger_train.json */; };
+		AE5554661A5CB9D3007DCF1D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE5554651A5CB9D3007DCF1D /* AppDelegate.swift */; };
+		AE5554681A5CB9D3007DCF1D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE5554671A5CB9D3007DCF1D /* ViewController.swift */; };
+		AE55546D1A5CB9D3007DCF1D /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AE55546C1A5CB9D3007DCF1D /* Images.xcassets */; };
+		AE5554881A5CBAE1007DCF1D /* bridger_train.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD2481A5494B7007D1500 /* bridger_train.json */; };
+		AE5554C61A5CBBF7007DCF1D /* DigitRecognizerSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = AE5554C51A5CBBF7007DCF1D /* DigitRecognizerSDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		AE5554CC1A5CBBF7007DCF1D /* DigitRecognizerSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE5554C11A5CBBF7007DCF1D /* DigitRecognizerSDK.framework */; };
+		AE5554D51A5CBBF7007DCF1D /* DigitRecognizerSDKTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE5554D41A5CBBF7007DCF1D /* DigitRecognizerSDKTests.swift */; };
+		AE5554D81A5CBBF7007DCF1D /* DigitRecognizerSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE5554C11A5CBBF7007DCF1D /* DigitRecognizerSDK.framework */; };
+		AE5554D91A5CBBF7007DCF1D /* DigitRecognizerSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = AE5554C11A5CBBF7007DCF1D /* DigitRecognizerSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		AE5554E11A5CBC19007DCF1D /* DTWDigitClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE04E7531A4DE6F40077D2E3 /* DTWDigitClassifier.swift */; };
+		AE5554E31A5CBC25007DCF1D /* DTWDigitClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3DD2331A52100E007D1500 /* DTWDigitClassifierTests.swift */; };
+		AE5554E51A5CBC31007DCF1D /* SortedMinArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3DD2401A537C0A007D1500 /* SortedMinArray.swift */; };
+		AE5554E91A5CBC4C007DCF1D /* SortedMinArrayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3DD2431A544C02007D1500 /* SortedMinArrayTests.swift */; };
+		AE5554EC1A5CBC63007DCF1D /* bridger_test.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD2471A5494B7007D1500 /* bridger_test.json */; };
+		AE5554ED1A5CBC6A007DCF1D /* bridger_train.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD2481A5494B7007D1500 /* bridger_train.json */; };
+		AE5554EE1A5CBC6E007DCF1D /* bridger_train.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD2481A5494B7007D1500 /* bridger_train.json */; };
+		AE5554F01A5CBC78007DCF1D /* ujipenchars2_test.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD23B1A52785D007D1500 /* ujipenchars2_test.json */; };
+		AE5554F11A5CBC7E007DCF1D /* ujipenchars2_train.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD23C1A52785D007D1500 /* ujipenchars2_train.json */; };
+		AE5554F21A5CBC86007DCF1D /* ujipenchars2.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD2391A52784A007D1500 /* ujipenchars2.json */; };
+		AE5554F31A5CBC89007DCF1D /* ujipenchars2.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD2391A52784A007D1500 /* ujipenchars2.json */; };
+		AE5554F41A5CBC8B007DCF1D /* ujipenchars2.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD2391A52784A007D1500 /* ujipenchars2.json */; };
+		AE5554F51A5CBD25007DCF1D /* StrokeGestureRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEDF1A3CEB3A002C7B08 /* StrokeGestureRecognizer.swift */; };
+		AE5554F91A5CE08C007DCF1D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AE5554F71A5CE08C007DCF1D /* Main.storyboard */; };
+		AE5554FC1A5CE0A5007DCF1D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AE5554FA1A5CE0A5007DCF1D /* Main.storyboard */; };
 		AEC9EEC01A3CDC4A002C7B08 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */; };
 		AEC9EEC21A3CDC4A002C7B08 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEC11A3CDC4A002C7B08 /* ViewController.swift */; };
-		AEC9EEC51A3CDC4A002C7B08 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AEC9EEC31A3CDC4A002C7B08 /* Main.storyboard */; };
 		AEC9EEC71A3CDC4A002C7B08 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AEC9EEC61A3CDC4A002C7B08 /* Images.xcassets */; };
 		AEC9EED61A3CDC4A002C7B08 /* NumberPadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EED51A3CDC4A002C7B08 /* NumberPadTests.swift */; };
-		AEC9EEE01A3CEB3A002C7B08 /* StrokeGestureRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEDF1A3CEB3A002C7B08 /* StrokeGestureRecognizer.swift */; };
-		AEC9EEFF1A3F87F0002C7B08 /* BitmapDigitClassier.mm in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEFE1A3F87F0002C7B08 /* BitmapDigitClassier.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		AE5554CD1A5CBBF7007DCF1D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AEC9EEB21A3CDC4A002C7B08 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AE5554C01A5CBBF7007DCF1D;
+			remoteInfo = DigitRecognizerSDK;
+		};
+		AE5554CF1A5CBBF7007DCF1D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AEC9EEB21A3CDC4A002C7B08 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AE5554601A5CB9D3007DCF1D;
+			remoteInfo = DigitRecognizer;
+		};
+		AE5554D61A5CBBF7007DCF1D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AEC9EEB21A3CDC4A002C7B08 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AE5554C01A5CBBF7007DCF1D;
+			remoteInfo = DigitRecognizerSDK;
+		};
 		AEC9EED01A3CDC4A002C7B08 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = AEC9EEB21A3CDC4A002C7B08 /* Project object */;
@@ -39,6 +67,20 @@
 			remoteInfo = NumberPad;
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		AE5554DD1A5CBBF7007DCF1D /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				AE5554D91A5CBBF7007DCF1D /* DigitRecognizerSDK.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		AE04E7531A4DE6F40077D2E3 /* DTWDigitClassifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DTWDigitClassifier.swift; sourceTree = "<group>"; };
@@ -50,11 +92,25 @@
 		AE3DD2431A544C02007D1500 /* SortedMinArrayTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SortedMinArrayTests.swift; sourceTree = "<group>"; };
 		AE3DD2471A5494B7007D1500 /* bridger_test.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = bridger_test.json; path = Data/bridger_test.json; sourceTree = SOURCE_ROOT; };
 		AE3DD2481A5494B7007D1500 /* bridger_train.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = bridger_train.json; path = Data/bridger_train.json; sourceTree = SOURCE_ROOT; };
+		AE5554611A5CB9D3007DCF1D /* DigitRecognizer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DigitRecognizer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AE5554641A5CB9D3007DCF1D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AE5554651A5CB9D3007DCF1D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		AE5554671A5CB9D3007DCF1D /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		AE55546C1A5CB9D3007DCF1D /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		AE55547A1A5CB9D3007DCF1D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AE55547B1A5CB9D3007DCF1D /* DigitRecognizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DigitRecognizerTests.swift; sourceTree = "<group>"; };
+		AE5554C11A5CBBF7007DCF1D /* DigitRecognizerSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DigitRecognizerSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		AE5554C41A5CBBF7007DCF1D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AE5554C51A5CBBF7007DCF1D /* DigitRecognizerSDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DigitRecognizerSDK.h; sourceTree = "<group>"; };
+		AE5554CB1A5CBBF7007DCF1D /* DigitRecognizerSDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DigitRecognizerSDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AE5554D31A5CBBF7007DCF1D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AE5554D41A5CBBF7007DCF1D /* DigitRecognizerSDKTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DigitRecognizerSDKTests.swift; sourceTree = "<group>"; };
+		AE5554F81A5CE08C007DCF1D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		AE5554FB1A5CE0A5007DCF1D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		AEC9EEBA1A3CDC4A002C7B08 /* NumberPad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NumberPad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC9EEBE1A3CDC4A002C7B08 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		AEC9EEC11A3CDC4A002C7B08 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		AEC9EEC41A3CDC4A002C7B08 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		AEC9EEC61A3CDC4A002C7B08 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		AEC9EECF1A3CDC4A002C7B08 /* NumberPadTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NumberPadTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC9EED41A3CDC4A002C7B08 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -66,6 +122,29 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		AE55545E1A5CB9D3007DCF1D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AE5554D81A5CBBF7007DCF1D /* DigitRecognizerSDK.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AE5554BD1A5CBBF7007DCF1D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AE5554C81A5CBBF7007DCF1D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AE5554CC1A5CBBF7007DCF1D /* DigitRecognizerSDK.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AEC9EEB71A3CDC4A002C7B08 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -83,11 +162,91 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		AE5554621A5CB9D3007DCF1D /* DigitRecognizer */ = {
+			isa = PBXGroup;
+			children = (
+				AE5554651A5CB9D3007DCF1D /* AppDelegate.swift */,
+				AE5554671A5CB9D3007DCF1D /* ViewController.swift */,
+				AE5554F71A5CE08C007DCF1D /* Main.storyboard */,
+				AE55546C1A5CB9D3007DCF1D /* Images.xcassets */,
+				AE5554631A5CB9D3007DCF1D /* Supporting Files */,
+			);
+			path = DigitRecognizer;
+			sourceTree = "<group>";
+		};
+		AE5554631A5CB9D3007DCF1D /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				AE5554641A5CB9D3007DCF1D /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		AE5554781A5CB9D3007DCF1D /* DigitRecognizerTests */ = {
+			isa = PBXGroup;
+			children = (
+				AE55547B1A5CB9D3007DCF1D /* DigitRecognizerTests.swift */,
+				AE5554791A5CB9D3007DCF1D /* Supporting Files */,
+			);
+			path = DigitRecognizerTests;
+			sourceTree = "<group>";
+		};
+		AE5554791A5CB9D3007DCF1D /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				AE55547A1A5CB9D3007DCF1D /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		AE5554C21A5CBBF7007DCF1D /* DigitRecognizerSDK */ = {
+			isa = PBXGroup;
+			children = (
+				AE04E7531A4DE6F40077D2E3 /* DTWDigitClassifier.swift */,
+				AE3DD2401A537C0A007D1500 /* SortedMinArray.swift */,
+				AEC9EEDF1A3CEB3A002C7B08 /* StrokeGestureRecognizer.swift */,
+				AE5554C51A5CBBF7007DCF1D /* DigitRecognizerSDK.h */,
+				AE5554C31A5CBBF7007DCF1D /* Supporting Files */,
+			);
+			path = DigitRecognizerSDK;
+			sourceTree = "<group>";
+		};
+		AE5554C31A5CBBF7007DCF1D /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				AE5554C41A5CBBF7007DCF1D /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		AE5554D11A5CBBF7007DCF1D /* DigitRecognizerSDKTests */ = {
+			isa = PBXGroup;
+			children = (
+				AE3DD2331A52100E007D1500 /* DTWDigitClassifierTests.swift */,
+				AE3DD2431A544C02007D1500 /* SortedMinArrayTests.swift */,
+				AE5554D41A5CBBF7007DCF1D /* DigitRecognizerSDKTests.swift */,
+				AE5554D21A5CBBF7007DCF1D /* Supporting Files */,
+			);
+			path = DigitRecognizerSDKTests;
+			sourceTree = "<group>";
+		};
+		AE5554D21A5CBBF7007DCF1D /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				AE5554D31A5CBBF7007DCF1D /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
 		AEC9EEB11A3CDC4A002C7B08 = {
 			isa = PBXGroup;
 			children = (
 				AEC9EEBC1A3CDC4A002C7B08 /* NumberPad */,
 				AEC9EED21A3CDC4A002C7B08 /* NumberPadTests */,
+				AE5554621A5CB9D3007DCF1D /* DigitRecognizer */,
+				AE5554781A5CB9D3007DCF1D /* DigitRecognizerTests */,
+				AE5554C21A5CBBF7007DCF1D /* DigitRecognizerSDK */,
+				AE5554D11A5CBBF7007DCF1D /* DigitRecognizerSDKTests */,
 				AEC9EEBB1A3CDC4A002C7B08 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -97,6 +256,9 @@
 			children = (
 				AEC9EEBA1A3CDC4A002C7B08 /* NumberPad.app */,
 				AEC9EECF1A3CDC4A002C7B08 /* NumberPadTests.xctest */,
+				AE5554611A5CB9D3007DCF1D /* DigitRecognizer.app */,
+				AE5554C11A5CBBF7007DCF1D /* DigitRecognizerSDK.framework */,
+				AE5554CB1A5CBBF7007DCF1D /* DigitRecognizerSDKTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -106,14 +268,9 @@
 			children = (
 				AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */,
 				AEC9EEC11A3CDC4A002C7B08 /* ViewController.swift */,
-				AE04E7531A4DE6F40077D2E3 /* DTWDigitClassifier.swift */,
-				AE3DD2331A52100E007D1500 /* DTWDigitClassifierTests.swift */,
-				AE3DD2401A537C0A007D1500 /* SortedMinArray.swift */,
-				AE3DD2431A544C02007D1500 /* SortedMinArrayTests.swift */,
-				AEC9EEDF1A3CEB3A002C7B08 /* StrokeGestureRecognizer.swift */,
-				AEC9EEC31A3CDC4A002C7B08 /* Main.storyboard */,
 				AEC9EF001A3F880A002C7B08 /* BitmapDigitClassifier.h */,
 				AEC9EEFE1A3F87F0002C7B08 /* BitmapDigitClassier.mm */,
+				AE5554FA1A5CE0A5007DCF1D /* Main.storyboard */,
 				AEC9EEC61A3CDC4A002C7B08 /* Images.xcassets */,
 				AEC9EEBD1A3CDC4A002C7B08 /* Supporting Files */,
 				AEC9EEE21A3CEC7F002C7B08 /* NumberPad-Bridging-Header.h */,
@@ -153,7 +310,74 @@
 		};
 /* End PBXGroup section */
 
+/* Begin PBXHeadersBuildPhase section */
+		AE5554BE1A5CBBF7007DCF1D /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AE5554C61A5CBBF7007DCF1D /* DigitRecognizerSDK.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
 /* Begin PBXNativeTarget section */
+		AE5554601A5CB9D3007DCF1D /* DigitRecognizer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AE5554811A5CB9D3007DCF1D /* Build configuration list for PBXNativeTarget "DigitRecognizer" */;
+			buildPhases = (
+				AE55545D1A5CB9D3007DCF1D /* Sources */,
+				AE55545E1A5CB9D3007DCF1D /* Frameworks */,
+				AE55545F1A5CB9D3007DCF1D /* Resources */,
+				AE5554DD1A5CBBF7007DCF1D /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AE5554D71A5CBBF7007DCF1D /* PBXTargetDependency */,
+			);
+			name = DigitRecognizer;
+			productName = DigitRecognizer;
+			productReference = AE5554611A5CB9D3007DCF1D /* DigitRecognizer.app */;
+			productType = "com.apple.product-type.application";
+		};
+		AE5554C01A5CBBF7007DCF1D /* DigitRecognizerSDK */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AE5554DA1A5CBBF7007DCF1D /* Build configuration list for PBXNativeTarget "DigitRecognizerSDK" */;
+			buildPhases = (
+				AE5554BC1A5CBBF7007DCF1D /* Sources */,
+				AE5554BD1A5CBBF7007DCF1D /* Frameworks */,
+				AE5554BE1A5CBBF7007DCF1D /* Headers */,
+				AE5554BF1A5CBBF7007DCF1D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DigitRecognizerSDK;
+			productName = DigitRecognizerSDK;
+			productReference = AE5554C11A5CBBF7007DCF1D /* DigitRecognizerSDK.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		AE5554CA1A5CBBF7007DCF1D /* DigitRecognizerSDKTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AE5554DE1A5CBBF7007DCF1D /* Build configuration list for PBXNativeTarget "DigitRecognizerSDKTests" */;
+			buildPhases = (
+				AE5554C71A5CBBF7007DCF1D /* Sources */,
+				AE5554C81A5CBBF7007DCF1D /* Frameworks */,
+				AE5554C91A5CBBF7007DCF1D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AE5554CE1A5CBBF7007DCF1D /* PBXTargetDependency */,
+				AE5554D01A5CBBF7007DCF1D /* PBXTargetDependency */,
+			);
+			name = DigitRecognizerSDKTests;
+			productName = DigitRecognizerSDKTests;
+			productReference = AE5554CB1A5CBBF7007DCF1D /* DigitRecognizerSDKTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		AEC9EEB91A3CDC4A002C7B08 /* NumberPad */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = AEC9EED91A3CDC4A002C7B08 /* Build configuration list for PBXNativeTarget "NumberPad" */;
@@ -198,6 +422,16 @@
 				LastUpgradeCheck = 0610;
 				ORGANIZATIONNAME = "Bridger Maxwell";
 				TargetAttributes = {
+					AE5554601A5CB9D3007DCF1D = {
+						CreatedOnToolsVersion = 6.1.1;
+					};
+					AE5554C01A5CBBF7007DCF1D = {
+						CreatedOnToolsVersion = 6.1.1;
+					};
+					AE5554CA1A5CBBF7007DCF1D = {
+						CreatedOnToolsVersion = 6.1.1;
+						TestTargetID = AE5554601A5CB9D3007DCF1D;
+					};
 					AEC9EEB91A3CDC4A002C7B08 = {
 						CreatedOnToolsVersion = 6.1.1;
 					};
@@ -222,21 +456,52 @@
 			targets = (
 				AEC9EEB91A3CDC4A002C7B08 /* NumberPad */,
 				AEC9EECE1A3CDC4A002C7B08 /* NumberPadTests */,
+				AE5554601A5CB9D3007DCF1D /* DigitRecognizer */,
+				AE5554C01A5CBBF7007DCF1D /* DigitRecognizerSDK */,
+				AE5554CA1A5CBBF7007DCF1D /* DigitRecognizerSDKTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		AE55545F1A5CB9D3007DCF1D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AE5554F31A5CBC89007DCF1D /* ujipenchars2.json in Resources */,
+				AE5554881A5CBAE1007DCF1D /* bridger_train.json in Resources */,
+				AE55546D1A5CB9D3007DCF1D /* Images.xcassets in Resources */,
+				AE5554F91A5CE08C007DCF1D /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AE5554BF1A5CBBF7007DCF1D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AE5554C91A5CBBF7007DCF1D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AE5554F21A5CBC86007DCF1D /* ujipenchars2.json in Resources */,
+				AE5554F01A5CBC78007DCF1D /* ujipenchars2_test.json in Resources */,
+				AE5554ED1A5CBC6A007DCF1D /* bridger_train.json in Resources */,
+				AE5554F11A5CBC7E007DCF1D /* ujipenchars2_train.json in Resources */,
+				AE5554EC1A5CBC63007DCF1D /* bridger_test.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AEC9EEB81A3CDC4A002C7B08 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AEC9EEC51A3CDC4A002C7B08 /* Main.storyboard in Resources */,
-				AE3DD23A1A52784A007D1500 /* ujipenchars2.json in Resources */,
-				AE3DD2491A5494B7007D1500 /* bridger_test.json in Resources */,
 				AEC9EEC71A3CDC4A002C7B08 /* Images.xcassets in Resources */,
-				AE3DD23F1A528233007D1500 /* ujipenchars2_test.json in Resources */,
-				AE3DD24B1A5494B7007D1500 /* bridger_train.json in Resources */,
+				AE5554EE1A5CBC6E007DCF1D /* bridger_train.json in Resources */,
+				AE5554F41A5CBC8B007DCF1D /* ujipenchars2.json in Resources */,
+				AE5554FC1A5CE0A5007DCF1D /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -244,26 +509,47 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AE3DD24A1A5494B7007D1500 /* bridger_test.json in Resources */,
-				AE3DD23E1A52785D007D1500 /* ujipenchars2_train.json in Resources */,
-				AE3DD23D1A52785D007D1500 /* ujipenchars2_test.json in Resources */,
-				AE3DD24C1A5494B7007D1500 /* bridger_train.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		AE55545D1A5CB9D3007DCF1D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AE5554681A5CB9D3007DCF1D /* ViewController.swift in Sources */,
+				AE5554661A5CB9D3007DCF1D /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AE5554BC1A5CBBF7007DCF1D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AE5554E11A5CBC19007DCF1D /* DTWDigitClassifier.swift in Sources */,
+				AE5554E51A5CBC31007DCF1D /* SortedMinArray.swift in Sources */,
+				AE5554F51A5CBD25007DCF1D /* StrokeGestureRecognizer.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AE5554C71A5CBBF7007DCF1D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AE5554E31A5CBC25007DCF1D /* DTWDigitClassifierTests.swift in Sources */,
+				AE5554D51A5CBBF7007DCF1D /* DigitRecognizerSDKTests.swift in Sources */,
+				AE5554E91A5CBC4C007DCF1D /* SortedMinArrayTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AEC9EEB61A3CDC4A002C7B08 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				AEC9EEC21A3CDC4A002C7B08 /* ViewController.swift in Sources */,
-				AEC9EEFF1A3F87F0002C7B08 /* BitmapDigitClassier.mm in Sources */,
 				AEC9EEC01A3CDC4A002C7B08 /* AppDelegate.swift in Sources */,
-				AE3DD2411A537C0A007D1500 /* SortedMinArray.swift in Sources */,
-				AE04E7541A4DE6F40077D2E3 /* DTWDigitClassifier.swift in Sources */,
-				AEC9EEE01A3CEB3A002C7B08 /* StrokeGestureRecognizer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -271,17 +557,28 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AE04E7551A4DE6F40077D2E3 /* DTWDigitClassifier.swift in Sources */,
-				AE3DD2341A52100E007D1500 /* DTWDigitClassifierTests.swift in Sources */,
 				AEC9EED61A3CDC4A002C7B08 /* NumberPadTests.swift in Sources */,
-				AE3DD2421A537C0A007D1500 /* SortedMinArray.swift in Sources */,
-				AE3DD2441A544C02007D1500 /* SortedMinArrayTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		AE5554CE1A5CBBF7007DCF1D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AE5554C01A5CBBF7007DCF1D /* DigitRecognizerSDK */;
+			targetProxy = AE5554CD1A5CBBF7007DCF1D /* PBXContainerItemProxy */;
+		};
+		AE5554D01A5CBBF7007DCF1D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AE5554601A5CB9D3007DCF1D /* DigitRecognizer */;
+			targetProxy = AE5554CF1A5CBBF7007DCF1D /* PBXContainerItemProxy */;
+		};
+		AE5554D71A5CBBF7007DCF1D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AE5554C01A5CBBF7007DCF1D /* DigitRecognizerSDK */;
+			targetProxy = AE5554D61A5CBBF7007DCF1D /* PBXContainerItemProxy */;
+		};
 		AEC9EED11A3CDC4A002C7B08 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = AEC9EEB91A3CDC4A002C7B08 /* NumberPad */;
@@ -290,10 +587,18 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		AEC9EEC31A3CDC4A002C7B08 /* Main.storyboard */ = {
+		AE5554F71A5CE08C007DCF1D /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
-				AEC9EEC41A3CDC4A002C7B08 /* Base */,
+				AE5554F81A5CE08C007DCF1D /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		AE5554FA1A5CE0A5007DCF1D /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				AE5554FB1A5CE0A5007DCF1D /* Base */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";
@@ -301,6 +606,108 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		AE55547D1A5CB9D3007DCF1D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = DigitRecognizer/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AE55547E1A5CB9D3007DCF1D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = DigitRecognizer/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		AE5554DB1A5CBBF7007DCF1D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = DigitRecognizerSDK/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		AE5554DC1A5CBBF7007DCF1D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = DigitRecognizerSDK/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		AE5554DF1A5CBBF7007DCF1D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = DigitRecognizerSDKTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DigitRecognizer.app/DigitRecognizer";
+			};
+			name = Debug;
+		};
+		AE5554E01A5CBBF7007DCF1D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = DigitRecognizerSDKTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DigitRecognizer.app/DigitRecognizer";
+			};
+			name = Release;
+		};
 		AEC9EED71A3CDC4A002C7B08 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -389,7 +796,6 @@
 				INFOPLIST_FILE = NumberPad/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "NumberPad/NumberPad-Bridging-Header.h";
 			};
 			name = Debug;
 		};
@@ -401,7 +807,6 @@
 				INFOPLIST_FILE = NumberPad/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "NumberPad/NumberPad-Bridging-Header.h";
 			};
 			name = Release;
 		};
@@ -442,6 +847,30 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		AE5554811A5CB9D3007DCF1D /* Build configuration list for PBXNativeTarget "DigitRecognizer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AE55547D1A5CB9D3007DCF1D /* Debug */,
+				AE55547E1A5CB9D3007DCF1D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		AE5554DA1A5CBBF7007DCF1D /* Build configuration list for PBXNativeTarget "DigitRecognizerSDK" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AE5554DB1A5CBBF7007DCF1D /* Debug */,
+				AE5554DC1A5CBBF7007DCF1D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		AE5554DE1A5CBBF7007DCF1D /* Build configuration list for PBXNativeTarget "DigitRecognizerSDKTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AE5554DF1A5CBBF7007DCF1D /* Debug */,
+				AE5554E01A5CBBF7007DCF1D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
 		AEC9EEB51A3CDC4A002C7B08 /* Build configuration list for PBXProject "NumberPad" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

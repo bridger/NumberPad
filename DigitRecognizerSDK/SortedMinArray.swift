@@ -25,7 +25,7 @@ func insertionIndexOf<T>(array: [T], elem: T, isOrderedBefore: (T, T) -> Bool) -
     return lo // not found, would be inserted at position lo
 }
 
-struct SortedMinArray<D: Comparable, T> {
+public struct SortedMinArray<D: Comparable, T> {
     typealias Value = D
     typealias Element = T
     typealias ValueTuple = (value: Value, element: Element)
@@ -33,27 +33,27 @@ struct SortedMinArray<D: Comparable, T> {
     private var contents: [ValueTuple] = []
     let capacity: Int
     
-    init(capacity: Int) {
+    public init(capacity: Int) {
         self.capacity = capacity
     }
     
-    var count: Int { return contents.count }
+    public var count: Int { return contents.count }
     
-    var isEmpty: Bool { return contents.isEmpty }
+    public var isEmpty: Bool { return contents.isEmpty }
     
-    var first: ValueTuple? {
+    public var first: ValueTuple? {
         get {
             return contents.first
         }
     }
     
-    var last: ValueTuple? {
+    public var last: ValueTuple? {
         get {
             return contents.last
         }
     }
     
-    mutating func add(value: D, element: Element) {
+    public mutating func add(value: D, element: Element) {
         let hasRoom = contents.count < self.capacity
         
         if (hasRoom || (self.capacity > 0 && value < contents.last!.value)) {
@@ -75,7 +75,7 @@ struct SortedMinArray<D: Comparable, T> {
 
 extension SortedMinArray : SequenceType {
     typealias Generator = IndexingGenerator<[ValueTuple]>
-    func generate() -> Generator {
+    public func generate() -> Generator {
         return contents.generate()
     }
 }
