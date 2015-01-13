@@ -94,7 +94,13 @@ class InternalConnectorPort: NSObject, ConnectorPort {
     }
 }
 
+protocol ConstraintViewDelegate: NSObjectProtocol {
+    func constraintView(constraintView: ConstraintView, didResolveConnectorPort connectorPort: ConnectorPort)
+}
+
 class ConstraintView: UIView {
+    weak var delegate: ConstraintViewDelegate?
+    
     func connectorPorts() -> [ConnectorPort] {
         fatalError("This method must be overriden")
     }
@@ -106,6 +112,22 @@ class ConstraintView: UIView {
     }
     func layoutWithConnectorPositions(positions: [Connector: CGPoint]) {
         fatalError("This method must be overriden")
+    }
+    
+    private func addSentinelConnectorToPort(connectorPort: InternalConnectorPort) {
+        let connector = Connector()
+        var hasResolvedAtLeastOnce = false
+        connector.addObserver { [weak self, weak connectorPort] value in
+            if value != nil && !hasResolvedAtLeastOnce {
+                if let delegate = self?.delegate {
+                    if let connectorPort = connectorPort {
+                        hasResolvedAtLeastOnce = true
+                        delegate.constraintView(self!, didResolveConnectorPort: connectorPort)
+                    }
+                }
+            }
+        }
+        self.connectPort(connectorPort, connector: connector)
     }
 }
 
@@ -140,9 +162,11 @@ class MultiplierView: ConstraintView {
         for internalPort in internalConnectorPorts() {
             if internalPort === port {
                 if let oldConnector = internalPort.connector {
-                    // TODO: Remove input / output
-                    println("We don't know how to remove connectors yet!")
-                    return
+                    if internalPort.isOutput {
+                        multiplier.removeOutput(oldConnector)
+                    } else {
+                        multiplier.removeInput(oldConnector)
+                    }
                 }
                 
                 if internalPort.isOutput {
@@ -175,6 +199,9 @@ class MultiplierView: ConstraintView {
         self.layer.addSublayer(self.redInput.layer)
         self.layer.addSublayer(self.blueInput.layer)
         self.layer.addSublayer(self.purpleOutput.layer)
+        addSentinelConnectorToPort(self.redInput)
+        addSentinelConnectorToPort(self.blueInput)
+        addSentinelConnectorToPort(self.purpleOutput)
     }
     
     let mySize: CGFloat = 60.0

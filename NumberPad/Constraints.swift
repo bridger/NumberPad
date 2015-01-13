@@ -14,6 +14,16 @@ class Constraint {
     func processForgetValues() { }
 }
 
+extension Constraint: Hashable {
+    var hashValue: Int {
+        return ObjectIdentifier(self).hashValue
+    }
+}
+// Equatable
+func ==(lhs: Constraint, rhs: Constraint) -> Bool {
+    return ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
+}
+
 class MultiInputOutputConstraint : Constraint {
     var inputs: [Connector] = []
     var outputs: [Connector] = []
@@ -37,9 +47,25 @@ class MultiInputOutputConstraint : Constraint {
         inputs.append(connector)
         connector.connect(self)
     }
+    func removeInput(connector: Connector) {
+        if let index = find(inputs, connector) {
+            inputs.removeAtIndex(index)
+            connector.disconnect(self)
+        } else {
+            println("Unable to remove connector!")
+        }
+    }
     func addOutput(connector: Connector) {
         outputs.append(connector)
         connector.connect(self)
+    }
+    func removeOutput(connector: Connector) {
+        if let index = find(outputs, connector) {
+            outputs.removeAtIndex(index)
+            connector.disconnect(self)
+        } else {
+            println("Unable to remove connector!")
+        }
     }
 
     override func processForgetValues() {
@@ -109,6 +135,13 @@ class Connector {
             constraint.processNewValues()
         } else {
             constraint.processForgetValues()
+        }
+    }
+    func disconnect(constraint: Constraint) {
+        if let index = find(constraints, constraint) {
+            constraints.removeAtIndex(index)
+        } else {
+            println("Unable to remove constraint")
         }
     }
     

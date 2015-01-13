@@ -37,7 +37,7 @@ class Stroke {
     }
 }
 
-class ViewController: UIViewController, UIGestureRecognizerDelegate {
+class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintViewDelegate {
     var scrollView: UIScrollView!
     
     var currentStroke: Stroke?
@@ -53,6 +53,11 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
     }
     
     var constraintViews: [ConstraintView] = []
+    func addConstraintView(constraintView: ConstraintView) {
+        constraintViews.append(constraintView)
+        constraintView.delegate = self
+        self.scrollView.addSubview(constraintView)
+    }
     
     var makeConnectionDragStart: ConnectorLabel?
     var currentDragLine: CAShapeLayer?
@@ -141,6 +146,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
         }
     }
     
+    @IBAction func clearStrokes(sender: AnyObject?) {
+        for previousStroke in self.unprocessedStrokes {
+            previousStroke.layer.removeFromSuperlayer()
+        }
+        self.unprocessedStrokes.removeAll(keepCapacity: false)
+    }
+    
     func connectorPortForDragAtLocation(location: CGPoint) -> (ConstraintView: ConstraintView, ConnectorPort: ConnectorPort)? {
         for constraintView in constraintViews {
             let point = constraintView.convertPoint(location, fromView: self.scrollView)
@@ -150,45 +162,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
         }
         return nil
     }
-    
-    func rebuildAllConnectionLayers() {
-        for oldLayer in self.connectionLayers {
-            oldLayer.removeFromSuperlayer()
-        }
-        self.connectionLayers.removeAll(keepCapacity: true)
-        
-        for constraintView in constraintViews {
-            for connectorPort in constraintView.connectorPorts() {
-                if let connector = connectorPort.connector {
-                    if let connectorLabel = connectorToLabel[connector] {
-                        let connectorPoint = self.scrollView.convertPoint(connectorPort.center, fromView: constraintView)
-                        let labelPoint = closestPointOnRectPerimeter(connectorPoint, CGRectInset(connectorLabel.frame, 1, 1))
-                        
-                        let connectionLayer = createConnectionLayer(labelPoint, endPoint: connectorPoint, color: connectorPort.color)
-                        
-                        self.connectionLayers.append(connectionLayer)
-                        self.scrollView.layer.addSublayer(connectionLayer)
-                    }
-                }
-            }
-            
-        }
-    }
-    
-    func createConnectionLayer(startPoint: CGPoint, endPoint: CGPoint, color: UIColor?) -> CAShapeLayer {
-        let dragLine = CAShapeLayer()
-        dragLine.lineWidth = 3
-        dragLine.fillColor = nil
-        dragLine.lineCap = kCALineCapRound
-        dragLine.strokeColor = color?.CGColor ?? UIColor.blackColor().CGColor
-        
-        let path = CGPathCreateMutable()
-        CGPathMoveToPoint(path, nil, startPoint.x, startPoint.y)
-        CGPathAddLineToPoint(path, nil, endPoint.x, endPoint.y)
-        dragLine.path = path
-        return dragLine
-    }
-    
     
     func processStrokes() {
         var allStrokes: DTWDigitClassifier.DigitStrokes = []
@@ -240,8 +213,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
                     let newView = MultiplierView(multiplier: newMultiplier)
                     newView.layoutWithConnectorPositions([:])
                     newView.center = centerPoint
-                    self.scrollView.addSubview(newView)
-                    self.constraintViews.append(newView)
+                    addConstraintView(newView)
                     
                 } else {
                     println("Unable to parse written text: \(combinedLabels)")
@@ -254,11 +226,65 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
         self.clearStrokes(nil)
     }
     
-    @IBAction func clearStrokes(sender: AnyObject?) {
-        for previousStroke in self.unprocessedStrokes {
-            previousStroke.layer.removeFromSuperlayer()
+    func constraintView(constraintView: ConstraintView, didResolveConnectorPort connectorPort: ConnectorPort) {
+        // This is called when a constraint makes a connector on it's own. For example, if you set two inputs on a multiplier then it will resolve the output automatically. We need to add a view for it and display it
+        if let newConnector = connectorPort.connector {
+            let newLabel = ConnectorLabel(connector: newConnector)
+            newLabel.sizeToFit()
+            
+            let distance: CGFloat = 80 + max(constraintView.bounds.width, constraintView.bounds.height)
+            // If the connectorPort is at the bottom-right, then we want to place it distance points off to the bottom-right
+            let constraintMiddle = CGPointMake(CGRectGetMidX(constraintView.bounds), CGRectGetMidY(constraintView.bounds))
+            let displacement = connectorPort.center - constraintMiddle
+            let newDisplacement = displacement * (distance / displacement.length())
+            
+            let newPoint = self.scrollView.convertPoint(newDisplacement + constraintMiddle, fromView: constraintView)
+            newLabel.center = newPoint
+            addConnectorLabel(newLabel)
         }
-        self.unprocessedStrokes.removeAll(keepCapacity: false)
     }
+    
+    
+    
+    func rebuildAllConnectionLayers() {
+        for oldLayer in self.connectionLayers {
+            oldLayer.removeFromSuperlayer()
+        }
+        self.connectionLayers.removeAll(keepCapacity: true)
+        
+        for constraintView in constraintViews {
+            for connectorPort in constraintView.connectorPorts() {
+                if let connector = connectorPort.connector {
+                    if let connectorLabel = connectorToLabel[connector] {
+                        let connectorPoint = self.scrollView.convertPoint(connectorPort.center, fromView: constraintView)
+                        let labelPoint = closestPointOnRectPerimeter(connectorPoint, CGRectInset(connectorLabel.frame, 1, 1))
+                        
+                        let connectionLayer = createConnectionLayer(labelPoint, endPoint: connectorPoint, color: connectorPort.color)
+                        
+                        self.connectionLayers.append(connectionLayer)
+                        self.scrollView.layer.addSublayer(connectionLayer)
+                    }
+                }
+            }
+            
+        }
+    }
+    
+    func createConnectionLayer(startPoint: CGPoint, endPoint: CGPoint, color: UIColor?) -> CAShapeLayer {
+        let dragLine = CAShapeLayer()
+        dragLine.lineWidth = 3
+        dragLine.fillColor = nil
+        dragLine.lineCap = kCALineCapRound
+        dragLine.strokeColor = color?.CGColor ?? UIColor.blackColor().CGColor
+        
+        let path = CGPathCreateMutable()
+        CGPathMoveToPoint(path, nil, startPoint.x, startPoint.y)
+        CGPathAddLineToPoint(path, nil, endPoint.x, endPoint.y)
+        dragLine.path = path
+        return dragLine
+    }
+    
+    
+
 }
 

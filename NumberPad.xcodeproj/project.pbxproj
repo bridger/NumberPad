@@ -37,6 +37,7 @@
 		AE5554F51A5CBD25007DCF1D /* StrokeGestureRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEDF1A3CEB3A002C7B08 /* StrokeGestureRecognizer.swift */; };
 		AE5554F91A5CE08C007DCF1D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AE5554F71A5CE08C007DCF1D /* Main.storyboard */; };
 		AE5554FC1A5CE0A5007DCF1D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AE5554FA1A5CE0A5007DCF1D /* Main.storyboard */; };
+		AE890D0A1A657C8700E604C4 /* CGPoint+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE890D091A657C8700E604C4 /* CGPoint+Extensions.swift */; };
 		AEC9EEC01A3CDC4A002C7B08 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */; };
 		AEC9EEC21A3CDC4A002C7B08 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEC11A3CDC4A002C7B08 /* ViewController.swift */; };
 		AEC9EEC71A3CDC4A002C7B08 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AEC9EEC61A3CDC4A002C7B08 /* Images.xcassets */; };
@@ -134,6 +135,7 @@
 		AE5554D41A5CBBF7007DCF1D /* DigitRecognizerSDKTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DigitRecognizerSDKTests.swift; sourceTree = "<group>"; };
 		AE5554F81A5CE08C007DCF1D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		AE5554FB1A5CE0A5007DCF1D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		AE890D091A657C8700E604C4 /* CGPoint+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGPoint+Extensions.swift"; sourceTree = "<group>"; };
 		AEC9EEBA1A3CDC4A002C7B08 /* NumberPad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NumberPad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC9EEBE1A3CDC4A002C7B08 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -296,9 +298,10 @@
 			children = (
 				AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */,
 				AEC9EEC11A3CDC4A002C7B08 /* ViewController.swift */,
-				AE064B6F1A646FB200A10381 /* Utils.swift */,
 				AE064B6A1A64679200A10381 /* Constraints.swift */,
 				AE064B6D1A646A6300A10381 /* ConstraintViews.swift */,
+				AE064B6F1A646FB200A10381 /* Utils.swift */,
+				AE890D091A657C8700E604C4 /* CGPoint+Extensions.swift */,
 				AEC9EF001A3F880A002C7B08 /* BitmapDigitClassifier.h */,
 				AEC9EEFE1A3F87F0002C7B08 /* BitmapDigitClassier.mm */,
 				AE5554FA1A5CE0A5007DCF1D /* Main.storyboard */,
@@ -585,6 +588,7 @@
 				AEC9EEC21A3CDC4A002C7B08 /* ViewController.swift in Sources */,
 				AE064B6B1A64679200A10381 /* Constraints.swift in Sources */,
 				AEC9EEC01A3CDC4A002C7B08 /* AppDelegate.swift in Sources */,
+				AE890D0A1A657C8700E604C4 /* CGPoint+Extensions.swift in Sources */,
 				AE064B6E1A646A6300A10381 /* ConstraintViews.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
