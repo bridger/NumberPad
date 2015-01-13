@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import DigitRecognizerSDK
 
 let filePrefix = "SavedLibraries-"
 
@@ -23,9 +24,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if let path = NSBundle.mainBundle().pathForResource("bridger_train", ofType: "json") {
             loadData(path)
         }
-//        if let newestDataName = newestSavedData() {
-//            loadData(documentsDirectory().stringByAppendingPathComponent(newestDataName))
-//        }
         return true
     }
 

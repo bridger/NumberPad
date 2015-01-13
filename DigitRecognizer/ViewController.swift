@@ -60,7 +60,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
         self.scrollView.addGestureRecognizer(strokeRecognizer)
         strokeRecognizer.addTarget(self, action: "handleStroke:")
         
-        self.labelSelector.selectedSegmentIndex = 10
+        for index in 0..<self.labelSelector.numberOfSegments {
+            if self.labelSelector.titleForSegmentAtIndex(index) == "Test" {
+                self.labelSelector.selectedSegmentIndex = index
+                break;
+            }
+        }
     }
     
     func handleStroke(recognizer: StrokeGestureRecognizer) {
@@ -103,8 +108,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
                             }
                             allStrokes.append(currentStroke.points)
                             
-                            if let writtenNumber = self.readNumberFromStrokes(allStrokes) {
-                                self.resultLabel.text = "\(writtenNumber)"
+                            if let writtenNumber = self.readStringFromStrokes(allStrokes) {
+                                self.resultLabel.text = writtenNumber
                             } else {
                                 self.resultLabel.text = "Unknown"
                             }
@@ -137,74 +142,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
     }
     
     // If any one stroke can't be classified, this will return nil
-    func readNumberFromStrokes(strokes: [[CGPoint]]) -> Int? {
-        typealias MinAndMax = (min: CGFloat, max: CGFloat)
-        func minAndMaxX(points: [CGPoint]) -> MinAndMax? {
-            if points.count == 0 {
-                return nil
-            }
-            var minX = points[0].x
-            var maxX = points[0].x
-            
-            for point in points {
-                minX = min(point.x, minX)
-                maxX = max(point.x, maxX)
-            }
-            return (minX, maxX)
+    func readStringFromStrokes(strokes: [[CGPoint]]) -> String? {
+        if let classifiedLabels = self.digitClassifier.classifyMultipleDigits(strokes) {
+            return classifiedLabels.reduce("", +)
+        } else {
+            return nil
         }
-        func isWithin(test: CGFloat, range: MinAndMax) -> Bool {
-            return test >= range.min && test <= range.max
-        }
-        
-        // TODO: This could be done in parallel
-        let singleStrokeClassifications: [DTWDigitClassifier.Classification?] = strokes.map { singleStrokeDigit in
-            return self.digitClassifier.classifyDigit([singleStrokeDigit])
-        }
-        let strokeRanges: [MinAndMax?] = strokes.map(minAndMaxX)
-        
-        var labels: [DTWDigitClassifier.DigitLabel] = []
-        var index = 0
-        while index < strokes.count {
-            // For the stroke at this index, we either accept it, or make a stroke from it and the index+1 stroke
-            let thisStrokeClassification = singleStrokeClassifications[index]
-            
-            if index + 1 < strokes.count {
-                // Check to see if this stroke and the next stroke touched each other x-wise
-                if let strokeRange = strokeRanges[index] {
-                    if let nextStrokeRange = strokeRanges[index + 1] {
-                        if isWithin(nextStrokeRange.min, strokeRange) || isWithin(nextStrokeRange.max, strokeRange) || isWithin(strokeRange.min, nextStrokeRange) {
-                            
-                            // These two strokes intersected x-wise, so we try to classify them as one digit
-                            if let twoStrokeClassification = self.digitClassifier.classifyDigit([strokes[index], strokes[index + 1]]) {
-                                let nextStrokeClassification = singleStrokeClassifications[index + 1]
-                                
-                                var mustMatch = thisStrokeClassification == nil || nextStrokeClassification == nil;
-                                if (mustMatch || twoStrokeClassification.Confidence < thisStrokeClassification!.Confidence || twoStrokeClassification.Confidence < nextStrokeClassification!.Confidence) {
-                                    
-                                    // Sweet, the double stroke classification is the best one
-                                    labels.append(twoStrokeClassification.Label)
-                                    index += 2
-                                    continue
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            
-            // If we made it this far, then the two stroke hypothesis didn't pan out. This stroke must be viable on its own, or we fail
-            if let thisStrokeClassification = thisStrokeClassification {
-                labels.append(thisStrokeClassification.Label)
-            } else {
-                println("Could not classify stroke \(index)")
-                return nil
-            }
-            index += 1
-        }
-        
-        // Translate from labels to an integer
-        let combinedLabels = labels.reduce("", +)
-        return combinedLabels.toInt()
     }
     
     

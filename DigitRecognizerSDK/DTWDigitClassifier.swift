@@ -37,6 +37,77 @@ public class DTWDigitClassifier {
         addToLibrary(&self.normalizedPrototypeLibrary, label: label, digit: normalizedDigit)
     }
     
+    
+    // If any one stroke can't be classified, this will return nil. It assumes the strokes go left-to-right and are in order
+    public func classifyMultipleDigits(strokes: [[CGPoint]]) -> [DigitLabel]? {
+        typealias MinAndMax = (min: CGFloat, max: CGFloat)
+        func minAndMaxX(points: [CGPoint]) -> MinAndMax? {
+            if points.count == 0 {
+                return nil
+            }
+            var minX = points[0].x
+            var maxX = points[0].x
+            
+            for point in points {
+                minX = min(point.x, minX)
+                maxX = max(point.x, maxX)
+            }
+            return (minX, maxX)
+        }
+        func isWithin(test: CGFloat, range: MinAndMax) -> Bool {
+            return test >= range.min && test <= range.max
+        }
+        
+        // TODO: This could be done in parallel
+        let singleStrokeClassifications: [DTWDigitClassifier.Classification?] = strokes.map { singleStrokeDigit in
+            return self.classifyDigit([singleStrokeDigit])
+        }
+        let strokeRanges: [MinAndMax?] = strokes.map(minAndMaxX)
+        
+        var labels: [DigitLabel] = []
+        var index = 0
+        while index < strokes.count {
+            // For the stroke at this index, we either accept it, or make a stroke from it and the index+1 stroke
+            let thisStrokeClassification = singleStrokeClassifications[index]
+            
+            if index + 1 < strokes.count {
+                // Check to see if this stroke and the next stroke touched each other x-wise
+                if let strokeRange = strokeRanges[index] {
+                    if let nextStrokeRange = strokeRanges[index + 1] {
+                        if isWithin(nextStrokeRange.min, strokeRange) || isWithin(nextStrokeRange.max, strokeRange) || isWithin(strokeRange.min, nextStrokeRange) {
+                            
+                            // These two strokes intersected x-wise, so we try to classify them as one digit
+                            if let twoStrokeClassification = self.classifyDigit([strokes[index], strokes[index + 1]]) {
+                                let nextStrokeClassification = singleStrokeClassifications[index + 1]
+                                
+                                var mustMatch = thisStrokeClassification == nil || nextStrokeClassification == nil;
+                                if (mustMatch || twoStrokeClassification.Confidence < thisStrokeClassification!.Confidence || twoStrokeClassification.Confidence < nextStrokeClassification!.Confidence) {
+                                    
+                                    // Sweet, the double stroke classification is the best one
+                                    labels.append(twoStrokeClassification.Label)
+                                    index += 2
+                                    continue
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // If we made it this far, then the two stroke hypothesis didn't pan out. This stroke must be viable on its own, or we fail
+            if let thisStrokeClassification = thisStrokeClassification {
+                labels.append(thisStrokeClassification.Label)
+            } else {
+                println("Could not classify stroke \(index)")
+                return nil
+            }
+            index += 1
+        }
+        
+        return labels
+    }
+    
+    
     // Returns the label, as well as a confidence in the label
     // Can be called from the background
     public typealias Classification = (Label: DigitLabel, Confidence: CGFloat)

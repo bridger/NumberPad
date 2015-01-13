@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import DigitRecognizerSDK
 
 class Stroke {
     var points: [CGPoint] = []
@@ -38,12 +39,25 @@ class Stroke {
 
 class ViewController: UIViewController, UIGestureRecognizerDelegate {
     var scrollView: UIScrollView!
+    
     var currentStroke: Stroke?
-    var previousStrokes: [Stroke] = []
+    var unprocessedStrokes: [Stroke] = []
     var digitClassifier: DTWDigitClassifier
-    @IBOutlet weak var labelSelector: UISegmentedControl!
-    @IBOutlet weak var resultLabel: UILabel!
-
+    
+    var connectorLabels: [ConnectorLabel] = []
+    var connectorToLabel: [Connector: ConnectorLabel] = [:]
+    func addConnectorLabel(label: ConnectorLabel) {
+        connectorLabels.append(label)
+        connectorToLabel[label.connector] = label
+        self.scrollView.addSubview(label)
+    }
+    
+    var constraintViews: [ConstraintView] = []
+    
+    var makeConnectionDragStart: ConnectorLabel?
+    var currentDragLine: CAShapeLayer?
+    var connectionLayers: [CAShapeLayer] = []
+    
     required init(coder aDecoder: NSCoder) {
         self.digitClassifier = DTWDigitClassifier()
         super.init(coder: aDecoder)
@@ -58,160 +72,193 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
         let strokeRecognizer = StrokeGestureRecognizer()
         self.scrollView.addGestureRecognizer(strokeRecognizer)
         strokeRecognizer.addTarget(self, action: "handleStroke:")
-        
-        self.labelSelector.selectedSegmentIndex = 10
+        //self.scrollView.layer.delegate = self
     }
 
+    var processStrokesCounter: Int = 0
     func handleStroke(recognizer: StrokeGestureRecognizer) {
+        let point = recognizer.locationInView(self.scrollView)
+
         if recognizer.state == UIGestureRecognizerState.Began {
+            for connectorLabel in self.connectorLabels {
+                if CGRectContainsPoint(connectorLabel.frame, point) {
+                    // We are dragging from a label
+                    makeConnectionDragStart = connectorLabel
+                    return
+                }
+            }
+            
+            self.processStrokesCounter += 1
             self.currentStroke = Stroke()
             self.scrollView.layer.addSublayer(self.currentStroke!.layer)
-            
-            let point = recognizer.locationInView(self.scrollView)
             self.currentStroke!.addPoint(point)
-            self.resultLabel.text = ""
             
         } else if recognizer.state == UIGestureRecognizerState.Changed {
             if let currentStroke = self.currentStroke {
-                let point = recognizer.locationInView(self.scrollView)
+                // We are drawing
                 currentStroke.addPoint(point)
+                
+            } else if let dragStart = makeConnectionDragStart {
+                // We are dragging between connectors
+                let targetConnector = connectorPortForDragAtLocation(point)?.ConnectorPort
+                
+                if let oldDragLine = currentDragLine {
+                    oldDragLine.removeFromSuperlayer()
+                }
+                let labelPoint = closestPointOnRectPerimeter(point, CGRectInset(dragStart.frame, 1, 1))
+                let dragLine = createConnectionLayer(labelPoint, endPoint: point, color: targetConnector?.color)
+                self.scrollView.layer.addSublayer(dragLine)
+                self.currentDragLine = dragLine
             }
         } else if recognizer.state == UIGestureRecognizerState.Ended {
             if let currentStroke = self.currentStroke {
-                
-                var wasFarAway = false
-                if let lastStroke = self.previousStrokes.last {
-                    if let lastStrokeLastPoint = lastStroke.points.last {
-                        let point = recognizer.locationInView(self.scrollView)
-                        if euclidianDistance(lastStrokeLastPoint, point) > 150 {
-                            wasFarAway = true
+                let currentCounter = self.processStrokesCounter
+                delay(0.8) { [weak self] in
+                    if let strongself = self {
+                        // If we haven't begun a new stroke in the intervening time, then process the old strokes
+                        if strongself.processStrokesCounter == currentCounter {
+                            strongself.processStrokes()
                         }
                     }
                 }
+                unprocessedStrokes.append(currentStroke)
+                self.currentStroke = nil
                 
-                let selectedSegment = self.labelSelector.selectedSegmentIndex
-                if selectedSegment != UISegmentedControlNoSegment {
-                    if let currentLabel = self.labelSelector.titleForSegmentAtIndex(selectedSegment) {
+            } else if let dragStart = makeConnectionDragStart {
+                
+                if let (constraintView, connectorPort) = connectorPortForDragAtLocation(point) {
+                    constraintView.connectPort(connectorPort, connector: dragStart.connector)
+                }
+                
+                if let dragLine = currentDragLine {
+                    dragLine.removeFromSuperlayer()
+                    self.currentDragLine = nil
+                }
+                makeConnectionDragStart = nil
+                
+                rebuildAllConnectionLayers()
+            }
+        }
+    }
+    
+    func connectorPortForDragAtLocation(location: CGPoint) -> (ConstraintView: ConstraintView, ConnectorPort: ConnectorPort)? {
+        for constraintView in constraintViews {
+            let point = constraintView.convertPoint(location, fromView: self.scrollView)
+            if let port = constraintView.connectorPortForDragAtLocation(point) {
+                return (constraintView, port)
+            }
+        }
+        return nil
+    }
+    
+    func rebuildAllConnectionLayers() {
+        for oldLayer in self.connectionLayers {
+            oldLayer.removeFromSuperlayer()
+        }
+        self.connectionLayers.removeAll(keepCapacity: true)
+        
+        for constraintView in constraintViews {
+            for connectorPort in constraintView.connectorPorts() {
+                if let connector = connectorPort.connector {
+                    if let connectorLabel = connectorToLabel[connector] {
+                        let connectorPoint = self.scrollView.convertPoint(connectorPort.center, fromView: constraintView)
+                        let labelPoint = closestPointOnRectPerimeter(connectorPoint, CGRectInset(connectorLabel.frame, 1, 1))
                         
-                        if currentLabel == "Test" {
-                            var allStrokes: DigitStrokes = []
-                            if !wasFarAway {
-                                for previousStroke in self.previousStrokes {
-                                    allStrokes.append(previousStroke.points)
-                                }
-                            }
-                            allStrokes.append(currentStroke.points)
-                            
-                            if let writtenNumber = self.readNumberFromStrokes(allStrokes) {
-                                self.resultLabel.text = "\(writtenNumber)"
-                            } else {
-                                self.resultLabel.text = "Unknown"
-                            }
-                            if wasFarAway {
-                                self.clearStrokes(nil)
-                            }
-                            
+                        let connectionLayer = createConnectionLayer(labelPoint, endPoint: connectorPoint, color: connectorPort.color)
+                        
+                        self.connectionLayers.append(connectionLayer)
+                        self.scrollView.layer.addSublayer(connectionLayer)
+                    }
+                }
+            }
+            
+        }
+    }
+    
+    func createConnectionLayer(startPoint: CGPoint, endPoint: CGPoint, color: UIColor?) -> CAShapeLayer {
+        let dragLine = CAShapeLayer()
+        dragLine.lineWidth = 3
+        dragLine.fillColor = nil
+        dragLine.lineCap = kCALineCapRound
+        dragLine.strokeColor = color?.CGColor ?? UIColor.blackColor().CGColor
+        
+        let path = CGPathCreateMutable()
+        CGPathMoveToPoint(path, nil, startPoint.x, startPoint.y)
+        CGPathAddLineToPoint(path, nil, endPoint.x, endPoint.y)
+        dragLine.path = path
+        return dragLine
+    }
+    
+    
+    func processStrokes() {
+        var allStrokes: DTWDigitClassifier.DigitStrokes = []
+        for previousStroke in self.unprocessedStrokes {
+            allStrokes.append(previousStroke.points)
+        }
+        
+        if allStrokes.count > 0 {
+            if let classifiedLabels = self.digitClassifier.classifyMultipleDigits(allStrokes) {
+                // Find the bounding rect of all of the strokes
+                var topLeft: CGPoint?
+                var bottomRight: CGPoint?
+                for stroke in allStrokes {
+                    for point in stroke {
+                        if let capturedTopLeft = topLeft {
+                            topLeft = CGPointMake(min(capturedTopLeft.x, point.x), min(capturedTopLeft.y, point.y));
                         } else {
-                            if previousStrokes.count > 0 && wasFarAway {
-                                var lastDigit: DigitStrokes = []
-                                for previousStroke in self.previousStrokes {
-                                    lastDigit.append(previousStroke.points)
-                                }
-                                self.clearStrokes(nil)
-                                
-                                self.digitClassifier.learnDigit(currentLabel, digit: lastDigit)
-                                if let classification = self.digitClassifier.classifyDigit(lastDigit) {
-                                    self.resultLabel.text = classification.Label
-                                } else {
-                                    self.resultLabel.text = "Unknown"
-                                }
-                            }
+                            topLeft = point
                         }
+                        if let capturedBottomRight = bottomRight {
+                            bottomRight = CGPointMake(max(capturedBottomRight.x, point.x), max(capturedBottomRight.y, point.y));
+                        } else {
+                            bottomRight = point
+                        }
+                    }
+                }
+                // Figure out where to put the new component
+                var centerPoint = scrollView.convertPoint(self.view.center, fromView: self.view)
+                if let topLeft = topLeft {
+                    if let bottomRight = bottomRight {
+                        centerPoint = CGPointMake((topLeft.x + bottomRight.x) / 2.0, (topLeft.y + bottomRight.y) / 2.0)
                     }
                 }
                 
-                previousStrokes.append(self.currentStroke!)
-            }
-        }
-    }
-    
-    // If any one stroke can't be classified, this will return nil
-    func readNumberFromStrokes(strokes: [[CGPoint]]) -> Int? {
-        typealias MinAndMax = (min: CGFloat, max: CGFloat)
-        func minAndMaxX(points: [CGPoint]) -> MinAndMax? {
-            if points.count == 0 {
-                return nil
-            }
-            var minX = points[0].x
-            var maxX = points[0].x
-            
-            for point in points {
-                minX = min(point.x, minX)
-                maxX = max(point.x, maxX)
-            }
-            return (minX, maxX)
-        }
-        func isWithin(test: CGFloat, range: MinAndMax) -> Bool {
-            return test >= range.min && test <= range.max
-        }
-        
-        // TODO: This could be done in parallel
-        let singleStrokeClassifications: [DTWDigitClassifier.Classification?] = strokes.map { singleStrokeDigit in
-            return self.digitClassifier.classifyDigit([singleStrokeDigit])
-        }
-        let strokeRanges: [MinAndMax?] = strokes.map(minAndMaxX)
-        
-        var labels: [DigitLabel] = []
-        var index = 0
-        while index < strokes.count {
-            // For the stroke at this index, we either accept it, or make a stroke from it and the index+1 stroke
-            let thisStrokeClassification = singleStrokeClassifications[index]
-            
-            if index + 1 < strokes.count {
-                // Check to see if this stroke and the next stroke touched each other x-wise
-                if let strokeRange = strokeRanges[index] {
-                    if let nextStrokeRange = strokeRanges[index + 1] {
-                        if isWithin(nextStrokeRange.min, strokeRange) || isWithin(nextStrokeRange.max, strokeRange) || isWithin(strokeRange.min, nextStrokeRange) {
-                            
-                            // These two strokes intersected x-wise, so we try to classify them as one digit
-                            if let twoStrokeClassification = self.digitClassifier.classifyDigit([strokes[index], strokes[index + 1]]) {
-                                let nextStrokeClassification = singleStrokeClassifications[index + 1]
-                                
-                                var mustMatch = thisStrokeClassification == nil || nextStrokeClassification == nil;
-                                if (mustMatch || twoStrokeClassification.Confidence < thisStrokeClassification!.Confidence || twoStrokeClassification.Confidence < nextStrokeClassification!.Confidence) {
-                                    
-                                    // Sweet, the double stroke classification is the best one
-                                    labels.append(twoStrokeClassification.Label)
-                                    index += 2
-                                    continue
-                                }
-                            }
-                        }
-                    }
+                // TODO: Try to actually parse out an equation, instead of just one component
+                let combinedLabels = classifiedLabels.reduce("", +)
+                if let writtenNumber = combinedLabels.toInt() {
+                    // We recognized a number!
+                    let newConnector = Connector()
+                    newConnector.setValue(Double(writtenNumber), informant: globalInformant)
+                    let newLabel = ConnectorLabel(connector: newConnector)
+                    newLabel.sizeToFit()
+                    newLabel.center = centerPoint
+                    addConnectorLabel(newLabel)
+                    
+                } else if combinedLabels == "x" || combinedLabels == "/" {
+                    // We recognized a multiply or divide!
+                    let newMultiplier = Multiplier()
+                    let newView = MultiplierView(multiplier: newMultiplier)
+                    newView.layoutWithConnectorPositions([:])
+                    newView.center = centerPoint
+                    self.scrollView.addSubview(newView)
+                    self.constraintViews.append(newView)
+                    
+                } else {
+                    println("Unable to parse written text: \(combinedLabels)")
                 }
-            }
-            
-            // If we made it this far, then the two stroke hypothesis didn't pan out. This stroke must be viable on its own, or we fail
-            if let thisStrokeClassification = thisStrokeClassification {
-                labels.append(thisStrokeClassification.Label)
             } else {
-                println("Could not classify stroke \(index)")
-                return nil
+                println("Unable to recognize all \(allStrokes.count) strokes")
             }
-            index += 1
         }
         
-        // Translate from labels to an integer
-        let combinedLabels = labels.reduce("", +)
-        return combinedLabels.toInt()
+        self.clearStrokes(nil)
     }
-    
     
     @IBAction func clearStrokes(sender: AnyObject?) {
-        for previousStroke in self.previousStrokes {
+        for previousStroke in self.unprocessedStrokes {
             previousStroke.layer.removeFromSuperlayer()
         }
-        self.previousStrokes.removeAll(keepCapacity: false)
+        self.unprocessedStrokes.removeAll(keepCapacity: false)
     }
 }
 

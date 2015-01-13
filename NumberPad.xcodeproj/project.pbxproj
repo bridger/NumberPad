@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AE064B661A64605A00A10381 /* DigitRecognizerSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE5554C11A5CBBF7007DCF1D /* DigitRecognizerSDK.framework */; };
+		AE064B6B1A64679200A10381 /* Constraints.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE064B6A1A64679200A10381 /* Constraints.swift */; };
+		AE064B6C1A64679200A10381 /* Constraints.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE064B6A1A64679200A10381 /* Constraints.swift */; };
+		AE064B6E1A646A6300A10381 /* ConstraintViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE064B6D1A646A6300A10381 /* ConstraintViews.swift */; };
+		AE064B701A646FB200A10381 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE064B6F1A646FB200A10381 /* Utils.swift */; };
+		AE064B721A64C1D000A10381 /* DigitRecognizerSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = AE5554C11A5CBBF7007DCF1D /* DigitRecognizerSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AE5554661A5CB9D3007DCF1D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE5554651A5CB9D3007DCF1D /* AppDelegate.swift */; };
 		AE5554681A5CB9D3007DCF1D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE5554671A5CB9D3007DCF1D /* ViewController.swift */; };
 		AE55546D1A5CB9D3007DCF1D /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AE55546C1A5CB9D3007DCF1D /* Images.xcassets */; };
@@ -38,6 +44,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		AE064B641A64605300A10381 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AEC9EEB21A3CDC4A002C7B08 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AE5554C01A5CBBF7007DCF1D;
+			remoteInfo = DigitRecognizerSDK;
+		};
 		AE5554CD1A5CBBF7007DCF1D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = AEC9EEB21A3CDC4A002C7B08 /* Project object */;
@@ -69,6 +82,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		AE064B711A64C1AF00A10381 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				AE064B721A64C1D000A10381 /* DigitRecognizerSDK.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AE5554DD1A5CBBF7007DCF1D /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -84,6 +108,9 @@
 
 /* Begin PBXFileReference section */
 		AE04E7531A4DE6F40077D2E3 /* DTWDigitClassifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DTWDigitClassifier.swift; sourceTree = "<group>"; };
+		AE064B6A1A64679200A10381 /* Constraints.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constraints.swift; sourceTree = "<group>"; };
+		AE064B6D1A646A6300A10381 /* ConstraintViews.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConstraintViews.swift; sourceTree = "<group>"; };
+		AE064B6F1A646FB200A10381 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		AE3DD2331A52100E007D1500 /* DTWDigitClassifierTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DTWDigitClassifierTests.swift; sourceTree = "<group>"; };
 		AE3DD2391A52784A007D1500 /* ujipenchars2.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = ujipenchars2.json; path = Data/ujipenchars2.json; sourceTree = SOURCE_ROOT; };
 		AE3DD23B1A52785D007D1500 /* ujipenchars2_test.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = ujipenchars2_test.json; path = Data/ujipenchars2_test.json; sourceTree = SOURCE_ROOT; };
@@ -149,6 +176,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AE064B661A64605A00A10381 /* DigitRecognizerSDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -268,6 +296,9 @@
 			children = (
 				AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */,
 				AEC9EEC11A3CDC4A002C7B08 /* ViewController.swift */,
+				AE064B6F1A646FB200A10381 /* Utils.swift */,
+				AE064B6A1A64679200A10381 /* Constraints.swift */,
+				AE064B6D1A646A6300A10381 /* ConstraintViews.swift */,
 				AEC9EF001A3F880A002C7B08 /* BitmapDigitClassifier.h */,
 				AEC9EEFE1A3F87F0002C7B08 /* BitmapDigitClassier.mm */,
 				AE5554FA1A5CE0A5007DCF1D /* Main.storyboard */,
@@ -385,10 +416,12 @@
 				AEC9EEB61A3CDC4A002C7B08 /* Sources */,
 				AEC9EEB71A3CDC4A002C7B08 /* Frameworks */,
 				AEC9EEB81A3CDC4A002C7B08 /* Resources */,
+				AE064B711A64C1AF00A10381 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				AE064B651A64605300A10381 /* PBXTargetDependency */,
 			);
 			name = NumberPad;
 			productName = NumberPad;
@@ -548,8 +581,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AE064B701A646FB200A10381 /* Utils.swift in Sources */,
 				AEC9EEC21A3CDC4A002C7B08 /* ViewController.swift in Sources */,
+				AE064B6B1A64679200A10381 /* Constraints.swift in Sources */,
 				AEC9EEC01A3CDC4A002C7B08 /* AppDelegate.swift in Sources */,
+				AE064B6E1A646A6300A10381 /* ConstraintViews.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -557,6 +593,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AE064B6C1A64679200A10381 /* Constraints.swift in Sources */,
 				AEC9EED61A3CDC4A002C7B08 /* NumberPadTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -564,6 +601,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		AE064B651A64605300A10381 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AE5554C01A5CBBF7007DCF1D /* DigitRecognizerSDK */;
+			targetProxy = AE064B641A64605300A10381 /* PBXContainerItemProxy */;
+		};
 		AE5554CE1A5CBBF7007DCF1D /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = AE5554C01A5CBBF7007DCF1D /* DigitRecognizerSDK */;
@@ -854,6 +896,7 @@
 				AE55547E1A5CB9D3007DCF1D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		AE5554DA1A5CBBF7007DCF1D /* Build configuration list for PBXNativeTarget "DigitRecognizerSDK" */ = {
 			isa = XCConfigurationList;
@@ -862,6 +905,7 @@
 				AE5554DC1A5CBBF7007DCF1D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		AE5554DE1A5CBBF7007DCF1D /* Build configuration list for PBXNativeTarget "DigitRecognizerSDKTests" */ = {
 			isa = XCConfigurationList;
@@ -870,6 +914,7 @@
 				AE5554E01A5CBBF7007DCF1D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		AEC9EEB51A3CDC4A002C7B08 /* Build configuration list for PBXProject "NumberPad" */ = {
 			isa = XCConfigurationList;

@@ -8,7 +8,7 @@
         <!--View Controller-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="NumberPad" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="DigitRecognizer" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="y3c-jy-aDJ"/>
                         <viewControllerLayoutGuide type="bottom" id="wfy-db-euE"/>
@@ -18,9 +18,9 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="zcm-Or-enl">
-                                <rect key="frame" x="81" y="40" width="439" height="29"/>
+                                <rect key="frame" x="16" y="40" width="568" height="29"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="439" id="CZR-09-qix"/>
+                                    <constraint firstAttribute="width" constant="568" id="CZR-09-qix"/>
                                 </constraints>
                                 <segments>
                                     <segment title="0"/>
@@ -33,6 +33,10 @@
                                     <segment title="7"/>
                                     <segment title="8"/>
                                     <segment title="9"/>
+                                    <segment title="+"/>
+                                    <segment title="-"/>
+                                    <segment title="x"/>
+                                    <segment title="/"/>
                                     <segment title="Test"/>
                                 </segments>
                                 <connections>

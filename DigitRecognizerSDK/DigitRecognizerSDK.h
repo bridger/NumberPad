@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <UIKit/UIGestureRecognizerSubclass.h>
 
 //! Project version number for DigitRecognizerSDK.
 FOUNDATION_EXPORT double DigitRecognizerSDKVersionNumber;
