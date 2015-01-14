@@ -38,6 +38,7 @@
 		AE5554F91A5CE08C007DCF1D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AE5554F71A5CE08C007DCF1D /* Main.storyboard */; };
 		AE5554FC1A5CE0A5007DCF1D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AE5554FA1A5CE0A5007DCF1D /* Main.storyboard */; };
 		AE890D0A1A657C8700E604C4 /* CGPoint+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE890D091A657C8700E604C4 /* CGPoint+Extensions.swift */; };
+		AE890D0D1A65AFAE00E604C4 /* Launch Screen.xib in Resources */ = {isa = PBXBuildFile; fileRef = AE890D0B1A65AFAE00E604C4 /* Launch Screen.xib */; };
 		AEC9EEC01A3CDC4A002C7B08 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */; };
 		AEC9EEC21A3CDC4A002C7B08 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEC11A3CDC4A002C7B08 /* ViewController.swift */; };
 		AEC9EEC71A3CDC4A002C7B08 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AEC9EEC61A3CDC4A002C7B08 /* Images.xcassets */; };
@@ -136,6 +137,7 @@
 		AE5554F81A5CE08C007DCF1D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		AE5554FB1A5CE0A5007DCF1D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		AE890D091A657C8700E604C4 /* CGPoint+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGPoint+Extensions.swift"; sourceTree = "<group>"; };
+		AE890D0C1A65AFAE00E604C4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = "Base.lproj/Launch Screen.xib"; sourceTree = "<group>"; };
 		AEC9EEBA1A3CDC4A002C7B08 /* NumberPad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NumberPad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC9EEBE1A3CDC4A002C7B08 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -305,6 +307,7 @@
 				AEC9EF001A3F880A002C7B08 /* BitmapDigitClassifier.h */,
 				AEC9EEFE1A3F87F0002C7B08 /* BitmapDigitClassier.mm */,
 				AE5554FA1A5CE0A5007DCF1D /* Main.storyboard */,
+				AE890D0B1A65AFAE00E604C4 /* Launch Screen.xib */,
 				AEC9EEC61A3CDC4A002C7B08 /* Images.xcassets */,
 				AEC9EEBD1A3CDC4A002C7B08 /* Supporting Files */,
 				AEC9EEE21A3CEC7F002C7B08 /* NumberPad-Bridging-Header.h */,
@@ -538,6 +541,7 @@
 				AE5554EE1A5CBC6E007DCF1D /* bridger_train.json in Resources */,
 				AE5554F41A5CBC8B007DCF1D /* ujipenchars2.json in Resources */,
 				AE5554FC1A5CE0A5007DCF1D /* Main.storyboard in Resources */,
+				AE890D0D1A65AFAE00E604C4 /* Launch Screen.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -647,6 +651,14 @@
 				AE5554FB1A5CE0A5007DCF1D /* Base */,
 			);
 			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		AE890D0B1A65AFAE00E604C4 /* Launch Screen.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				AE890D0C1A65AFAE00E604C4 /* Base */,
+			);
+			name = "Launch Screen.xib";
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -842,6 +854,7 @@
 				INFOPLIST_FILE = NumberPad/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -853,6 +866,7 @@
 				INFOPLIST_FILE = NumberPad/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};

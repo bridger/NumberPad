@@ -55,8 +55,8 @@ class ConnectorLabel: UILabel {
     
     override func sizeThatFits(size: CGSize) -> CGSize {
         var newSize = super.sizeThatFits(size)
-        newSize.width += 20.0
-        newSize.height += 20.0
+        newSize.width += 15.0
+        newSize.height += 15.0
         return newSize
     }
 }
@@ -88,7 +88,7 @@ class InternalConnectorPort: NSObject, ConnectorPort {
         self.isOutput = isOutput
         self.layer = CALayer()
         self.layer.backgroundColor = color.CGColor
-        let connectorSize: CGFloat = 20
+        let connectorSize: CGFloat = 16
         self.layer.frame = CGRectMake(0, 0, connectorSize, connectorSize)
         self.layer.cornerRadius = connectorSize / 2.0
     }
@@ -204,7 +204,7 @@ class MultiplierView: ConstraintView {
         addSentinelConnectorToPort(self.purpleOutput)
     }
     
-    let mySize: CGFloat = 60.0
+    let mySize: CGFloat = 45.0
     override func layoutWithConnectorPositions(positions: [Connector: CGPoint]) {
         self.sizeToFit()
         self.redInput.layer.position = CGPointMake(0, mySize / 2.0)

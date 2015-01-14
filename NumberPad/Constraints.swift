@@ -10,8 +10,6 @@ import Foundation
 
 class Constraint {
     func processNewValues() {}
-    
-    func processForgetValues() { }
 }
 
 extension Constraint: Hashable {
@@ -67,16 +65,6 @@ class MultiInputOutputConstraint : Constraint {
             println("Unable to remove connector!")
         }
     }
-
-    override func processForgetValues() {
-        for connector in inputs {
-            connector.forgetValue(self)
-        }
-        for connector in outputs {
-            connector.forgetValue(self)
-        }
-        processNewValues()
-    }
 }
 
 
@@ -96,10 +84,6 @@ class ValueObserver : Constraint {
     }
     
     override func processNewValues() {
-        observeBlock(input.value)
-    }
-    
-    override func processForgetValues() {
         observeBlock(input.value)
     }
 }
@@ -131,11 +115,7 @@ class Connector {
     
     func connect(constraint: Constraint) {
         constraints.append(constraint)
-        if self.value != nil {
-            constraint.processNewValues()
-        } else {
-            constraint.processForgetValues()
-        }
+        constraint.processNewValues()
     }
     func disconnect(constraint: Constraint) {
         if let index = find(constraints, constraint) {
@@ -162,14 +142,7 @@ class Connector {
     }
     
     func forgetValue(informant: Constraint) {
-        if informant === self.informant {
-            self.value = nil
-            for constraint in constraints {
-                if constraint !== informant {
-                    constraint.processForgetValues()
-                }
-            }
-        }
+        self.value = nil
     }
 }
 
@@ -273,12 +246,16 @@ class Multiplier : MultiInputOutputConstraint {
         } else if noValueOutputs.count == 1 && noValueInputs.count == 0 {
             // A * B * C = D * E * F. We know all except D
             // D = (A * B * C) / (E * F)
-            noValueOutputs[0].setValue(inputsMultiplied / outputsMultiplied, informant: self);
-            
+            if inputs.count > 0 {
+                noValueOutputs[0].setValue(inputsMultiplied / outputsMultiplied, informant: self)
+            }
         } else if noValueOutputs.count == 0 && noValueInputs.count == 1 {
             // A * B * C = D * E * F. We know all except A
             // A = (D * E * F) / (B * C)
-            noValueInputs[0].setValue(outputsMultiplied / inputsMultiplied, informant: self);
+            if outputs.count > 0 {
+                noValueInputs[0].setValue(outputsMultiplied / inputsMultiplied, informant: self)
+
+            }
             
         } else if noValueInputs.count == 0 && noValueOutputs.count == 0 {
             
@@ -357,14 +334,6 @@ class Exponent : Constraint {
             }
         }
     }
-    
-    override func processForgetValues() {
-        base.forgetValue(self)
-        exponent.forgetValue(self)
-        result.forgetValue(self)
-        
-        processNewValues()
-    }
 }
 
 class Constant : Constraint {
@@ -389,10 +358,6 @@ class Constant : Constraint {
     
     override func processNewValues() {
         println("A constant cannot process new values")
-    }
-    
-    override func processForgetValues() {
-        println("A constant cannot forget values")
     }
 }
 

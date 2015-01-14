@@ -40,6 +40,7 @@ class Stroke {
 class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintViewDelegate {
     var scrollView: UIScrollView!
     
+    var strokeRecognizer: StrokeGestureRecognizer!
     var currentStroke: Stroke?
     var unprocessedStrokes: [Stroke] = []
     var digitClassifier: DTWDigitClassifier
@@ -59,9 +60,24 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
         self.scrollView.addSubview(constraintView)
     }
     
-    var makeConnectionDragStart: ConnectorLabel?
-    var currentDragLine: CAShapeLayer?
     var connectionLayers: [CAShapeLayer] = []
+    
+    // For drawing connections
+    enum DrawConnectionInfo {
+        case FromConnector(ConnectorLabel)
+        case FromConnectorPort(ConstraintView, ConnectorPort)
+    }
+    var currentDrawingConnection: DrawConnectionInfo?
+    var makeConnectionDragStart: ConnectorLabel? // TODO: Get rid of this, replace with currentDrawingConnection
+    var currentDrawConnectionLine: CAShapeLayer?
+    
+    // For dragging views around
+    enum DragViewInfo {
+        case Connector(ConnectorLabel, CGPoint)
+        case Constraint(ConstraintView, CGPoint)
+    }
+    var currentDrag: DragViewInfo?
+    
     
     required init(coder aDecoder: NSCoder) {
         self.digitClassifier = DTWDigitClassifier()
@@ -77,14 +93,99 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
         let strokeRecognizer = StrokeGestureRecognizer()
         self.scrollView.addGestureRecognizer(strokeRecognizer)
         strokeRecognizer.addTarget(self, action: "handleStroke:")
-        //self.scrollView.layer.delegate = self
+        self.strokeRecognizer = strokeRecognizer
+        
+        let moveRecognizer = UILongPressGestureRecognizer(target: self, action: "handleMove:")
+        moveRecognizer.minimumPressDuration = 0.3
+        self.scrollView.addGestureRecognizer(moveRecognizer)
     }
 
+    
+    func handleMove(recognizer: UILongPressGestureRecognizer) {
+        let point = recognizer.locationInView(self.scrollView)
+        
+        switch recognizer.state {
+        case .Began:
+            var pickedUpView: UIView?
+            for connectorLabel in self.connectorLabels {
+                if CGRectContainsPoint(connectorLabel.frame, point) {
+                    let offset = connectorLabel.center - point
+                    self.currentDrag = DragViewInfo.Connector(connectorLabel, offset)
+                    pickedUpView = connectorLabel
+                    break
+                }
+            }
+            if pickedUpView == nil {
+                for constraintView in self.constraintViews {
+                    if CGRectContainsPoint(constraintView.frame, point) {
+                        let offset = constraintView.center - point
+                        self.currentDrag = DragViewInfo.Constraint(constraintView, offset)
+                        pickedUpView = constraintView
+                        break
+                    }
+                }
+            }
+            if let pickedUpView = pickedUpView {
+                // Cancel the stroke
+                self.strokeRecognizer.enabled = false
+                self.strokeRecognizer.enabled = true
+                
+                // Add some styles to make it look picked up
+                UIView.animateWithDuration(0.2) {
+                    pickedUpView.layer.shadowColor = UIColor.blackColor().CGColor
+                    pickedUpView.layer.shadowOpacity = 0.4
+                    pickedUpView.layer.shadowRadius = 10
+                    pickedUpView.layer.shadowOffset = CGSizeMake(5, 5)
+                    pickedUpView.transform = CGAffineTransformMakeScale(1.3, 1.3)
+                }
+                self.rebuildAllConnectionLayers()
+            }
+            
+        case .Changed:
+            if let currentDrag = self.currentDrag {
+                switch currentDrag {
+                case let .Connector(connectorLabel, offset):
+                    connectorLabel.center = point + offset
+                case let .Constraint(constraintView, offset):
+                    constraintView.center = point + offset
+                }
+                
+                rebuildAllConnectionLayers()
+            }
+            
+        case .Ended, .Cancelled, .Failed:
+            if let currentDrag = self.currentDrag {
+                var pickedUpView: UIView?
+                switch currentDrag {
+                case let .Connector(connectorLabel, offset):
+                    connectorLabel.center = point + offset
+                    pickedUpView = connectorLabel
+                case let .Constraint(constraintView, offset):
+                    constraintView.center = point + offset
+                    pickedUpView = constraintView
+                }
+                
+                if let pickedUpView = pickedUpView {
+                    UIView.animateWithDuration(0.2) {
+                        pickedUpView.layer.shadowColor = nil
+                        pickedUpView.layer.shadowOpacity = 0
+                        pickedUpView.transform = CGAffineTransformIdentity
+                    }
+                }
+                rebuildAllConnectionLayers()
+                self.currentDrag = nil
+            }
+        case .Possible:
+            break
+        }
+    }
+    
     var processStrokesCounter: Int = 0
     func handleStroke(recognizer: StrokeGestureRecognizer) {
         let point = recognizer.locationInView(self.scrollView)
-
-        if recognizer.state == UIGestureRecognizerState.Began {
+        
+        switch recognizer.state {
+        case .Began:
             for connectorLabel in self.connectorLabels {
                 if CGRectContainsPoint(connectorLabel.frame, point) {
                     // We are dragging from a label
@@ -98,7 +199,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
             self.scrollView.layer.addSublayer(self.currentStroke!.layer)
             self.currentStroke!.addPoint(point)
             
-        } else if recognizer.state == UIGestureRecognizerState.Changed {
+        case .Changed:
             if let currentStroke = self.currentStroke {
                 // We are drawing
                 currentStroke.addPoint(point)
@@ -107,16 +208,31 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                 // We are dragging between connectors
                 let targetConnector = connectorPortForDragAtLocation(point)?.ConnectorPort
                 
-                if let oldDragLine = currentDragLine {
+                if let oldDragLine = currentDrawConnectionLine {
                     oldDragLine.removeFromSuperlayer()
                 }
                 let labelPoint = closestPointOnRectPerimeter(point, CGRectInset(dragStart.frame, 1, 1))
                 let dragLine = createConnectionLayer(labelPoint, endPoint: point, color: targetConnector?.color)
                 self.scrollView.layer.addSublayer(dragLine)
-                self.currentDragLine = dragLine
+                self.currentDrawConnectionLine = dragLine
             }
-        } else if recognizer.state == UIGestureRecognizerState.Ended {
+            
+        case .Ended, .Cancelled, .Failed:
             if let currentStroke = self.currentStroke {
+                
+                var wasFarAway = false
+                if let lastStroke = self.unprocessedStrokes.last {
+                    if let lastStrokeLastPoint = lastStroke.points.last {
+                        let point = recognizer.locationInView(self.scrollView)
+                        if euclidianDistance(lastStrokeLastPoint, point) > 150 {
+                            wasFarAway = true
+                        }
+                    }
+                }
+                if wasFarAway {
+                    processStrokes()
+                }
+                
                 let currentCounter = self.processStrokesCounter
                 delay(0.8) { [weak self] in
                     if let strongself = self {
@@ -135,14 +251,17 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                     constraintView.connectPort(connectorPort, connector: dragStart.connector)
                 }
                 
-                if let dragLine = currentDragLine {
+                if let dragLine = currentDrawConnectionLine {
                     dragLine.removeFromSuperlayer()
-                    self.currentDragLine = nil
+                    self.currentDrawConnectionLine = nil
                 }
                 makeConnectionDragStart = nil
                 
                 rebuildAllConnectionLayers()
             }
+            
+        case .Possible:
+            break
         }
     }
     
@@ -245,7 +364,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
     }
     
     
-    
     func rebuildAllConnectionLayers() {
         for oldLayer in self.connectionLayers {
             oldLayer.removeFromSuperlayer()
@@ -283,8 +401,5 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
         dragLine.path = path
         return dragLine
     }
-    
-    
-
 }
 
