@@ -55,6 +55,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
         }
         connectorToLabel[label.connector] = label
         self.scrollView.addSubview(label)
+        updateScrollableSize()
     }
     func moveConnectorToTopPriority(connectorLabel: ConnectorLabel) {
         if let index = find(connectorLabels, connectorLabel) {
@@ -72,6 +73,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
         constraintViews.append(constraintView)
         constraintView.delegate = self
         self.scrollView.addSubview(constraintView)
+        updateScrollableSize()
     }
     
     var connectionLayers: [CAShapeLayer] = []
@@ -101,6 +103,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
     override func viewDidLoad() {
         super.viewDidLoad()
         self.scrollView = UIScrollView(frame: self.view.bounds)
+        self.scrollView.autoresizingMask = .FlexibleWidth | .FlexibleHeight
         self.scrollView.panGestureRecognizer.minimumNumberOfTouches = 2
         self.view.insertSubview(self.scrollView, atIndex: 0)
         
@@ -187,6 +190,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                     }
                 }
                 rebuildAllConnectionLayers()
+                updateScrollableSize()
                 self.currentDrag = nil
             }
         case .Possible:
@@ -436,6 +440,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
             }
             index += 1
         }
+        
+        
     }
     
     func createConnectionLayer(startPoint: CGPoint, endPoint: CGPoint, color: UIColor?) -> CAShapeLayer {
@@ -450,6 +456,28 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
         CGPathAddLineToPoint(path, nil, endPoint.x, endPoint.y)
         dragLine.path = path
         return dragLine
+    }
+    
+    override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransitionToSize(size, withTransitionCoordinator: coordinator)
+        coordinator.animateAlongsideTransition(nil, completion: { context in
+            self.updateScrollableSize()
+        })
+    }
+    
+    func updateScrollableSize() {
+        var maxY: CGFloat = 0
+        var maxX: CGFloat = self.view.bounds.width
+        for view in connectorLabels {
+            maxY = max(maxY, CGRectGetMaxY(view.frame))
+            maxX = max(maxX, CGRectGetMaxX(view.frame))
+        }
+        for view in constraintViews {
+            maxY = max(maxY, CGRectGetMaxY(view.frame))
+            maxX = max(maxX, CGRectGetMaxX(view.frame))
+        }
+        
+        self.scrollView.contentSize = CGSizeMake(maxX, maxY + self.view.bounds.height)
     }
 }
 
