@@ -88,13 +88,10 @@ class ValueObserver : Constraint {
     }
 }
 
-let globalInformant = Constant(value: 0, outputs: [])
-
 class Connector {
     var value: Double?
     
     var constraints: [Constraint] = []
-    var informant: Constraint?
     
     init() {
     }
@@ -125,14 +122,13 @@ class Connector {
         }
     }
     
-    func setValue(newValue: Double, informant: Constraint) {
+    func setValue(newValue: Double, informant: Constraint?) {
         if let value = self.value {
             if value != newValue {
                 println("Something went wrong. Value changed from \(value) not equal to outputs \(newValue)");
             }
         } else {
             self.value = newValue
-            self.informant = informant
             for constraint in constraints {
                 if constraint !== informant {
                     constraint.processNewValues()
@@ -141,7 +137,7 @@ class Connector {
         }
     }
     
-    func forgetValue(informant: Constraint) {
+    func forgetValue() {
         self.value = nil
     }
 }

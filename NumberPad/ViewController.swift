@@ -47,10 +47,24 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
     
     var connectorLabels: [ConnectorLabel] = []
     var connectorToLabel: [Connector: ConnectorLabel] = [:]
-    func addConnectorLabel(label: ConnectorLabel) {
-        connectorLabels.append(label)
+    func addConnectorLabel(label: ConnectorLabel, topPriority: Bool) {
+        if topPriority {
+            connectorLabels.insert(label, atIndex: 0)
+        } else {
+            connectorLabels.append(label)
+        }
         connectorToLabel[label.connector] = label
         self.scrollView.addSubview(label)
+    }
+    func moveConnectorToTopPriority(connectorLabel: ConnectorLabel) {
+        if let index = find(connectorLabels, connectorLabel) {
+            if index != 0 {
+                connectorLabels.removeAtIndex(index)
+                connectorLabels.insert(connectorLabel, atIndex: 0)
+            }
+        } else {
+            println("Tried to move connector to top priority, but couldn't find it!")
+        }
     }
     
     var constraintViews: [ConstraintView] = []
@@ -248,7 +262,15 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
             } else if let dragStart = makeConnectionDragStart {
                 
                 if let (constraintView, connectorPort) = connectorPortForDragAtLocation(point) {
+                    let savedValue = dragStart.connector.value
+                    dragStart.connector.forgetValue()
+                    moveConnectorToTopPriority(dragStart) // Is this actually a good idea? When you drag a connector to a constraint, do you expect that connector to influence the constraint, or the other way around?
                     constraintView.connectPort(connectorPort, connector: dragStart.connector)
+                    if let savedValue = savedValue {
+                        runSolver([dragStart.connector : savedValue])
+                    } else {
+                        runSolver([:])
+                    }
                 }
                 
                 if let dragLine = currentDrawConnectionLine {
@@ -320,11 +342,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                 if let writtenNumber = combinedLabels.toInt() {
                     // We recognized a number!
                     let newConnector = Connector()
-                    newConnector.setValue(Double(writtenNumber), informant: globalInformant)
                     let newLabel = ConnectorLabel(connector: newConnector)
                     newLabel.sizeToFit()
                     newLabel.center = centerPoint
-                    addConnectorLabel(newLabel)
+                    addConnectorLabel(newLabel, topPriority: true)
+                    
+                    runSolver([newConnector: Double(writtenNumber)])
                     
                 } else if combinedLabels == "x" || combinedLabels == "/" {
                     // We recognized a multiply or divide!
@@ -347,6 +370,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
     
     func constraintView(constraintView: ConstraintView, didResolveConnectorPort connectorPort: ConnectorPort) {
         // This is called when a constraint makes a connector on it's own. For example, if you set two inputs on a multiplier then it will resolve the output automatically. We need to add a view for it and display it
+        // This is called during runSolver, so we need to be careful about what we mutate
         if let newConnector = connectorPort.connector {
             let newLabel = ConnectorLabel(connector: newConnector)
             newLabel.sizeToFit()
@@ -359,10 +383,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
             
             let newPoint = self.scrollView.convertPoint(newDisplacement + constraintMiddle, fromView: constraintView)
             newLabel.center = newPoint
-            addConnectorLabel(newLabel)
+            addConnectorLabel(newLabel, topPriority: false)
         }
     }
-    
     
     func rebuildAllConnectionLayers() {
         for oldLayer in self.connectionLayers {
@@ -385,6 +408,33 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                 }
             }
             
+        }
+    }
+    
+    func runSolver(values: [Connector: Double]) {
+        // First we save all of the values for each connector. Then, we set them all again
+        var savedValues = values
+        
+        for connectorLabel in self.connectorLabels {
+            let connector = connectorLabel.connector
+            if let value = connector.value {
+                if savedValues[connector] == nil {
+                    savedValues[connector] = value
+                }
+                connector.forgetValue()
+            }
+        }
+        
+        // We loop through connectorLabels like this, because it can mutate during the simulation, if a constraint "resolves a port"
+        var index = 0
+        while index < self.connectorLabels.count {
+            let connector = self.connectorLabels[index].connector
+            if connector.value == nil {
+                if let value = savedValues[connector] {
+                    connector.setValue(value, informant: nil)
+                }
+            }
+            index += 1
         }
     }
     
