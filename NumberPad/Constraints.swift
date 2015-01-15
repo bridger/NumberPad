@@ -179,12 +179,15 @@ class Adder : MultiInputOutputConstraint {
         if noValueOutputs.count == 1 && noValueInputs.count == 0 {
             // A + B + C = D + E + F. We know all except D
             // D = (A + B + C) - (E + F)
-            noValueOutputs[0].setValue(inputsAdded - outputsAdded, informant: self);
+            if inputs.count > 0 {
+                noValueOutputs[0].setValue(inputsAdded - outputsAdded, informant: self)
+            }
         } else if noValueOutputs.count == 0 && noValueInputs.count == 1 {
             // A + B + C = D + E + F. We know all except A
             // A = (D + E + F) - (B + C)
-            
-            noValueInputs[0].setValue(outputsAdded - inputsAdded, informant: self);
+            if outputs.count > 0 {
+                noValueInputs[0].setValue(outputsAdded - inputsAdded, informant: self)
+            }
         } else if noValueInputs.count == 0 && noValueOutputs.count == 0 {
             
             if outputsAdded != inputsAdded {

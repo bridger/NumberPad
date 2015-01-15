@@ -113,7 +113,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
         self.strokeRecognizer = strokeRecognizer
         
         let moveRecognizer = UILongPressGestureRecognizer(target: self, action: "handleMove:")
-        moveRecognizer.minimumPressDuration = 0.3
+        moveRecognizer.minimumPressDuration = 0.2
         self.scrollView.addGestureRecognizer(moveRecognizer)
     }
 
@@ -252,7 +252,14 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                 }
                 
                 let currentCounter = self.processStrokesCounter
-                delay(0.8) { [weak self] in
+                #if arch(i386) || arch(x86_64)
+                //simulator, give more time to draw stroke
+                let delayTime = 0.8
+                #else
+                //device
+                let delayTime = 0.4
+                #endif
+                delay(delayTime) { [weak self] in
                     if let strongself = self {
                         // If we haven't begun a new stroke in the intervening time, then process the old strokes
                         if strongself.processStrokesCounter == currentCounter {
@@ -361,6 +368,14 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                     newView.center = centerPoint
                     addConstraintView(newView)
                     
+                } else if combinedLabels == "+" || combinedLabels == "-" || combinedLabels == "1-" { // The last is a hack for a common misclassification
+                    // We recognized an add or subtract!
+                    let newAdder = Adder()
+                    let newView = AdderView(adder: newAdder)
+                    newView.layoutWithConnectorPositions([:])
+                    newView.center = centerPoint
+                    addConstraintView(newView)
+                    
                 } else {
                     println("Unable to parse written text: \(combinedLabels)")
                 }
@@ -440,8 +455,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
             }
             index += 1
         }
-        
-        
     }
     
     func createConnectionLayer(startPoint: CGPoint, endPoint: CGPoint, color: UIColor?) -> CAShapeLayer {

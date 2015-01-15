@@ -81,7 +81,7 @@ public class DTWDigitClassifier {
                                 let nextStrokeClassification = singleStrokeClassifications[index + 1]
                                 
                                 var mustMatch = thisStrokeClassification == nil || nextStrokeClassification == nil;
-                                if (mustMatch || twoStrokeClassification.Confidence < thisStrokeClassification!.Confidence || twoStrokeClassification.Confidence < nextStrokeClassification!.Confidence) {
+                                if (mustMatch || twoStrokeClassification.Confidence < (thisStrokeClassification!.Confidence + nextStrokeClassification!.Confidence)) {
                                     
                                     // Sweet, the double stroke classification is the best one
                                     labels.append(twoStrokeClassification.Label)
