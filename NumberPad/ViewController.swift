@@ -113,7 +113,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
         case FromConnectorPort(ConstraintView, ConnectorPort)
     }
     var currentDrawingConnection: DrawConnectionInfo?
-    var makeConnectionDragStart: ConnectorLabel? // TODO: Get rid of this, replace with currentDrawingConnection
     var currentDrawConnectionLine: CAShapeLayer?
     
     // For dragging views around
@@ -149,7 +148,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
         deleteRecognizer.numberOfTouchesRequired = 2
         self.scrollView.addGestureRecognizer(deleteRecognizer)
     }
-
     
     func handleMove(recognizer: UILongPressGestureRecognizer) {
         let point = recognizer.locationInView(self.scrollView)
@@ -265,12 +263,15 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
         
         switch recognizer.state {
         case .Began:
-            for connectorLabel in self.connectorLabels {
-                if CGRectContainsPoint(connectorLabel.frame, point) {
-                    // We are dragging from a label
-                    makeConnectionDragStart = connectorLabel
-                    return
-                }
+            if let connectorLabel  = connectorLabelAtPoint(point) {
+                // We are dragging from a label
+                currentDrawingConnection = DrawConnectionInfo.FromConnector(connectorLabel)
+                return
+            }
+            if let (constraintView, connectorPort) = connectorPortAtLocation(point) {
+                // We are dragging from a constraint view
+                currentDrawingConnection = DrawConnectionInfo.FromConnectorPort(constraintView, connectorPort)
+                return
             }
             
             self.processStrokesCounter += 1
@@ -283,15 +284,27 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                 // We are drawing
                 currentStroke.addPoint(point)
                 
-            } else if let dragStart = makeConnectionDragStart {
+            } else if let drawConnectionInfo = currentDrawingConnection {
                 // We are dragging between connectors
-                let targetConnector = connectorPortForDragAtLocation(point)?.ConnectorPort
                 
                 if let oldDragLine = currentDrawConnectionLine {
                     oldDragLine.removeFromSuperlayer()
                 }
-                let labelPoint = closestPointOnRectPerimeter(point, CGRectInset(dragStart.frame, 1, 1))
-                let dragLine = createConnectionLayer(labelPoint, endPoint: point, color: targetConnector?.color)
+                var dragLine: CAShapeLayer?
+                switch drawConnectionInfo {
+                case let .FromConnector(connectorLabel):
+                    let targetPort = connectorPortAtLocation(point)?.ConnectorPort
+                    let labelPoint = closestPointOnRectPerimeter(point, CGRectInset(connectorLabel.frame, 1, 1))
+                    dragLine = createConnectionLayer(labelPoint, endPoint: point, color: targetPort?.color)
+                case let .FromConnectorPort(constraintView, connectorPort):
+                    let startPoint = self.scrollView.convertPoint(connectorPort.center, fromView: constraintView)
+                    var endPoint = point
+                    if let targetConnector = connectorLabelAtPoint(point) {
+                        endPoint = closestPointOnRectPerimeter(startPoint, targetConnector.frame)
+                    }
+                    dragLine = createConnectionLayer(startPoint, endPoint: endPoint, color: connectorPort.color)
+                }
+                
                 self.scrollView.layer.addSublayer(dragLine)
                 self.currentDrawConnectionLine = dragLine
             }
@@ -331,27 +344,40 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                 unprocessedStrokes.append(currentStroke)
                 self.currentStroke = nil
                 
-            } else if let dragStart = makeConnectionDragStart {
+            } else if let drawConnectionInfo = currentDrawingConnection {
                 
-                if let (constraintView, connectorPort) = connectorPortForDragAtLocation(point) {
-                    let savedValue = dragStart.connector.value
-                    dragStart.connector.forgetValue()
-                    moveConnectorToTopPriority(dragStart) // Is this actually a good idea? When you drag a connector to a constraint, do you expect that connector to influence the constraint, or the other way around?
-                    constraintView.connectPort(connectorPort, connector: dragStart.connector)
+                var connectorEnds: (ConnectorLabel, ConstraintView, ConnectorPort)?
+                
+                switch drawConnectionInfo {
+                case let .FromConnector(connectorLabel):
+                    if let (constraintView, connectorPort) = connectorPortAtLocation(point) {
+                        connectorEnds = (connectorLabel, constraintView, connectorPort)
+                    }
+                case let .FromConnectorPort(constraintView, connectorPort):
+                    if let connectorLabel = connectorLabelAtPoint(point) {
+                        connectorEnds = (connectorLabel, constraintView, connectorPort)
+                    }
+                }
+                
+                if let (connectorLabel, constraintView, connectorPort) = connectorEnds {
+                    let savedValue = connectorLabel.connector.value
+                    connectorLabel.connector.forgetValue()
+                    moveConnectorToTopPriority(connectorLabel) // Is this actually a good idea? When you drag a connector to a constraint, do you expect that connector to influence the constraint, or the other way around?
+                    constraintView.connectPort(connectorPort, connector: connectorLabel.connector)
                     if let savedValue = savedValue {
-                        runSolver([dragStart.connector : savedValue])
+                        runSolver([connectorLabel.connector : savedValue])
                     } else {
                         runSolver([:])
                     }
+                    rebuildAllConnectionLayers()
                 }
                 
                 if let dragLine = currentDrawConnectionLine {
                     dragLine.removeFromSuperlayer()
                     self.currentDrawConnectionLine = nil
                 }
-                makeConnectionDragStart = nil
+                currentDrawingConnection = nil
                 
-                rebuildAllConnectionLayers()
             }
             
         case .Possible:
@@ -366,7 +392,25 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
         self.unprocessedStrokes.removeAll(keepCapacity: false)
     }
     
-    func connectorPortForDragAtLocation(location: CGPoint) -> (ConstraintView: ConstraintView, ConnectorPort: ConnectorPort)? {
+    func connectorLabelAtPoint(point: CGPoint) -> ConnectorLabel? {
+        for label in connectorLabels {
+            if CGRectContainsPoint(label.frame, point) {
+                return label
+            }
+        }
+        return nil
+    }
+    
+    func constraintViewAtPoint(point: CGPoint) -> ConstraintView? {
+        for view in constraintViews {
+            if CGRectContainsPoint(view.frame, point) {
+                return view
+            }
+        }
+        return nil
+    }
+    
+    func connectorPortAtLocation(location: CGPoint) -> (ConstraintView: ConstraintView, ConnectorPort: ConnectorPort)? {
         for constraintView in constraintViews {
             let point = constraintView.convertPoint(location, fromView: self.scrollView)
             if let port = constraintView.connectorPortForDragAtLocation(point) {
