@@ -112,7 +112,6 @@ class Connector {
     
     func connect(constraint: Constraint) {
         constraints.append(constraint)
-        constraint.processNewValues()
     }
     func disconnect(constraint: Constraint) {
         if let index = find(constraints, constraint) {
@@ -253,7 +252,6 @@ class Multiplier : MultiInputOutputConstraint {
             // A = (D * E * F) / (B * C)
             if outputs.count > 0 {
                 noValueInputs[0].setValue(outputsMultiplied / inputsMultiplied, informant: self)
-
             }
             
         } else if noValueInputs.count == 0 && noValueOutputs.count == 0 {

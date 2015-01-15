@@ -67,6 +67,24 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
             println("Tried to move connector to top priority, but couldn't find it!")
         }
     }
+    func removeConnectorLabel(label: ConnectorLabel) {
+        if let index = find(connectorLabels, label) {
+            connectorLabels.removeAtIndex(index)
+            label.removeFromSuperview()
+            connectorToLabel[label.connector] = nil
+            
+            let deleteConnector = label.connector
+            for constraintView in self.constraintViews {
+                for port in constraintView.connectorPorts() {
+                    if port.connector === deleteConnector {
+                        constraintView.removeConnectorAtPort(port)
+                    }
+                }
+            }
+        } else {
+            println("Cannot remove that label!")
+        }
+    }
     
     var constraintViews: [ConstraintView] = []
     func addConstraintView(constraintView: ConstraintView) {
@@ -115,6 +133,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
         let moveRecognizer = UILongPressGestureRecognizer(target: self, action: "handleMove:")
         moveRecognizer.minimumPressDuration = 0.2
         self.scrollView.addGestureRecognizer(moveRecognizer)
+        
+        let deleteRecognizer = UITapGestureRecognizer(target: self, action: "handleDelete:")
+        deleteRecognizer.numberOfTouchesRequired = 2
+        self.scrollView.addGestureRecognizer(deleteRecognizer)
     }
 
     
@@ -195,6 +217,34 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
             }
         case .Possible:
             break
+        }
+    }
+    
+    func handleDelete(recognizer: UITapGestureRecognizer) {
+        let point = recognizer.locationInView(self.scrollView)
+        var deletedSomething = false
+        for connectorLabel in self.connectorLabels {
+            if CGRectContainsPoint(connectorLabel.frame, point) {
+                // Delete this connector!
+                removeConnectorLabel(connectorLabel)
+                deletedSomething = true
+                break
+            }
+        }
+//        if deletedSomething == false {
+//            for constraintView in self.constraintViews {
+//                if CGRectContainsPoint(constraintView.frame, point) {
+//                    let offset = constraintView.center - point
+//                    self.currentDrag = DragViewInfo.Constraint(constraintView, offset)
+//                    deletedSomething = true
+//                    break
+//                }
+//            }
+//        }
+//        
+        if deletedSomething {
+            runSolver([:])
+            rebuildAllConnectionLayers()
         }
     }
     

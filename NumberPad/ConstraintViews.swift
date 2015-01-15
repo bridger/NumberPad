@@ -31,26 +31,36 @@ class ConnectorLabel: UILabel {
         self.layer.borderWidth = 3
         self.textAlignment = .Center
         
-        connector.addObserver { [unowned self] value in
-            
-            var color: UIColor = UIColor.blackColor()
-            if let value = value {
-                if abs(value) < 2 {
-                    self.text = String(format: "%.3f", value)
-                } else if abs(value) < 100 {
-                    self.text = String(format: "%.1f", value)
-                } else {
-                    self.text = String(format: "%.f", value)
-                }
-            } else {
-                self.text = "?"
-                color = UIColor.redColor()
+        weak var weakSelf = self
+        connector.addObserver{ value in
+            if let strongSelf = weakSelf {
+                strongSelf.updateToValue()
             }
-            self.layer.borderColor = color.CGColor
-            self.textColor = color
-            
-            self.sizeToFit()
         }
+        self.updateToValue()
+    }
+    
+    func updateToValue() {
+        let value = self.connector.value
+        
+        var color: UIColor = UIColor.blackColor()
+        if let value = value {
+            if abs(value) < 2 {
+                self.text = String(format: "%.3f", value)
+            } else if abs(value) < 100 {
+                self.text = String(format: "%.1f", value)
+            } else {
+                self.text = String(format: "%.f", value)
+            }
+        } else {
+            self.text = "?"
+            color = UIColor.redColor()
+        }
+        self.layer.borderColor = color.CGColor
+        self.textColor = color
+        
+        self.sizeToFit()
+
     }
     
     override func sizeThatFits(size: CGSize) -> CGSize {
@@ -111,6 +121,9 @@ class ConstraintView: UIView {
         fatalError("This method must be overriden")
     }
     func layoutWithConnectorPositions(positions: [Connector: CGPoint]) {
+        fatalError("This method must be overriden")
+    }
+    func removeConnectorAtPort(port: ConnectorPort) {
         fatalError("This method must be overriden")
     }
     
@@ -176,6 +189,15 @@ class MultiplierView: ConstraintView {
                 }
                 internalPort.connector = connector
                 
+                return
+            }
+        }
+    }
+    
+    override func removeConnectorAtPort(port: ConnectorPort) {
+        for internalPort in internalConnectorPorts() {
+            if internalPort === port {
+                addSentinelConnectorToPort(internalPort) // This will remove the old connector
                 return
             }
         }
@@ -283,6 +305,14 @@ class AdderView: ConstraintView {
         }
     }
     
+    override func removeConnectorAtPort(port: ConnectorPort) {
+        for internalPort in internalConnectorPorts() {
+            if internalPort === port {
+                addSentinelConnectorToPort(internalPort) // This will remove the old connector
+                return
+            }
+        }
+    }
 
     init(adder: Adder) {
         self.adder = adder
