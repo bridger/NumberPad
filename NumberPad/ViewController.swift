@@ -93,6 +93,17 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
         self.scrollView.addSubview(constraintView)
         updateScrollableSize()
     }
+    func removeConstraintView(constraintView: ConstraintView) {
+        if let index = find(constraintViews, constraintView) {
+            constraintViews.removeAtIndex(index)
+            constraintView.removeFromSuperview()
+            for port in constraintView.connectorPorts() {
+                constraintView.removeConnectorAtPort(port)
+            }
+        } else {
+            println("Cannot remove that constraint!")
+        }
+    }
     
     var connectionLayers: [CAShapeLayer] = []
     
@@ -231,17 +242,17 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                 break
             }
         }
-//        if deletedSomething == false {
-//            for constraintView in self.constraintViews {
-//                if CGRectContainsPoint(constraintView.frame, point) {
-//                    let offset = constraintView.center - point
-//                    self.currentDrag = DragViewInfo.Constraint(constraintView, offset)
-//                    deletedSomething = true
-//                    break
-//                }
-//            }
-//        }
-//        
+        if deletedSomething == false {
+            for constraintView in self.constraintViews {
+                if CGRectContainsPoint(constraintView.frame, point) {
+                    // Delete this constraint!
+                    removeConstraintView(constraintView)
+                    deletedSomething = true
+                    break
+                }
+            }
+        }
+        
         if deletedSomething {
             runSolver([:])
             rebuildAllConnectionLayers()
