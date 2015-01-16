@@ -245,9 +245,6 @@ public class DTWDigitClassifier {
         if !loadedNormalizedData {
             for (label, prototypes) in self.rawPrototypeLibrary {
                 for (index, prototype) in enumerate(prototypes) {
-                    if label == "1" && index == 13 {
-                        println("Normalizing a troubled digit")
-                    }
                     let normalizedDigit = normalizeDigit(prototype)
                     let totalPoints = normalizedDigit.reduce(0) {(total, stroke) -> Int in
                         return total + stroke.count
@@ -290,18 +287,19 @@ public class DTWDigitClassifier {
             let windowScale: CGFloat = 1.0
             totalDistance += differenceDistance * windowScale
         }
+        //totalDistance += euclidianDistance(curveA[indexA], curveB[indexB])
         
         return totalDistance / CGFloat(neighborsRange)
     }
     
     func greedyDynamicTimeWarp(sample: [CGPoint], prototype: [CGPoint]) -> CGFloat {
         let minNeighborSize = 2
-        let maxNeighborSize = 8
+        let maxNeighborSize = 10
         if sample.count < minNeighborSize * 4 || prototype.count < minNeighborSize * 4 {
             return CGFloat.max
         }
         
-        let windowWidth: CGFloat = 0.5 * CGFloat(sample.count)
+        let windowWidth: CGFloat = 6.0
         let slope: CGFloat = CGFloat(sample.count) / CGFloat(prototype.count)
         
         var pathLength = 1
@@ -309,34 +307,39 @@ public class DTWDigitClassifier {
         
         var sampleIndex: Int = minNeighborSize
         var prototypeIndex: Int = minNeighborSize
+        
+        func calculateSafeNeighborSize(sampleIndex: Int, prototypeIndex: Int) -> Int {
+            return min(sampleIndex, sample.count - 1 - (sampleIndex + 1),
+                prototypeIndex, prototype.count - 1 - (prototypeIndex + 1),
+                maxNeighborSize)
+        }
+        
         // Imagine that sample is the vertical axis, and prototype is the horizontal axis
         while sampleIndex + 1 < sample.count - minNeighborSize && prototypeIndex + 1 < prototype.count - minNeighborSize {
             
             // We want to use the same window size to compare all options, so it must be safe for all cases
-            let safeNeighborSize = min(sampleIndex, sample.count - 1 - (sampleIndex + 1),
-                prototypeIndex, prototype.count - 1 - (prototypeIndex + 1),
-                maxNeighborSize)
+            let safeNeighborSize = calculateSafeNeighborSize(sampleIndex, prototypeIndex)
             
             // For a pairing (sampleIndex, prototypeIndex) to be made, it must meet the boundary condition:
             // sampleIndex < (slope * CGFloat(prototypeIndex) + windowWidth
             // sampleIndex < (slope * CGFloat(prototypeIndex) - windowWidth
             // You can think of slope * CGFloat(prototypeIndex) as being the perfectly diagonal pairing
             var up = CGFloat.max
-//            if CGFloat(sampleIndex + 1) < slope * CGFloat(prototypeIndex) + windowWidth {
+            if CGFloat(sampleIndex + 1) < slope * CGFloat(prototypeIndex) + windowWidth {
                 up = hHalfMetricForPoints(sampleIndex + 1, curveA: sample,
                     indexB: prototypeIndex, curveB: prototype, neighborsRange: safeNeighborSize)
-//            }
+            }
             var right = CGFloat.max
-//            if CGFloat(sampleIndex) < slope * CGFloat(prototypeIndex + 1) + windowWidth {
+            if CGFloat(sampleIndex) < slope * CGFloat(prototypeIndex + 1) + windowWidth {
                 right = hHalfMetricForPoints(sampleIndex, curveA: sample,
                     indexB: prototypeIndex + 1, curveB: prototype, neighborsRange: safeNeighborSize)
-//            }
+            }
             var diagonal = CGFloat.max
-//            if (CGFloat(sampleIndex + 1) < slope * CGFloat(prototypeIndex + 1) + windowWidth &&
-//                CGFloat(sampleIndex + 1) > slope * CGFloat(prototypeIndex + 1) - windowWidth) {
+            if (CGFloat(sampleIndex + 1) < slope * CGFloat(prototypeIndex + 1) + windowWidth &&
+                CGFloat(sampleIndex + 1) > slope * CGFloat(prototypeIndex + 1) - windowWidth) {
                     diagonal = hHalfMetricForPoints(sampleIndex + 1, curveA: sample,
                         indexB: prototypeIndex + 1, curveB: prototype, neighborsRange: safeNeighborSize)
-//            }
+            }
             
             // TODO: The right is the least case is repeated twice. Any way to fix that?
             if up < diagonal {
@@ -369,19 +372,25 @@ public class DTWDigitClassifier {
         // At most one of the following while loops will execute, finishing the path with a vertical or horizontal line along the boundary
         while sampleIndex + 1 < sample.count - minNeighborSize {
             sampleIndex++
-            result += euclidianDistance(sample[sampleIndex], prototype[prototypeIndex])
             pathLength++;
+            
+            let safeNeighborSize = calculateSafeNeighborSize(sampleIndex, prototypeIndex)
+            result += hHalfMetricForPoints(sampleIndex, curveA: sample,
+                indexB: prototypeIndex, curveB: prototype, neighborsRange: safeNeighborSize)
         }
         while prototypeIndex + 1 < prototype.count - minNeighborSize {
             prototypeIndex++
-            result += euclidianDistance(sample[sampleIndex], prototype[prototypeIndex])
             pathLength++;
+            
+            let safeNeighborSize = calculateSafeNeighborSize(sampleIndex, prototypeIndex)
+            result += hHalfMetricForPoints(sampleIndex, curveA: sample,
+                indexB: prototypeIndex, curveB: prototype, neighborsRange: safeNeighborSize)
         }
         
         return result / CGFloat(pathLength)
     }
     
-    func normalizeDigit(inputDigit: DigitStrokes) -> DigitStrokes {
+    public func normalizeDigit(inputDigit: DigitStrokes) -> DigitStrokes {
         let targetPointCount = 32
         
         var newInputDigit: DigitStrokes = []
