@@ -51,7 +51,7 @@ class VisualizeCollectionViewController: UICollectionViewController {
         self.collectionView!.registerClass(ImageCell.self, forCellWithReuseIdentifier: reuseIdentifier)
     }
     
-    let prototypeSize = CGSizeMake(140, 140)
+    let prototypeSize = CGSizeMake(280, 280)
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
@@ -81,17 +81,20 @@ class VisualizeCollectionViewController: UICollectionViewController {
         
         let label = self.digitLabels[indexPath.section]
         let scale = UIScreen.mainScreen().scale
+        let prototypeSize = self.prototypeSize
         if let prototype = digitClassifier.normalizedPrototypeLibrary[label]?[indexPath.row] {
             
             UIGraphicsBeginImageContextWithOptions(prototypeSize, true, scale)
             let ctx = UIGraphicsGetCurrentContext()
             
+            let transformPointLambda: (CGPoint) -> CGPoint = { point -> CGPoint in
+                return CGPointMake((point.x * 0.9 + 0.5) * prototypeSize.width,
+                    (point.y * 0.9 + 0.5) * prototypeSize.height)
+            }
             for stroke in prototype {
                 var firstPoint = true
                 for point in stroke {
-                    var transformedPoint = point
-                    transformedPoint.x = (transformedPoint.x / 15 + 0.5) * prototypeSize.width
-                    transformedPoint.y = (transformedPoint.y / 15 + 0.5) * prototypeSize.height
+                    let transformedPoint = transformPointLambda(point)
                     
                     if firstPoint {
                         firstPoint = false
@@ -103,6 +106,12 @@ class VisualizeCollectionViewController: UICollectionViewController {
                 CGContextSetStrokeColorWithColor(ctx, UIColor.whiteColor().CGColor)
                 CGContextSetLineWidth(ctx, 2)
                 CGContextStrokePath(ctx)
+                
+                for point in stroke {
+                    let transformedPoint = transformPointLambda(point)
+                    CGContextSetFillColorWithColor(ctx, UIColor.redColor().CGColor)
+                    CGContextFillEllipseInRect(ctx, CGRectMake(transformedPoint.x-2, transformedPoint.y-2, 4, 4))
+                }
             }
             
             let image = UIGraphicsGetImageFromCurrentImageContext()
