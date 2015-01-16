@@ -244,7 +244,10 @@ public class DTWDigitClassifier {
         
         if !loadedNormalizedData {
             for (label, prototypes) in self.rawPrototypeLibrary {
-                for prototype in prototypes {
+                for (index, prototype) in enumerate(prototypes) {
+                    if label == "1" && index == 13 {
+                        println("Normalizing a troubled digit")
+                    }
                     let normalizedDigit = normalizeDigit(prototype)
                     addToLibrary(&self.normalizedPrototypeLibrary, label: label, digit: normalizedDigit)
                 }
@@ -375,6 +378,11 @@ public class DTWDigitClassifier {
     }
     
     func normalizeDigit(inputDigit: DigitStrokes) -> DigitStrokes {
+        let pointCount = 32
+        let totalPoints = inputDigit.reduce(0) {(total, stroke) -> Int in
+            return total + stroke.count
+        }
+        let dropIndexes = totalPoints > pointCount ?  totalPoints / (totalPoints - pointCount) : Int.max
         // Resize the point list to have a center of mass at the origin and unit standard deviation on both axis
         //    scaled_x = (symbol.x - mean(symbol.x)) * (h/5)/std2(symbol.x) + h/2;
         //    scaled_y = (symbol.y - mean(symbol.y)) * (h/5)/std2(symbol.y) + h/2;
@@ -383,34 +391,40 @@ public class DTWDigitClassifier {
         var xDeviation: CGFloat = 0.0
         var yMean: CGFloat = 0.0
         var yDeviation: CGFloat = 0.0
+        var pointIndex = 0
         for subPath in inputDigit {
             var lastPoint: CGPoint?
             for point in subPath {
-                if let lastPoint = lastPoint {
-                    let midPoint = CGPointMake((point.x + lastPoint.x) / 2.0, (point.y + lastPoint.y) / 2.0)
-                    var distanceScore = euclidianDistance(point, lastPoint)
-                    if distanceScore == 0 {
-                        distanceScore = 0.1 // Otherwise, we will get NaN because of the weighting
+                let drop = pointIndex % dropIndexes == 0
+                if !drop {
+                    if let lastPoint = lastPoint {
+                        let midPoint = CGPointMake((point.x + lastPoint.x) / 2.0, (point.y + lastPoint.y) / 2.0)
+                        var distanceScore = euclidianDistance(point, lastPoint)
+                        distanceScore = 1.0
+                        if distanceScore == 0 {
+                            distanceScore = 0.01 // Otherwise, we will get NaN because of the weighting
+                        }
+                        
+                        let temp = distanceScore + totalDistance
+                        
+                        let xDelta = midPoint.x - xMean;
+                        let xR = xDelta * distanceScore / temp;
+                        xMean = xMean + xR;
+                        xDeviation = xDeviation + totalDistance * xDelta * xR;
+                        
+                        let yDelta = midPoint.y - yMean;
+                        let yR = yDelta * distanceScore / temp;
+                        yMean = yMean + yR;
+                        yDeviation = yDeviation + totalDistance * yDelta * yR;
+                        
+                        totalDistance = temp;
+                        
+                        assert(isfinite(xMean) && isfinite(yMean), "Found a nan!")
+                    } else {
+                        lastPoint = point
                     }
-                    
-                    let temp = distanceScore + totalDistance
-                    
-                    let xDelta = midPoint.x - xMean;
-                    let xR = xDelta * distanceScore / temp;
-                    xMean = xMean + xR;
-                    xDeviation = xDeviation + totalDistance * xDelta * xR;
-                    
-                    let yDelta = midPoint.y - yMean;
-                    let yR = yDelta * distanceScore / temp;
-                    yMean = yMean + yR;
-                    yDeviation = yDeviation + totalDistance * yDelta * yR;
-                    
-                    totalDistance = temp;
-                    
-                    assert(isfinite(xMean) && isfinite(yMean), "Found a nan!")
-                } else {
-                    lastPoint = point
                 }
+                pointIndex++
             }
         }
         
@@ -428,12 +442,17 @@ public class DTWDigitClassifier {
         }
         let scale = min(xScale, yScale)
         
+        pointIndex = 0
         return inputDigit.map { subPath in
-            return subPath.map { point in
+            return subPath.filter({ point in
+                let drop = pointIndex % dropIndexes == 0
+                pointIndex++
+                return !drop
+            }).map({ point in
                 let x = (point.x - xMean) * scale
                 let y = (point.y - yMean) * scale
                 return CGPointMake(x, y)
-            }
+            })
         }
     }
 }
