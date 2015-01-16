@@ -252,7 +252,7 @@ public class DTWDigitClassifier {
                     let totalPoints = normalizedDigit.reduce(0) {(total, stroke) -> Int in
                         return total + stroke.count
                     }
-                    println("Normalized digit \(label) to \(totalPoints) points")
+                    //println("Normalized digit \(label) to \(totalPoints) points")
                     addToLibrary(&self.normalizedPrototypeLibrary, label: label, digit: normalizedDigit)
                 }
             }
@@ -287,16 +287,16 @@ public class DTWDigitClassifier {
             
             let difference = aVector - bVector
             let differenceDistance = difference.length()
-            let windowScale = 1.0 / (CGFloat(neighbors * neighbors))
+            let windowScale: CGFloat = 1.0
             totalDistance += differenceDistance * windowScale
         }
         
-        return totalDistance
+        return totalDistance / CGFloat(neighborsRange)
     }
     
     func greedyDynamicTimeWarp(sample: [CGPoint], prototype: [CGPoint]) -> CGFloat {
-        let minNeighborSize = 3
-        let maxNeighborSize = 5
+        let minNeighborSize = 2
+        let maxNeighborSize = 8
         if sample.count < minNeighborSize * 4 || prototype.count < minNeighborSize * 4 {
             return CGFloat.max
         }
@@ -383,46 +383,51 @@ public class DTWDigitClassifier {
     
     func normalizeDigit(inputDigit: DigitStrokes) -> DigitStrokes {
         let targetPointCount = 32
-        let totalPoints = inputDigit.reduce(0) {(total, stroke) -> Int in
-            return total + stroke.count
-        }
-        var dropEveryDistance: Double = 1000000.0
-        if totalPoints > targetPointCount {
-            dropEveryDistance = Double(totalPoints) / Double(totalPoints - targetPointCount)
-        }
         
-        var inputDigit = inputDigit
-        if totalPoints < targetPointCount {
-            // We need to insert points
-            let newPointCount = targetPointCount - totalPoints
-            let insertEveryDistance = CGFloat(totalPoints) / CGFloat(newPointCount)
-            var pointIndex = 0
-            var insertedToVirtualIndex: CGFloat = 0.0
-            
-            var newInputDigit: DigitStrokes = []
-            for stroke in inputDigit {
-                var lastPoint: CGPoint?
-                var newStroke: [CGPoint] = []
-                for point in stroke {
-                    if let lastPoint = lastPoint {
-                        while insertedToVirtualIndex + insertEveryDistance < CGFloat(pointIndex) {
-                            let ratio = min(CGFloat(pointIndex) - insertedToVirtualIndex , 0.5)
-                            let newPoint = CGPointMake(lastPoint.x * ratio + point.x * (1.0 - ratio),
-                                lastPoint.y * ratio + point.y * (1.0 - ratio))
-                            
-                            newStroke.append(newPoint)
-                            insertedToVirtualIndex += insertEveryDistance
-                        }
-                    }
-                    newStroke.append(point)
-                    lastPoint = point
-                    pointIndex++
+        var newInputDigit: DigitStrokes = []
+        for stroke in inputDigit {
+            // First, figure out the total arc length of this stroke
+            var lastPoint: CGPoint?
+            var totalDistance: CGFloat = 0
+            for point in stroke {
+                if let lastPoint = lastPoint {
+                    totalDistance += euclidianDistance(lastPoint, point)
                 }
-                newInputDigit.append(newStroke)
+                lastPoint = point
             }
-            inputDigit = newInputDigit
+            
+            // Now, divide this arc length into 32 segments
+            let distancePerPoint = totalDistance / CGFloat(targetPointCount)
+            var newPoints: [CGPoint] = []
+            
+            lastPoint = nil
+            var distanceCovered: CGFloat = 0
+            totalDistance = 0
+            for point in stroke {
+                if let lastPoint = lastPoint {
+                    let nextDistance = euclidianDistance(lastPoint, point)
+                    let newTotalDistance = totalDistance + nextDistance
+                    while distanceCovered + distancePerPoint < newTotalDistance {
+                        distanceCovered += distancePerPoint
+                        let ratio: CGFloat = (distanceCovered - totalDistance) / nextDistance
+                        if ratio < 0.0 || ratio > 1.0 {
+                            println("Uh oh! Something went wrong!")
+                        }
+                        let newPointX: CGFloat = point.x * ratio + lastPoint.x * (1.0 - ratio)
+                        let newPointY: CGFloat = point.y * ratio + lastPoint.y * (1.0 - ratio)
+                        newPoints.append(CGPointMake(newPointX, newPointY))
+                    }
+                    totalDistance = newTotalDistance
+                }
+                lastPoint = point
+            }
+            if newPoints.count > 0 && newPoints.count > 29 {
+                newInputDigit.append(newPoints)
+            } else {
+                println("What happened here????")
+            }
         }
-        
+        let inputDigit = newInputDigit
         
         var topLeft: CGPoint?
         var bottomRight: CGPoint?
@@ -458,15 +463,7 @@ public class DTWDigitClassifier {
         var pointIndex = 0
         var droppedDistance: Double = 0
         return inputDigit.map { subPath in
-            return subPath.filter({ point in
-                var drop = false
-                if droppedDistance + dropEveryDistance < Double(pointIndex) {
-                    drop = true
-                    droppedDistance += dropEveryDistance
-                }
-                pointIndex++
-                return !drop
-            }).map({ point in
+            return subPath.map({ point in
                 let x = (point.x - xTranslate) * scale
                 let y = (point.y - yTranslate) * scale
                 return CGPointMake(x, y)
