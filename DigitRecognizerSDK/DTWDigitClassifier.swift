@@ -386,7 +386,10 @@ public class DTWDigitClassifier {
         let totalPoints = inputDigit.reduce(0) {(total, stroke) -> Int in
             return total + stroke.count
         }
-        let dropIndexes = totalPoints > targetPointCount ?  totalPoints / (totalPoints - targetPointCount) : Int.max
+        var dropEveryDistance: Double = 1000000.0
+        if totalPoints > targetPointCount {
+            dropEveryDistance = Double(totalPoints) / Double(totalPoints - targetPointCount)
+        }
         
         var inputDigit = inputDigit
         if totalPoints < targetPointCount {
@@ -453,9 +456,14 @@ public class DTWDigitClassifier {
         let scale = min(xScale, yScale)
         
         var pointIndex = 0
+        var droppedDistance: Double = 0
         return inputDigit.map { subPath in
             return subPath.filter({ point in
-                let drop = pointIndex % dropIndexes == 0
+                var drop = false
+                if droppedDistance + dropEveryDistance < Double(pointIndex) {
+                    drop = true
+                    droppedDistance += dropEveryDistance
+                }
                 pointIndex++
                 return !drop
             }).map({ point in
