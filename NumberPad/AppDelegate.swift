@@ -52,7 +52,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func loadData(path: String) {
         if let jsonLibrary = DTWDigitClassifier.jsonLibraryFromFile(path) {
-            self.rootViewController.digitClassifier.loadData(jsonLibrary, loadNormalizedData: false)
+            self.rootViewController.digitClassifier.loadData(jsonLibrary, loadNormalizedData: true)
         }
     }
     
