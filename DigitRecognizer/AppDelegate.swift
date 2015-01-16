@@ -25,9 +25,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if let path = NSBundle.mainBundle().pathForResource("bridger_train", ofType: "json") {
             loadData(path)
         }
-        //        if let newestDataName = newestSavedData() {
-        //            loadData(documentsDirectory().stringByAppendingPathComponent(newestDataName))
-        //        }
+        saveMisclassified()
+        
         return true
     }
     
@@ -77,5 +76,54 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         return nil
     }
+    
+    
+    func saveMisclassified() {
+        
+        let testDataPath = NSBundle.mainBundle().pathForResource("bridger_test", ofType: "json")!
+        let testDataJson = DTWDigitClassifier.jsonLibraryFromFile(testDataPath)!["rawData"]!
+        let testData = DTWDigitClassifier.jsonToLibrary(testDataJson)
+        let randomNumber = arc4random() % 500
+        let documentDirectory = documentsDirectory().stringByAppendingPathComponent("\(randomNumber)")
+        NSFileManager.defaultManager().createDirectoryAtPath(documentDirectory, withIntermediateDirectories: true, attributes: nil, error: nil)
+
+        let imageSize = CGSizeMake(200, 200)
+        
+        for (testLabel, trainLabel, testIndex, trainIndex) in [("3", "5", 17, 22), ("3", "5", 28, 12), ("7", "+", 8, 24), ("9", "4", 7, 29), ("9", "0", 13, 21), ("5", "1", 1, 3)] {
+            
+            let testStroke = testData[testLabel]![testIndex]
+            let normalizedTestStroke = self.digitClassifier.normalizeDigit(testStroke)
+            let trainStroke = self.digitClassifier.normalizedPrototypeLibrary[trainLabel]![trainIndex]
+            
+            let testStrokeImage = visualizeNormalizedStrokes(normalizedTestStroke, imageSize)
+            let trainStrokeImage = visualizeNormalizedStrokes(trainStroke, imageSize)
+    
+            func safeName(name: String) -> String {
+                if name == "+" {
+                    return "plus"
+                } else if name == "/" {
+                    return "slash"
+                } else if name == "-" {
+                    return "minus"
+                }
+                return name
+            }
+            let fileName = documentDirectory.stringByAppendingPathComponent("\(safeName(testLabel)) as \(safeName(trainLabel)) indexes \(testIndex) \(trainIndex)")
+            let testFileName = fileName + " - Test.png"
+            let trainFileName = fileName + " - Train.png"
+            
+            var error: NSError? = nil
+            if !UIImagePNGRepresentation(testStrokeImage).writeToFile(testFileName, options: nil, error: &error) {
+                println("Unable to write file \(testFileName) + \(error)")
+            }
+            if !UIImagePNGRepresentation(trainStrokeImage).writeToFile(trainFileName, options: nil, error: &error) {
+                println("Unable to write file \(trainFileName) + \(error)")
+            }
+        }
+        
+        
+        println("Finished writing to \(documentDirectory)")
+    }
+    
 }
 

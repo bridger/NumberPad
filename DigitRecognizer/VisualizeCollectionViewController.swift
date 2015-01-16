@@ -12,27 +12,35 @@ import DigitRecognizerSDK
 let reuseIdentifier = "ImageCell"
 
 class ImageCell: UICollectionViewCell {
-    let imageView: UIImageView
+    let imageView: UIImageView = UIImageView()
+    let indexLabel: UILabel = UILabel()
     
     override init(frame: CGRect) {
-        imageView = UIImageView()
         super.init(frame: frame)
-        imageView.frame = self.contentView.bounds
-        self.contentView.addSubview(imageView)
-        imageView.autoresizingMask = .FlexibleWidth | .FlexibleHeight
+        imageCellSetup()
     }
     
     required init(coder aDecoder: NSCoder) {
-        imageView = UIImageView()
         super.init(coder: aDecoder)
+        imageCellSetup()
+    }
+    
+    func imageCellSetup() {
         imageView.frame = self.contentView.bounds
         self.contentView.addSubview(imageView)
         imageView.autoresizingMask = .FlexibleWidth | .FlexibleHeight
+        
+        indexLabel.text = "Mj"
+        indexLabel.sizeToFit()
+        indexLabel.frame = CGRectMake(0, self.contentView.bounds.height  - indexLabel.frame.size.height, self.contentView.bounds.width, indexLabel.frame.height)
+        self.contentView.addSubview(indexLabel)
+        indexLabel.textColor = UIColor.grayColor()
     }
     
     override func prepareForReuse() {
         super.prepareForReuse()
         imageView.image = nil
+        indexLabel.text = ""
     }
     
 }
@@ -51,7 +59,7 @@ class VisualizeCollectionViewController: UICollectionViewController {
         self.collectionView!.registerClass(ImageCell.self, forCellWithReuseIdentifier: reuseIdentifier)
     }
     
-    let prototypeSize = CGSizeMake(280, 280)
+    let prototypeSize = CGSizeMake(140, 140)
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
@@ -80,45 +88,12 @@ class VisualizeCollectionViewController: UICollectionViewController {
         let cell = collectionView.dequeueReusableCellWithReuseIdentifier(reuseIdentifier, forIndexPath: indexPath) as ImageCell
         
         let label = self.digitLabels[indexPath.section]
-        let scale = UIScreen.mainScreen().scale
-        let prototypeSize = self.prototypeSize
         if let prototype = digitClassifier.normalizedPrototypeLibrary[label]?[indexPath.row] {
-            
-            UIGraphicsBeginImageContextWithOptions(prototypeSize, true, scale)
-            let ctx = UIGraphicsGetCurrentContext()
-            
-            let transformPointLambda: (CGPoint) -> CGPoint = { point -> CGPoint in
-                return CGPointMake((point.x * 0.9 + 0.5) * prototypeSize.width,
-                    (point.y * 0.9 + 0.5) * prototypeSize.height)
-            }
-            for stroke in prototype {
-                var firstPoint = true
-                for point in stroke {
-                    let transformedPoint = transformPointLambda(point)
-                    
-                    if firstPoint {
-                        firstPoint = false
-                        CGContextMoveToPoint(ctx, transformedPoint.x, transformedPoint.y)
-                    } else {
-                        CGContextAddLineToPoint(ctx, transformedPoint.x, transformedPoint.y)
-                    }
-                }
-                CGContextSetStrokeColorWithColor(ctx, UIColor.whiteColor().CGColor)
-                CGContextSetLineWidth(ctx, 2)
-                CGContextStrokePath(ctx)
-                
-                for point in stroke {
-                    let transformedPoint = transformPointLambda(point)
-                    CGContextSetFillColorWithColor(ctx, UIColor.redColor().CGColor)
-                    CGContextFillEllipseInRect(ctx, CGRectMake(transformedPoint.x-2, transformedPoint.y-2, 4, 4))
-                }
-            }
-            
-            let image = UIGraphicsGetImageFromCurrentImageContext()
-            UIGraphicsEndImageContext()
-            
+            let image = visualizeNormalizedStrokes(prototype, self.prototypeSize)
             cell.imageView.image = image
             cell.imageView.layer.borderWidth = 1
+            
+            cell.indexLabel.text = "\(indexPath.row)"
         }
         return cell
     }

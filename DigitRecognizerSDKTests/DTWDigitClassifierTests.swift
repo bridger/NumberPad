@@ -10,6 +10,17 @@ import UIKit
 import XCTest
 import DigitRecognizerSDK
 
+struct MisclassifiedRecord: Printable {
+    var testLabel: String
+    var trainLabel: String
+    var testIndex: Int
+    var trainIndex: Int
+    
+    var description: String {
+        return "(\"\(testLabel)\", \"\(trainLabel)\", \(testIndex), \(trainIndex))"
+    }
+}
+
 class DTWDigitClassifierTests: XCTestCase {
     
     func testParameters() {
@@ -23,12 +34,14 @@ class DTWDigitClassifierTests: XCTestCase {
         let testData = DTWDigitClassifier.jsonToLibrary(testJsonData!["rawData"]!)
         
         
-        for (votesCounted: Int, scoreCutoff: CGFloat) in [(5, 0.8), (10, 0.8)] {
+        for (votesCounted: Int, scoreCutoff: CGFloat) in [(5, 0.8)] {
             println("\n\n\nTesting votesCounted=\(votesCounted) scoreCutoff=\(scoreCutoff)")
             
             let startTime = NSDate()
             var aggregateCorrect = 0
             var aggregateTotal = 0
+            
+            var misclassifieds: [MisclassifiedRecord] = []
             
             for (label, testDigits) in testData {
                 var labelCorrect = 0
@@ -47,7 +60,8 @@ class DTWDigitClassifierTests: XCTestCase {
                     } else if classification == nil {
                         labelUnclassified += 1
                     } else {
-                        println("Misclassified \(label) as \(classification!.Label). Indexes \(index) \(classification!.BestPrototypeIndex)")
+                        misclassifieds.append(MisclassifiedRecord(testLabel: label, trainLabel: classification!.Label, testIndex: index, trainIndex: classification!.BestPrototypeIndex) )
+                        println("Misclassified \(label) as \(classification!.Label). Strokes \(testDigit.count) Indexes \(index) \(classification!.BestPrototypeIndex)")
                         labelWrong += 1
                     }
                     index++
@@ -57,9 +71,17 @@ class DTWDigitClassifierTests: XCTestCase {
                 let elapsedTime = NSDate().timeIntervalSinceDate(startDigitTime)
                 println(String(format: "Accuracy score for %@ is %.3f%% (%d/%d). %d wrong. %d unknown. Took %d seconds", label, accuracy, labelCorrect, labelTotal, labelWrong, labelUnclassified, Int(elapsedTime)))
                 
+                
                 aggregateCorrect += labelCorrect
                 aggregateTotal += labelTotal
             }
+            
+            
+            print("All misclassified: ")
+            for misclassified in misclassifieds {
+                print(misclassified.description + ", ")
+            }
+            println("")
             
             let accuracy = Double(aggregateCorrect) / Double(aggregateTotal)
             let elapsedTime = NSDate().timeIntervalSinceDate(startTime)
