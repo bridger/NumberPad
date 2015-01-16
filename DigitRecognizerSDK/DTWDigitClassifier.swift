@@ -249,6 +249,10 @@ public class DTWDigitClassifier {
                         println("Normalizing a troubled digit")
                     }
                     let normalizedDigit = normalizeDigit(prototype)
+                    let totalPoints = normalizedDigit.reduce(0) {(total, stroke) -> Int in
+                        return total + stroke.count
+                    }
+                    println("Normalized digit \(label) to \(totalPoints) points")
                     addToLibrary(&self.normalizedPrototypeLibrary, label: label, digit: normalizedDigit)
                 }
             }
@@ -291,7 +295,8 @@ public class DTWDigitClassifier {
     }
     
     func greedyDynamicTimeWarp(sample: [CGPoint], prototype: [CGPoint]) -> CGFloat {
-        let minNeighborSize = 2
+        let minNeighborSize = 3
+        let maxNeighborSize = 5
         if sample.count < minNeighborSize * 4 || prototype.count < minNeighborSize * 4 {
             return CGFloat.max
         }
@@ -308,7 +313,6 @@ public class DTWDigitClassifier {
         while sampleIndex + 1 < sample.count - minNeighborSize && prototypeIndex + 1 < prototype.count - minNeighborSize {
             
             // We want to use the same window size to compare all options, so it must be safe for all cases
-            let maxNeighborSize = 5
             let safeNeighborSize = min(sampleIndex, sample.count - 1 - (sampleIndex + 1),
                 prototypeIndex, prototype.count - 1 - (prototypeIndex + 1),
                 maxNeighborSize)
@@ -378,62 +382,68 @@ public class DTWDigitClassifier {
     }
     
     func normalizeDigit(inputDigit: DigitStrokes) -> DigitStrokes {
-        let pointCount = 32
+        let targetPointCount = 32
         let totalPoints = inputDigit.reduce(0) {(total, stroke) -> Int in
             return total + stroke.count
         }
-        let dropIndexes = totalPoints > pointCount ?  totalPoints / (totalPoints - pointCount) : Int.max
-        // Resize the point list to have a center of mass at the origin and unit standard deviation on both axis
-        //    scaled_x = (symbol.x - mean(symbol.x)) * (h/5)/std2(symbol.x) + h/2;
-        //    scaled_y = (symbol.y - mean(symbol.y)) * (h/5)/std2(symbol.y) + h/2;
-        var totalDistance: CGFloat = 0.0
-        var xMean: CGFloat = 0.0
-        var xDeviation: CGFloat = 0.0
-        var yMean: CGFloat = 0.0
-        var yDeviation: CGFloat = 0.0
-        var pointIndex = 0
-        for subPath in inputDigit {
-            var lastPoint: CGPoint?
-            for point in subPath {
-                let drop = pointIndex % dropIndexes == 0
-                if !drop {
+        let dropIndexes = totalPoints > targetPointCount ?  totalPoints / (totalPoints - targetPointCount) : Int.max
+        
+        var inputDigit = inputDigit
+        if totalPoints < targetPointCount {
+            // We need to insert points
+            let newPointCount = targetPointCount - totalPoints
+            let insertEveryDistance = CGFloat(totalPoints) / CGFloat(newPointCount)
+            var pointIndex = 0
+            var insertedToVirtualIndex: CGFloat = 0.0
+            
+            var newInputDigit: DigitStrokes = []
+            for stroke in inputDigit {
+                var lastPoint: CGPoint?
+                var newStroke: [CGPoint] = []
+                for point in stroke {
                     if let lastPoint = lastPoint {
-                        let midPoint = CGPointMake((point.x + lastPoint.x) / 2.0, (point.y + lastPoint.y) / 2.0)
-                        var distanceScore = euclidianDistance(point, lastPoint)
-                        distanceScore = 1.0
-                        if distanceScore == 0 {
-                            distanceScore = 0.01 // Otherwise, we will get NaN because of the weighting
+                        while insertedToVirtualIndex + insertEveryDistance < CGFloat(pointIndex) {
+                            let ratio = min(CGFloat(pointIndex) - insertedToVirtualIndex , 0.5)
+                            let newPoint = CGPointMake(lastPoint.x * ratio + point.x * (1.0 - ratio),
+                                lastPoint.y * ratio + point.y * (1.0 - ratio))
+                            
+                            newStroke.append(newPoint)
+                            insertedToVirtualIndex += insertEveryDistance
                         }
-                        
-                        let temp = distanceScore + totalDistance
-                        
-                        let xDelta = midPoint.x - xMean;
-                        let xR = xDelta * distanceScore / temp;
-                        xMean = xMean + xR;
-                        xDeviation = xDeviation + totalDistance * xDelta * xR;
-                        
-                        let yDelta = midPoint.y - yMean;
-                        let yR = yDelta * distanceScore / temp;
-                        yMean = yMean + yR;
-                        yDeviation = yDeviation + totalDistance * yDelta * yR;
-                        
-                        totalDistance = temp;
-                        
-                        assert(isfinite(xMean) && isfinite(yMean), "Found a nan!")
-                    } else {
-                        lastPoint = point
                     }
+                    newStroke.append(point)
+                    lastPoint = point
+                    pointIndex++
                 }
-                pointIndex++
+                newInputDigit.append(newStroke)
             }
+            inputDigit = newInputDigit
         }
         
         
-        xDeviation = sqrt(xDeviation / (totalDistance));
-        yDeviation = sqrt(yDeviation / (totalDistance));
+        var topLeft: CGPoint?
+        var bottomRight: CGPoint?
+        for stroke in inputDigit {
+            for point in stroke {
+                if let capturedTopLeft = topLeft {
+                    topLeft = CGPointMake(min(capturedTopLeft.x, point.x), min(capturedTopLeft.y, point.y));
+                } else {
+                    topLeft = point
+                }
+                if let capturedBottomRight = bottomRight {
+                    bottomRight = CGPointMake(max(capturedBottomRight.x, point.x), max(capturedBottomRight.y, point.y));
+                } else {
+                    bottomRight = point
+                }
+            }
+        }
+        let xDistance = (bottomRight!.x - topLeft!.x)
+        let yDistance = (bottomRight!.y - topLeft!.y)
+        let xTranslate = topLeft!.x + xDistance / 2
+        let yTranslate = topLeft!.y + yDistance / 2
         
-        var xScale = 1.0 / xDeviation;
-        var yScale = 1.0 / yDeviation;
+        var xScale = 1.0 / xDistance;
+        var yScale = 1.0 / yDistance;
         if !isfinite(xScale) {
             xScale = 1
         }
@@ -442,15 +452,15 @@ public class DTWDigitClassifier {
         }
         let scale = min(xScale, yScale)
         
-        pointIndex = 0
+        var pointIndex = 0
         return inputDigit.map { subPath in
             return subPath.filter({ point in
                 let drop = pointIndex % dropIndexes == 0
                 pointIndex++
                 return !drop
             }).map({ point in
-                let x = (point.x - xMean) * scale
-                let y = (point.y - yMean) * scale
+                let x = (point.x - xTranslate) * scale
+                let y = (point.y - yTranslate) * scale
                 return CGPointMake(x, y)
             })
         }
