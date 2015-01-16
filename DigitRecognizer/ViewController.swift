@@ -41,7 +41,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
     var scrollView: UIScrollView!
     var currentStroke: Stroke?
     var previousStrokes: [Stroke] = []
-    var digitClassifier: DTWDigitClassifier
+    var digitClassifier: DTWDigitClassifier!
     @IBOutlet weak var labelSelector: UISegmentedControl!
     @IBOutlet weak var resultLabel: UILabel!
     
@@ -52,6 +52,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.digitClassifier = AppDelegate.sharedAppDelegate().digitClassifier
         self.scrollView = UIScrollView(frame: self.view.bounds)
         self.scrollView.panGestureRecognizer.minimumNumberOfTouches = 2
         self.view.insertSubview(self.scrollView, atIndex: 0)

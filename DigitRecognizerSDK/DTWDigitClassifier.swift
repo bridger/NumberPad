@@ -24,7 +24,7 @@ public class DTWDigitClassifier {
     public typealias DigitLabel = String
     public typealias PrototypeLibrary = [DigitLabel: [DigitStrokes]]
     
-    var normalizedPrototypeLibrary: PrototypeLibrary = [:]
+    public var normalizedPrototypeLibrary: PrototypeLibrary = [:]
     var rawPrototypeLibrary: PrototypeLibrary = [:]
     
     public init() {
@@ -110,26 +110,28 @@ public class DTWDigitClassifier {
     
     // Returns the label, as well as a confidence in the label
     // Can be called from the background
-    public typealias Classification = (Label: DigitLabel, Confidence: CGFloat)
+    public typealias Classification = (Label: DigitLabel, Confidence: CGFloat, BestPrototypeIndex: Int)
     public func classifyDigit(digit: DigitStrokes, votesCounted: Int = 5, scoreCutoff: CGFloat = 0.8) -> Classification? {
         let normalizedDigit = normalizeDigit(digit)
         
-        var bestMatches = SortedMinArray<CGFloat, DigitLabel>(capacity: votesCounted)
+        var bestMatches = SortedMinArray<CGFloat, (DigitLabel, Int)>(capacity: votesCounted)
         for (label, prototypes) in self.normalizedPrototypeLibrary {
             var localMinDistance: CGFloat?
             var localMinLabel: DigitLabel?
+            var index = 0
             for prototype in prototypes {
                 if prototype.count == digit.count {
                     let score = self.classificationScore(normalizedDigit, prototype: prototype)
-                    if score < scoreCutoff {
-                        bestMatches.add(score, element: label)
-                    }
+                    //if score < scoreCutoff {
+                        bestMatches.add(score, element: (label, index))
+                    //}
                 }
+                index++
             }
         }
         
         var votes: [DigitLabel: Int] = [:]
-        for (score, label) in bestMatches {
+        for (score, (label, index)) in bestMatches {
             votes[label] = (votes[label] ?? 0) + 1
         }
         
@@ -142,9 +144,9 @@ public class DTWDigitClassifier {
             }
         }
         if let maxVotedLabel = maxVotedLabel {
-            for (score, label) in bestMatches {
+            for (score, (label, index)) in bestMatches {
                 if label == maxVotedLabel {
-                    return (maxVotedLabel, score)
+                    return (maxVotedLabel, score, index)
                 }
             }
         }
@@ -211,6 +213,13 @@ public class DTWDigitClassifier {
                         return CGPointMake(point[0], point[1])
                     }
                 }
+                }.filter { (prototype: DigitStrokes) -> Bool in
+                    for stroke in prototype {
+                        if stroke.count < 5 {
+                            return false // Sometimes a weird sample ends up in the database
+                        }
+                    }
+                    return true
             }
         }
         
@@ -263,46 +272,75 @@ public class DTWDigitClassifier {
         return result / CGFloat(sample.count)
     }
     
+    func hHalfMetricForPoints(indexA: Int, curveA: [CGPoint], indexB: Int, curveB: [CGPoint], neighborsRange: Int) -> CGFloat {
+        var totalDistance: CGFloat = 0
+        for neighbors in 1...neighborsRange {
+            let aVector = curveA[indexA - neighbors] + curveA[indexA + neighbors]
+            let bVector = curveB[indexB - neighbors] + curveB[indexB + neighbors]
+            
+            let difference = aVector - bVector
+            let differenceDistance = difference.length()
+            let windowScale = 1.0 / (CGFloat(neighbors * neighbors))
+            totalDistance += differenceDistance * windowScale
+        }
+        
+        return totalDistance
+    }
+    
     func greedyDynamicTimeWarp(sample: [CGPoint], prototype: [CGPoint]) -> CGFloat {
+        let minNeighborSize = 2
+        if sample.count < minNeighborSize * 4 || prototype.count < minNeighborSize * 4 {
+            return CGFloat.max
+        }
+        
         let windowWidth: CGFloat = 0.5 * CGFloat(sample.count)
         let slope: CGFloat = CGFloat(sample.count) / CGFloat(prototype.count)
         
         var pathLength = 1
-        var result: CGFloat = euclidianDistance(sample[0], prototype[0])
+        var result: CGFloat = 0
         
-        var sampleIndex: Int = 0
-        var prototypeIndex: Int = 0
+        var sampleIndex: Int = minNeighborSize
+        var prototypeIndex: Int = minNeighborSize
         // Imagine that sample is the vertical axis, and prototype is the horizontal axis
-        while sampleIndex + 1 < sample.count && prototypeIndex + 1 < prototype.count {
+        while sampleIndex + 1 < sample.count - minNeighborSize && prototypeIndex + 1 < prototype.count - minNeighborSize {
+            
+            // We want to use the same window size to compare all options, so it must be safe for all cases
+            let maxNeighborSize = 5
+            let safeNeighborSize = min(sampleIndex, sample.count - 1 - (sampleIndex + 1),
+                prototypeIndex, prototype.count - 1 - (prototypeIndex + 1),
+                maxNeighborSize)
             
             // For a pairing (sampleIndex, prototypeIndex) to be made, it must meet the boundary condition:
             // sampleIndex < (slope * CGFloat(prototypeIndex) + windowWidth
             // sampleIndex < (slope * CGFloat(prototypeIndex) - windowWidth
             // You can think of slope * CGFloat(prototypeIndex) as being the perfectly diagonal pairing
             var up = CGFloat.max
-            if CGFloat(sampleIndex + 1) < slope * CGFloat(prototypeIndex) + windowWidth {
-                up = euclidianDistanceSquared(sample[sampleIndex + 1], prototype[prototypeIndex])
-            }
+//            if CGFloat(sampleIndex + 1) < slope * CGFloat(prototypeIndex) + windowWidth {
+                up = hHalfMetricForPoints(sampleIndex + 1, curveA: sample,
+                    indexB: prototypeIndex, curveB: prototype, neighborsRange: safeNeighborSize)
+//            }
             var right = CGFloat.max
-            if CGFloat(sampleIndex) < slope * CGFloat(prototypeIndex + 1) + windowWidth {
-                right = euclidianDistanceSquared(sample[sampleIndex], prototype[prototypeIndex + 1])
-            }
+//            if CGFloat(sampleIndex) < slope * CGFloat(prototypeIndex + 1) + windowWidth {
+                right = hHalfMetricForPoints(sampleIndex, curveA: sample,
+                    indexB: prototypeIndex + 1, curveB: prototype, neighborsRange: safeNeighborSize)
+//            }
             var diagonal = CGFloat.max
-            if (CGFloat(sampleIndex + 1) < slope * CGFloat(prototypeIndex + 1) + windowWidth &&
-                CGFloat(sampleIndex + 1) > slope * CGFloat(prototypeIndex + 1) - windowWidth) {
-                diagonal = euclidianDistanceSquared(sample[sampleIndex + 1], prototype[prototypeIndex + 1])
-            }
+//            if (CGFloat(sampleIndex + 1) < slope * CGFloat(prototypeIndex + 1) + windowWidth &&
+//                CGFloat(sampleIndex + 1) > slope * CGFloat(prototypeIndex + 1) - windowWidth) {
+                    diagonal = hHalfMetricForPoints(sampleIndex + 1, curveA: sample,
+                        indexB: prototypeIndex + 1, curveB: prototype, neighborsRange: safeNeighborSize)
+//            }
             
             // TODO: The right is the least case is repeated twice. Any way to fix that?
             if up < diagonal {
                 if up < right {
                     // up is the least
                     sampleIndex++
-                    result += sqrt(up)
+                    result += up
                 } else {
                     // right is the least
                     prototypeIndex++
-                    result += sqrt(right)
+                    result += right
                 }
             } else {
                 // diagonal or right is the least
@@ -310,11 +348,11 @@ public class DTWDigitClassifier {
                     // diagonal is the least
                     sampleIndex++
                     prototypeIndex++
-                    result += sqrt(diagonal)
+                    result += diagonal
                 } else {
                     // right is the least
                     prototypeIndex++
-                    result += sqrt(right)
+                    result += right
                 }
             }
 
@@ -322,12 +360,12 @@ public class DTWDigitClassifier {
         }
         
         // At most one of the following while loops will execute, finishing the path with a vertical or horizontal line along the boundary
-        while sampleIndex + 1 < sample.count {
+        while sampleIndex + 1 < sample.count - minNeighborSize {
             sampleIndex++
             result += euclidianDistance(sample[sampleIndex], prototype[prototypeIndex])
             pathLength++;
         }
-        while prototypeIndex + 1 < prototype.count {
+        while prototypeIndex + 1 < prototype.count - minNeighborSize {
             prototypeIndex++
             result += euclidianDistance(sample[sampleIndex], prototype[prototypeIndex])
             pathLength++;

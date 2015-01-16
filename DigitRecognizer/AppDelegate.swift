@@ -15,12 +15,13 @@ let filePrefix = "SavedLibraries-"
 class AppDelegate: UIResponder, UIApplicationDelegate {
     
     var window: UIWindow?
-    var rootViewController: ViewController!
+    var digitClassifier: DTWDigitClassifier = DTWDigitClassifier()
     
+    class func sharedAppDelegate() -> AppDelegate {
+        return UIApplication.sharedApplication().delegate as AppDelegate
+    }
     
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
-        self.rootViewController = window?.rootViewController as ViewController
-        
         if let path = NSBundle.mainBundle().pathForResource("bridger_train", ofType: "json") {
             loadData(path)
         }
@@ -39,7 +40,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func saveData() {
-        let dataToSave = self.rootViewController.digitClassifier.dataToSave(true, saveNormalizedData: true)
+        let dataToSave = self.digitClassifier.dataToSave(true, saveNormalizedData: true)
         
         var saveNumber = 1
         if let lastSave = newestSavedData() {
@@ -55,7 +56,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func loadData(path: String) {
         if let jsonLibrary = DTWDigitClassifier.jsonLibraryFromFile(path) {
-            self.rootViewController.digitClassifier.loadData(jsonLibrary, loadNormalizedData: false)
+            self.digitClassifier.loadData(jsonLibrary, loadNormalizedData: false)
         }
     }
     

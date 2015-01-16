@@ -37,18 +37,20 @@ class DTWDigitClassifierTests: XCTestCase {
                 var labelUnclassified = 0
                 let startDigitTime = NSDate()
                 
+                var index = 0
                 for testDigit in testDigits {
                     labelTotal++
                     
-                    let classification = digitClassifier.classifyDigit(testDigit, votesCounted: votesCounted, scoreCutoff: scoreCutoff)?.Label
-                    if classification == label {
+                    let classification = digitClassifier.classifyDigit(testDigit, votesCounted: votesCounted, scoreCutoff: scoreCutoff)
+                    if classification?.Label == label {
                         labelCorrect += 1
                     } else if classification == nil {
                         labelUnclassified += 1
                     } else {
-                        println("Misclassified \(label) as \(classification!)")
+                        println("Misclassified \(label) as \(classification!.Label). Indexes \(index) \(classification!.BestPrototypeIndex)")
                         labelWrong += 1
                     }
+                    index++
                 }
                 
                 let accuracy = Double(labelCorrect) / Double(labelTotal)

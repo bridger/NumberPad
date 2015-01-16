@@ -37,8 +37,9 @@
 		AE5554F51A5CBD25007DCF1D /* StrokeGestureRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEDF1A3CEB3A002C7B08 /* StrokeGestureRecognizer.swift */; };
 		AE5554F91A5CE08C007DCF1D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AE5554F71A5CE08C007DCF1D /* Main.storyboard */; };
 		AE5554FC1A5CE0A5007DCF1D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AE5554FA1A5CE0A5007DCF1D /* Main.storyboard */; };
-		AE890D0A1A657C8700E604C4 /* CGPoint+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE890D091A657C8700E604C4 /* CGPoint+Extensions.swift */; };
 		AE890D0D1A65AFAE00E604C4 /* Launch Screen.xib in Resources */ = {isa = PBXBuildFile; fileRef = AE890D0B1A65AFAE00E604C4 /* Launch Screen.xib */; };
+		AE890D0F1A68970800E604C4 /* CGPoint+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE890D0E1A68970800E604C4 /* CGPoint+Extensions.swift */; };
+		AE890D111A68AB5B00E604C4 /* VisualizeCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE890D101A68AB5B00E604C4 /* VisualizeCollectionViewController.swift */; };
 		AEC9EEC01A3CDC4A002C7B08 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */; };
 		AEC9EEC21A3CDC4A002C7B08 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEC11A3CDC4A002C7B08 /* ViewController.swift */; };
 		AEC9EEC71A3CDC4A002C7B08 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AEC9EEC61A3CDC4A002C7B08 /* Images.xcassets */; };
@@ -136,8 +137,9 @@
 		AE5554D41A5CBBF7007DCF1D /* DigitRecognizerSDKTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DigitRecognizerSDKTests.swift; sourceTree = "<group>"; };
 		AE5554F81A5CE08C007DCF1D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		AE5554FB1A5CE0A5007DCF1D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		AE890D091A657C8700E604C4 /* CGPoint+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGPoint+Extensions.swift"; sourceTree = "<group>"; };
 		AE890D0C1A65AFAE00E604C4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = "Base.lproj/Launch Screen.xib"; sourceTree = "<group>"; };
+		AE890D0E1A68970800E604C4 /* CGPoint+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGPoint+Extensions.swift"; sourceTree = "<group>"; };
+		AE890D101A68AB5B00E604C4 /* VisualizeCollectionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VisualizeCollectionViewController.swift; sourceTree = "<group>"; };
 		AEC9EEBA1A3CDC4A002C7B08 /* NumberPad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NumberPad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC9EEBE1A3CDC4A002C7B08 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -199,6 +201,7 @@
 			children = (
 				AE5554651A5CB9D3007DCF1D /* AppDelegate.swift */,
 				AE5554671A5CB9D3007DCF1D /* ViewController.swift */,
+				AE890D101A68AB5B00E604C4 /* VisualizeCollectionViewController.swift */,
 				AE5554F71A5CE08C007DCF1D /* Main.storyboard */,
 				AE55546C1A5CB9D3007DCF1D /* Images.xcassets */,
 				AE5554631A5CB9D3007DCF1D /* Supporting Files */,
@@ -237,6 +240,7 @@
 				AE04E7531A4DE6F40077D2E3 /* DTWDigitClassifier.swift */,
 				AE3DD2401A537C0A007D1500 /* SortedMinArray.swift */,
 				AEC9EEDF1A3CEB3A002C7B08 /* StrokeGestureRecognizer.swift */,
+				AE890D0E1A68970800E604C4 /* CGPoint+Extensions.swift */,
 				AE5554C51A5CBBF7007DCF1D /* DigitRecognizerSDK.h */,
 				AE5554C31A5CBBF7007DCF1D /* Supporting Files */,
 			);
@@ -303,7 +307,6 @@
 				AE064B6A1A64679200A10381 /* Constraints.swift */,
 				AE064B6D1A646A6300A10381 /* ConstraintViews.swift */,
 				AE064B6F1A646FB200A10381 /* Utils.swift */,
-				AE890D091A657C8700E604C4 /* CGPoint+Extensions.swift */,
 				AEC9EF001A3F880A002C7B08 /* BitmapDigitClassifier.h */,
 				AEC9EEFE1A3F87F0002C7B08 /* BitmapDigitClassier.mm */,
 				AE5554FA1A5CE0A5007DCF1D /* Main.storyboard */,
@@ -560,6 +563,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AE5554681A5CB9D3007DCF1D /* ViewController.swift in Sources */,
+				AE890D111A68AB5B00E604C4 /* VisualizeCollectionViewController.swift in Sources */,
 				AE5554661A5CB9D3007DCF1D /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -570,6 +574,7 @@
 			files = (
 				AE5554E11A5CBC19007DCF1D /* DTWDigitClassifier.swift in Sources */,
 				AE5554E51A5CBC31007DCF1D /* SortedMinArray.swift in Sources */,
+				AE890D0F1A68970800E604C4 /* CGPoint+Extensions.swift in Sources */,
 				AE5554F51A5CBD25007DCF1D /* StrokeGestureRecognizer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -592,7 +597,6 @@
 				AEC9EEC21A3CDC4A002C7B08 /* ViewController.swift in Sources */,
 				AE064B6B1A64679200A10381 /* Constraints.swift in Sources */,
 				AEC9EEC01A3CDC4A002C7B08 /* AppDelegate.swift in Sources */,
-				AE890D0A1A657C8700E604C4 /* CGPoint+Extensions.swift in Sources */,
 				AE064B6E1A646A6300A10381 /* ConstraintViews.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
