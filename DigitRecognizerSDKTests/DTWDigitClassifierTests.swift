@@ -116,31 +116,19 @@ class DTWDigitClassifierTests: XCTestCase {
                 var labelTotal = 0
                 var labelUnclassified = 0
                 var labelWrong = 0
-                
-                let serviceGroup = dispatch_group_create()
-                let queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0)
-                let serialResultsQueue = dispatch_queue_create("collect_results", nil)
 
                 for testDigit in testDigits {
                     labelTotal++
                     
-                    dispatch_group_async(serviceGroup, queue) {
-                        let classification = digitClassifier.classifyDigit(testDigit)?.Label
-                        
-                        dispatch_group_async(serviceGroup, serialResultsQueue) {
-                            if classification == label {
-                                labelCorrect += 1
-                            } else if classification == nil {
-                                labelUnclassified += 1
-                            } else {
-                                labelWrong += 1
-                            }
-                        }
+                    let classification = digitClassifier.classifyDigit(testDigit)?.Label
+                    if classification == label {
+                        labelCorrect += 1
+                    } else if classification == nil {
+                        labelUnclassified += 1
+                    } else {
+                        labelWrong += 1
                     }
                 }
-                
-                // Wait for all results
-                dispatch_group_wait(serviceGroup, DISPATCH_TIME_FOREVER);
                 
                 let accuracy = Double(labelCorrect) / Double(labelTotal)
                 println(String(format: "Accuracy score for %@ is %.3f%% (%d/%d). Wrong=%d Uknown=%d", label, accuracy, labelCorrect, labelTotal, labelWrong, labelUnclassified))

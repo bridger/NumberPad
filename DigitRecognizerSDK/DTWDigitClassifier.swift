@@ -114,21 +114,35 @@ public class DTWDigitClassifier {
     public func classifyDigit(digit: DigitStrokes, votesCounted: Int = 5, scoreCutoff: CGFloat = 0.8) -> Classification? {
         let normalizedDigit = normalizeDigit(digit)
         
+        let serviceGroup = dispatch_group_create()
+        let queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0)
+        let serialResultsQueue = dispatch_queue_create("collect_results", nil)
+        
         var bestMatches = SortedMinArray<CGFloat, (DigitLabel, Int)>(capacity: votesCounted)
         for (label, prototypes) in self.normalizedPrototypeLibrary {
-            var localMinDistance: CGFloat?
-            var localMinLabel: DigitLabel?
-            var index = 0
-            for prototype in prototypes {
-                if prototype.count == digit.count {
-                    let score = self.classificationScore(normalizedDigit, prototype: prototype)
-                    //if score < scoreCutoff {
-                        bestMatches.add(score, element: (label, index))
-                    //}
+            
+            dispatch_group_async(serviceGroup, queue) {
+                var localBestMatches = SortedMinArray<CGFloat, (DigitLabel, Int)>(capacity: votesCounted)
+                var index = 0
+                for prototype in prototypes {
+                    if prototype.count == digit.count {
+                        let score = self.classificationScore(normalizedDigit, prototype: prototype)
+                        //if score < scoreCutoff {
+                            localBestMatches.add(score, element: (label, index))
+                        //}
+                    }
+                    index++
                 }
-                index++
+                dispatch_group_async(serviceGroup, serialResultsQueue) {
+                    for (score, bestMatch) in localBestMatches {
+                        bestMatches.add(score, element: bestMatch)
+                    }
+                }
             }
         }
+        
+        // Wait for all results
+        dispatch_group_wait(serviceGroup, DISPATCH_TIME_FOREVER);
         
         var votes: [DigitLabel: Int] = [:]
         for (score, (label, index)) in bestMatches {

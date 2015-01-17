@@ -279,6 +279,19 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
             self.scrollView.layer.addSublayer(self.currentStroke!.layer)
             self.currentStroke!.addPoint(point)
             
+            var wasFarAway = false
+            if let lastStroke = self.unprocessedStrokes.last {
+                if let lastStrokeLastPoint = lastStroke.points.last {
+                    let point = recognizer.locationInView(self.scrollView)
+                    if euclidianDistance(lastStrokeLastPoint, point) > 150 {
+                        wasFarAway = true
+                    }
+                }
+            }
+            if wasFarAway {
+                processStrokes()
+            }
+            
         case .Changed:
             if let currentStroke = self.currentStroke {
                 // We are drawing
@@ -312,26 +325,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
         case .Ended, .Cancelled, .Failed:
             if let currentStroke = self.currentStroke {
                 
-                var wasFarAway = false
-                if let lastStroke = self.unprocessedStrokes.last {
-                    if let lastStrokeLastPoint = lastStroke.points.last {
-                        let point = recognizer.locationInView(self.scrollView)
-                        if euclidianDistance(lastStrokeLastPoint, point) > 150 {
-                            wasFarAway = true
-                        }
-                    }
-                }
-                if wasFarAway {
-                    processStrokes()
-                }
-                
                 let currentCounter = self.processStrokesCounter
                 #if arch(i386) || arch(x86_64)
-                //simulator, give more time to draw stroke
-                let delayTime = 0.8
-                #else
-                //device
-                let delayTime = 0.4
+                    //simulator, give more time to draw stroke
+                    let delayTime = 0.8
+                    #else
+                    //device
+                    let delayTime = 0.4
                 #endif
                 delay(delayTime) { [weak self] in
                     if let strongself = self {
@@ -385,13 +385,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
         }
     }
     
-    @IBAction func clearStrokes(sender: AnyObject?) {
-        for previousStroke in self.unprocessedStrokes {
-            previousStroke.layer.removeFromSuperlayer()
-        }
-        self.unprocessedStrokes.removeAll(keepCapacity: false)
-    }
-    
     func connectorLabelAtPoint(point: CGPoint) -> ConnectorLabel? {
         for label in connectorLabels {
             if CGRectContainsPoint(label.frame, point) {
@@ -421,75 +414,83 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
     }
     
     func processStrokes() {
-        var allStrokes: DTWDigitClassifier.DigitStrokes = []
-        for previousStroke in self.unprocessedStrokes {
-            allStrokes.append(previousStroke.points)
-        }
+        let unprocessedStrokesCopy = self.unprocessedStrokes
+        self.unprocessedStrokes.removeAll(keepCapacity: false)
         
-        if allStrokes.count > 0 {
-            if let classifiedLabels = self.digitClassifier.classifyMultipleDigits(allStrokes) {
-                // Find the bounding rect of all of the strokes
-                var topLeft: CGPoint?
-                var bottomRight: CGPoint?
-                for stroke in allStrokes {
-                    for point in stroke {
-                        if let capturedTopLeft = topLeft {
-                            topLeft = CGPointMake(min(capturedTopLeft.x, point.x), min(capturedTopLeft.y, point.y));
-                        } else {
-                            topLeft = point
-                        }
-                        if let capturedBottomRight = bottomRight {
-                            bottomRight = CGPointMake(max(capturedBottomRight.x, point.x), max(capturedBottomRight.y, point.y));
-                        } else {
-                            bottomRight = point
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0)) {
+            var allStrokes: DTWDigitClassifier.DigitStrokes = []
+            for previousStroke in unprocessedStrokesCopy {
+                allStrokes.append(previousStroke.points)
+            }
+            let classifiedLabels = self.digitClassifier.classifyMultipleDigits(allStrokes)
+            
+            dispatch_async(dispatch_get_main_queue()) {
+                if let classifiedLabels = classifiedLabels {
+                    // Find the bounding rect of all of the strokes
+                    var topLeft: CGPoint?
+                    var bottomRight: CGPoint?
+                    for stroke in allStrokes {
+                        for point in stroke {
+                            if let capturedTopLeft = topLeft {
+                                topLeft = CGPointMake(min(capturedTopLeft.x, point.x), min(capturedTopLeft.y, point.y));
+                            } else {
+                                topLeft = point
+                            }
+                            if let capturedBottomRight = bottomRight {
+                                bottomRight = CGPointMake(max(capturedBottomRight.x, point.x), max(capturedBottomRight.y, point.y));
+                            } else {
+                                bottomRight = point
+                            }
                         }
                     }
-                }
-                // Figure out where to put the new component
-                var centerPoint = scrollView.convertPoint(self.view.center, fromView: self.view)
-                if let topLeft = topLeft {
-                    if let bottomRight = bottomRight {
-                        centerPoint = CGPointMake((topLeft.x + bottomRight.x) / 2.0, (topLeft.y + bottomRight.y) / 2.0)
+                    // Figure out where to put the new component
+                    var centerPoint = self.scrollView.convertPoint(self.view.center, fromView: self.view)
+                    if let topLeft = topLeft {
+                        if let bottomRight = bottomRight {
+                            centerPoint = CGPointMake((topLeft.x + bottomRight.x) / 2.0, (topLeft.y + bottomRight.y) / 2.0)
+                        }
                     }
+                    
+                    // TODO: Try to actually parse out an equation, instead of just one component
+                    let combinedLabels = classifiedLabels.reduce("", +)
+                    if let writtenNumber = combinedLabels.toInt() {
+                        // We recognized a number!
+                        let newConnector = Connector()
+                        let newLabel = ConnectorLabel(connector: newConnector)
+                        newLabel.sizeToFit()
+                        newLabel.center = centerPoint
+                        self.addConnectorLabel(newLabel, topPriority: true)
+                        
+                        self.runSolver([newConnector: Double(writtenNumber)])
+                        
+                    } else if combinedLabels == "x" || combinedLabels == "/" {
+                        // We recognized a multiply or divide!
+                        let newMultiplier = Multiplier()
+                        let newView = MultiplierView(multiplier: newMultiplier)
+                        newView.layoutWithConnectorPositions([:])
+                        newView.center = centerPoint
+                        self.addConstraintView(newView)
+                        
+                    } else if combinedLabels == "+" || combinedLabels == "-" || combinedLabels == "1-" { // The last is a hack for a common misclassification
+                        // We recognized an add or subtract!
+                        let newAdder = Adder()
+                        let newView = AdderView(adder: newAdder)
+                        newView.layoutWithConnectorPositions([:])
+                        newView.center = centerPoint
+                        self.addConstraintView(newView)
+                        
+                    } else {
+                        println("Unable to parse written text: \(combinedLabels)")
+                    }
+                } else {
+                    println("Unable to recognize all \(allStrokes.count) strokes")
                 }
                 
-                // TODO: Try to actually parse out an equation, instead of just one component
-                let combinedLabels = classifiedLabels.reduce("", +)
-                if let writtenNumber = combinedLabels.toInt() {
-                    // We recognized a number!
-                    let newConnector = Connector()
-                    let newLabel = ConnectorLabel(connector: newConnector)
-                    newLabel.sizeToFit()
-                    newLabel.center = centerPoint
-                    addConnectorLabel(newLabel, topPriority: true)
-                    
-                    runSolver([newConnector: Double(writtenNumber)])
-                    
-                } else if combinedLabels == "x" || combinedLabels == "/" {
-                    // We recognized a multiply or divide!
-                    let newMultiplier = Multiplier()
-                    let newView = MultiplierView(multiplier: newMultiplier)
-                    newView.layoutWithConnectorPositions([:])
-                    newView.center = centerPoint
-                    addConstraintView(newView)
-                    
-                } else if combinedLabels == "+" || combinedLabels == "-" || combinedLabels == "1-" { // The last is a hack for a common misclassification
-                    // We recognized an add or subtract!
-                    let newAdder = Adder()
-                    let newView = AdderView(adder: newAdder)
-                    newView.layoutWithConnectorPositions([:])
-                    newView.center = centerPoint
-                    addConstraintView(newView)
-                    
-                } else {
-                    println("Unable to parse written text: \(combinedLabels)")
+                for stroke in unprocessedStrokesCopy {
+                    stroke.layer.removeFromSuperlayer()
                 }
-            } else {
-                println("Unable to recognize all \(allStrokes.count) strokes")
             }
         }
-        
-        self.clearStrokes(nil)
     }
     
     func constraintView(constraintView: ConstraintView, didResolveConnectorPort connectorPort: ConnectorPort) {
