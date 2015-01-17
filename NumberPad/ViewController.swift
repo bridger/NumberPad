@@ -391,7 +391,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                     self.currentDrawConnectionLine = nil
                 }
                 currentDrawingConnection = nil
-                
             }
             
         case .Possible:

@@ -144,8 +144,8 @@ class ConstraintView: UIView {
     }
 }
 
-class MultiplierView: ConstraintView {
-    let multiplier: Multiplier
+class MultiInputOutputConstraintView<Constraint: MultiInputOutputConstraint>: ConstraintView {
+    let constraint: Constraint
     
     let redInput = InternalConnectorPort(color: UIColor.redColor(), isOutput: false)
     let blueInput = InternalConnectorPort(color: UIColor.blueColor(), isOutput: false)
@@ -176,16 +176,16 @@ class MultiplierView: ConstraintView {
             if internalPort === port {
                 if let oldConnector = internalPort.connector {
                     if internalPort.isOutput {
-                        multiplier.removeOutput(oldConnector)
+                        constraint.removeOutput(oldConnector)
                     } else {
-                        multiplier.removeInput(oldConnector)
+                        constraint.removeInput(oldConnector)
                     }
                 }
                 
                 if internalPort.isOutput {
-                    multiplier.addOutput(connector)
+                    constraint.addOutput(connector)
                 } else {
-                    multiplier.addInput(connector)
+                    constraint.addInput(connector)
                 }
                 internalPort.connector = connector
                 
@@ -203,22 +203,22 @@ class MultiplierView: ConstraintView {
         }
     }
     
-    init(multiplier: Multiplier) {
-        self.multiplier = multiplier
+    init(constraint: Constraint) {
+        self.constraint = constraint
         super.init(frame: CGRectZero)
-        multiplierViewInitialize()
+        multiInputOutputConstraintViewInitialize()
     }
-
-    required override init(coder aDecoder: NSCoder) {
-        self.multiplier = Multiplier()
+    
+    override init(coder aDecoder: NSCoder) {
+        self.constraint = Constraint()
         super.init(coder: aDecoder)
-        multiplierViewInitialize()
+        multiInputOutputConstraintViewInitialize()
     }
     
     let redLayer: CALayer = CALayer()
     let blueLayer: CALayer = CALayer()
     let purpleLayer: CALayer = CALayer()
-    private func multiplierViewInitialize() {
+    private func multiInputOutputConstraintViewInitialize() {
         self.layer.cornerRadius = 5
         addSentinelConnectorToPort(self.redInput)
         addSentinelConnectorToPort(self.blueInput)
@@ -229,6 +229,14 @@ class MultiplierView: ConstraintView {
         for layer in [self.redLayer, self.blueLayer, self.purpleLayer, self.redInput.layer, self.blueInput.layer, self.purpleOutput.layer] {
             self.layer.addSublayer(layer)
         }
+    }
+}
+
+// This is a hack because subclasses of MultiInputOutputConstraintView must also be generic, but can use a throwaway generic apparently
+typealias MultiplierView = MultiplierViewGeneric<AnyObject>
+class MultiplierViewGeneric<T>: MultiInputOutputConstraintView<Multiplier> {
+    init(multiplier: Multiplier) {
+        super.init(constraint: multiplier)
     }
     
     let mySize: CGFloat = 50.0
@@ -254,91 +262,10 @@ class MultiplierView: ConstraintView {
     }
 }
 
-
-class AdderView: ConstraintView {
-    let adder: Adder
-    
-    let redInput = InternalConnectorPort(color: UIColor.redColor(), isOutput: false)
-    let blueInput = InternalConnectorPort(color: UIColor.blueColor(), isOutput: false)
-    let purpleOutput = InternalConnectorPort(color: UIColor.purpleColor(), isOutput: true)
-    
-    override func connectorPorts() -> [ConnectorPort] {
-        return [redInput, blueInput, purpleOutput]
-    }
-    
-    func internalConnectorPorts() -> [InternalConnectorPort] {
-        return [redInput, blueInput, purpleOutput]
-    }
-    func connectorPortIsMine(port: ConnectorPort) -> Bool {
-        return port === redInput || port === blueInput || port === purpleOutput
-    }
-    
-    override func connectorPortForDragAtLocation(location: CGPoint) -> ConnectorPort? {
-        for internalPort in internalConnectorPorts() {
-            if euclidianDistanceSquared(internalPort.layer.position, location) < 400 {
-                return internalPort
-            }
-        }
-        return nil
-    }
-    
-    override func connectPort(port: ConnectorPort, connector: Connector) {
-        for internalPort in internalConnectorPorts() {
-            if internalPort === port {
-                if let oldConnector = internalPort.connector {
-                    if internalPort.isOutput {
-                        adder.removeOutput(oldConnector)
-                    } else {
-                        adder.removeInput(oldConnector)
-                    }
-                }
-                
-                if internalPort.isOutput {
-                    adder.addOutput(connector)
-                } else {
-                    adder.addInput(connector)
-                }
-                internalPort.connector = connector
-                
-                return
-            }
-        }
-    }
-    
-    override func removeConnectorAtPort(port: ConnectorPort) {
-        for internalPort in internalConnectorPorts() {
-            if internalPort === port {
-                addSentinelConnectorToPort(internalPort) // This will remove the old connector
-                return
-            }
-        }
-    }
-
+typealias AdderView = AdderViewGeneric<AnyObject>
+class AdderViewGeneric<T>: MultiInputOutputConstraintView<Adder> {
     init(adder: Adder) {
-        self.adder = adder
-        super.init(frame: CGRectZero)
-        multiplierViewInitialize()
-    }
-    
-    required override init(coder aDecoder: NSCoder) {
-        self.adder = Adder()
-        super.init(coder: aDecoder)
-        multiplierViewInitialize()
-    }
-    
-    let redLayer: CALayer = CALayer()
-    let blueLayer: CALayer = CALayer()
-    let purpleLayer: CALayer = CALayer()
-    private func multiplierViewInitialize() {
-        addSentinelConnectorToPort(self.redInput)
-        addSentinelConnectorToPort(self.blueInput)
-        addSentinelConnectorToPort(self.purpleOutput)
-        self.redLayer.backgroundColor = UIColor.redColor().CGColor
-        self.blueLayer.backgroundColor = UIColor.blueColor().CGColor
-        self.purpleLayer.backgroundColor = UIColor.purpleColor().CGColor
-        for layer in [self.redLayer, self.blueLayer, self.purpleLayer, self.redInput.layer, self.blueInput.layer, self.purpleOutput.layer] {
-            self.layer.addSublayer(layer)
-        }
+        super.init(constraint: adder)
     }
     
     let myWidth: CGFloat = 60.0

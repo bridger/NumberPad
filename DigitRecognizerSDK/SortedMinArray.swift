@@ -25,9 +25,7 @@ func insertionIndexOf<T>(array: [T], elem: T, isOrderedBefore: (T, T) -> Bool) -
     return lo // not found, would be inserted at position lo
 }
 
-public struct SortedMinArray<D: Comparable, T> {
-    typealias Value = D
-    typealias Element = T
+public struct SortedMinArray<Value: Comparable, Element> {
     typealias ValueTuple = (value: Value, element: Element)
     
     private var contents: [ValueTuple] = []
@@ -53,7 +51,7 @@ public struct SortedMinArray<D: Comparable, T> {
         }
     }
     
-    public mutating func add(value: D, element: Element) {
+    public mutating func add(value: Value, element: Element) {
         let hasRoom = contents.count < self.capacity
         
         if (hasRoom || (self.capacity > 0 && value < contents.last!.value)) {
