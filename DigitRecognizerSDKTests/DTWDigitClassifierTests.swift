@@ -27,8 +27,10 @@ class DTWDigitClassifierTests: XCTestCase {
         let digitClassifier = DTWDigitClassifier()
         let bundle = NSBundle(forClass: self.dynamicType)
         
-        let trainingJsonData = DTWDigitClassifier.jsonLibraryFromFile(bundle.pathForResource("bridger_train", ofType: "json")!)
+        var trainingJsonData = DTWDigitClassifier.jsonLibraryFromFile(bundle.pathForResource("bridger_train", ofType: "json")!)
         digitClassifier.loadData(trainingJsonData!, loadNormalizedData: false)
+//        trainingJsonData = DTWDigitClassifier.jsonLibraryFromFile(bundle.pathForResource("ujipenchars2", ofType: "json")!)
+//        digitClassifier.loadData(trainingJsonData!, loadNormalizedData: false)
         
         let testJsonData = DTWDigitClassifier.jsonLibraryFromFile(bundle.pathForResource("bridger_test", ofType: "json")!)
         let testData = DTWDigitClassifier.jsonToLibrary(testJsonData!["rawData"]!)
@@ -61,7 +63,7 @@ class DTWDigitClassifierTests: XCTestCase {
                         labelUnclassified += 1
                     } else {
                         misclassifieds.append(MisclassifiedRecord(testLabel: label, trainLabel: classification!.Label, testIndex: index, trainIndex: classification!.BestPrototypeIndex) )
-                        println("Misclassified \(label) as \(classification!.Label). Strokes \(testDigit.count) Indexes \(index) \(classification!.BestPrototypeIndex)")
+                        println("! Misclassified \(label) as \(classification!.Label). Strokes \(testDigit.count) Indexes \(index) \(classification!.BestPrototypeIndex)")
                         labelWrong += 1
                     }
                     index++

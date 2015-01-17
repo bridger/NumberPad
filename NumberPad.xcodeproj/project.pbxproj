@@ -42,6 +42,9 @@
 		AE890D111A68AB5B00E604C4 /* VisualizeCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE890D101A68AB5B00E604C4 /* VisualizeCollectionViewController.swift */; };
 		AE890D121A68D33F00E604C4 /* ujipenchars2_test.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD23B1A52785D007D1500 /* ujipenchars2_test.json */; };
 		AE890D131A68D33F00E604C4 /* ujipenchars2_train.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD23C1A52785D007D1500 /* ujipenchars2_train.json */; };
+		AE890D141A699A0400E604C4 /* bridger_test.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD2471A5494B7007D1500 /* bridger_test.json */; };
+		AE890D161A699E7E00E604C4 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE890D151A699E7E00E604C4 /* Utils.swift */; };
+		AE890D181A69DA0300E604C4 /* bridger_normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = AE890D171A69DA0300E604C4 /* bridger_normalized.json */; };
 		AEC9EEC01A3CDC4A002C7B08 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */; };
 		AEC9EEC21A3CDC4A002C7B08 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEC11A3CDC4A002C7B08 /* ViewController.swift */; };
 		AEC9EEC71A3CDC4A002C7B08 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AEC9EEC61A3CDC4A002C7B08 /* Images.xcassets */; };
@@ -142,6 +145,8 @@
 		AE890D0C1A65AFAE00E604C4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = "Base.lproj/Launch Screen.xib"; sourceTree = "<group>"; };
 		AE890D0E1A68970800E604C4 /* CGPoint+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGPoint+Extensions.swift"; sourceTree = "<group>"; };
 		AE890D101A68AB5B00E604C4 /* VisualizeCollectionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VisualizeCollectionViewController.swift; sourceTree = "<group>"; };
+		AE890D151A699E7E00E604C4 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		AE890D171A69DA0300E604C4 /* bridger_normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = bridger_normalized.json; sourceTree = "<group>"; };
 		AEC9EEBA1A3CDC4A002C7B08 /* NumberPad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NumberPad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC9EEBE1A3CDC4A002C7B08 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -243,6 +248,7 @@
 				AE3DD2401A537C0A007D1500 /* SortedMinArray.swift */,
 				AEC9EEDF1A3CEB3A002C7B08 /* StrokeGestureRecognizer.swift */,
 				AE890D0E1A68970800E604C4 /* CGPoint+Extensions.swift */,
+				AE890D151A699E7E00E604C4 /* Utils.swift */,
 				AE5554C51A5CBBF7007DCF1D /* DigitRecognizerSDK.h */,
 				AE5554C31A5CBBF7007DCF1D /* Supporting Files */,
 			);
@@ -323,6 +329,7 @@
 		AEC9EEBD1A3CDC4A002C7B08 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				AE890D171A69DA0300E604C4 /* bridger_normalized.json */,
 				AE3DD2471A5494B7007D1500 /* bridger_test.json */,
 				AE3DD2481A5494B7007D1500 /* bridger_train.json */,
 				AE3DD23B1A52785D007D1500 /* ujipenchars2_test.json */,
@@ -518,6 +525,7 @@
 				AE55546D1A5CB9D3007DCF1D /* Images.xcassets in Resources */,
 				AE5554F91A5CE08C007DCF1D /* Main.storyboard in Resources */,
 				AE890D121A68D33F00E604C4 /* ujipenchars2_test.json in Resources */,
+				AE890D141A699A0400E604C4 /* bridger_test.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -546,6 +554,7 @@
 			files = (
 				AEC9EEC71A3CDC4A002C7B08 /* Images.xcassets in Resources */,
 				AE5554EE1A5CBC6E007DCF1D /* bridger_train.json in Resources */,
+				AE890D181A69DA0300E604C4 /* bridger_normalized.json in Resources */,
 				AE5554F41A5CBC8B007DCF1D /* ujipenchars2.json in Resources */,
 				AE5554FC1A5CE0A5007DCF1D /* Main.storyboard in Resources */,
 				AE890D0D1A65AFAE00E604C4 /* Launch Screen.xib in Resources */,
@@ -576,6 +585,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AE890D161A699E7E00E604C4 /* Utils.swift in Sources */,
 				AE5554E11A5CBC19007DCF1D /* DTWDigitClassifier.swift in Sources */,
 				AE5554E51A5CBC31007DCF1D /* SortedMinArray.swift in Sources */,
 				AE890D0F1A68970800E604C4 /* CGPoint+Extensions.swift in Sources */,
@@ -715,7 +725,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_OPTIMIZATION_LEVEL = "-Ounchecked";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -735,7 +745,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_OPTIMIZATION_LEVEL = "-Ounchecked";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";

@@ -25,7 +25,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if let path = NSBundle.mainBundle().pathForResource("bridger_train", ofType: "json") {
             loadData(path)
         }
-        saveMisclassified()
+        //saveMisclassified()
         
         return true
     }
@@ -39,7 +39,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func saveData() {
-        let dataToSave = self.digitClassifier.dataToSave(true, saveNormalizedData: true)
+        var dataToSave = self.digitClassifier.dataToSave(true, saveNormalizedData: true)
         
         var saveNumber = 1
         if let lastSave = newestSavedData() {

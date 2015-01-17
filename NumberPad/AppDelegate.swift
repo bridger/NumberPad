@@ -21,7 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         self.rootViewController = window?.rootViewController as ViewController
         
-        if let path = NSBundle.mainBundle().pathForResource("bridger_train", ofType: "json") {
+        if let path = NSBundle.mainBundle().pathForResource("bridger_normalized", ofType: "json") {
             loadData(path)
         }
         return true

@@ -228,7 +228,7 @@ public class DTWDigitClassifier {
     
     public func loadData(jsonData: [String: JSONCompatibleLibrary], loadNormalizedData: Bool) {
         // Clear the existing library
-        self.normalizedPrototypeLibrary = [:]
+        //self.normalizedPrototypeLibrary = [:]
         self.rawPrototypeLibrary = [:]
         var loadedNormalizedData = false
         
@@ -276,22 +276,6 @@ public class DTWDigitClassifier {
         return result / CGFloat(sample.count)
     }
     
-    func hHalfMetricForPoints(indexA: Int, curveA: [CGPoint], indexB: Int, curveB: [CGPoint], neighborsRange: Int) -> CGFloat {
-        var totalDistance: CGFloat = 0
-        for neighbors in 1...neighborsRange {
-            let aVector = curveA[indexA - neighbors] + curveA[indexA + neighbors]
-            let bVector = curveB[indexB - neighbors] + curveB[indexB + neighbors]
-            
-            let difference = aVector - bVector
-            let differenceDistance = difference.length()
-            let windowScale: CGFloat = 1.0
-            totalDistance += differenceDistance * windowScale
-        }
-        //totalDistance += euclidianDistance(curveA[indexA], curveB[indexB])
-        
-        return totalDistance / CGFloat(neighborsRange)
-    }
-    
     func greedyDynamicTimeWarp(sample: [CGPoint], prototype: [CGPoint]) -> CGFloat {
         let minNeighborSize = 2
         let maxNeighborSize = 10
@@ -313,6 +297,22 @@ public class DTWDigitClassifier {
                 prototypeIndex, prototype.count - 1 - (prototypeIndex + 1),
                 maxNeighborSize)
         }
+        func hHalfMetricForPoints(sampleIndex: Int, prototypeIndex: Int, neighborsRange: Int) -> CGFloat {
+            var totalDistance: CGFloat = 0
+            for neighbors in 1...neighborsRange {
+                let aVector = sample[sampleIndex - neighbors] + sample[sampleIndex + neighbors]
+                let bVector = prototype[prototypeIndex - neighbors] + prototype[prototypeIndex + neighbors]
+                
+                let difference = aVector - bVector
+                let differenceDistance = difference.length()
+                let windowScale: CGFloat = 1.0
+                totalDistance += differenceDistance * windowScale
+            }
+            //totalDistance += euclidianDistance(curveA[indexA], curveB[indexB])
+            
+            return totalDistance / CGFloat(neighborsRange)
+        }
+        
         
         // Imagine that sample is the vertical axis, and prototype is the horizontal axis
         while sampleIndex + 1 < sample.count - minNeighborSize && prototypeIndex + 1 < prototype.count - minNeighborSize {
@@ -326,19 +326,16 @@ public class DTWDigitClassifier {
             // You can think of slope * CGFloat(prototypeIndex) as being the perfectly diagonal pairing
             var up = CGFloat.max
             if CGFloat(sampleIndex + 1) < slope * CGFloat(prototypeIndex) + windowWidth {
-                up = hHalfMetricForPoints(sampleIndex + 1, curveA: sample,
-                    indexB: prototypeIndex, curveB: prototype, neighborsRange: safeNeighborSize)
+                up = hHalfMetricForPoints(sampleIndex + 1, prototypeIndex, safeNeighborSize)
             }
             var right = CGFloat.max
             if CGFloat(sampleIndex) < slope * CGFloat(prototypeIndex + 1) + windowWidth {
-                right = hHalfMetricForPoints(sampleIndex, curveA: sample,
-                    indexB: prototypeIndex + 1, curveB: prototype, neighborsRange: safeNeighborSize)
+                right = hHalfMetricForPoints(sampleIndex, prototypeIndex + 1, safeNeighborSize)
             }
             var diagonal = CGFloat.max
             if (CGFloat(sampleIndex + 1) < slope * CGFloat(prototypeIndex + 1) + windowWidth &&
                 CGFloat(sampleIndex + 1) > slope * CGFloat(prototypeIndex + 1) - windowWidth) {
-                    diagonal = hHalfMetricForPoints(sampleIndex + 1, curveA: sample,
-                        indexB: prototypeIndex + 1, curveB: prototype, neighborsRange: safeNeighborSize)
+                    diagonal = hHalfMetricForPoints(sampleIndex + 1, prototypeIndex + 1, safeNeighborSize)
             }
             
             // TODO: The right is the least case is repeated twice. Any way to fix that?
@@ -375,16 +372,14 @@ public class DTWDigitClassifier {
             pathLength++;
             
             let safeNeighborSize = calculateSafeNeighborSize(sampleIndex, prototypeIndex)
-            result += hHalfMetricForPoints(sampleIndex, curveA: sample,
-                indexB: prototypeIndex, curveB: prototype, neighborsRange: safeNeighborSize)
+            result += hHalfMetricForPoints(sampleIndex, prototypeIndex, safeNeighborSize)
         }
         while prototypeIndex + 1 < prototype.count - minNeighborSize {
             prototypeIndex++
             pathLength++;
             
             let safeNeighborSize = calculateSafeNeighborSize(sampleIndex, prototypeIndex)
-            result += hHalfMetricForPoints(sampleIndex, curveA: sample,
-                indexB: prototypeIndex, curveB: prototype, neighborsRange: safeNeighborSize)
+            result += hHalfMetricForPoints(sampleIndex, prototypeIndex, safeNeighborSize)
         }
         
         return result / CGFloat(pathLength)
