@@ -356,6 +356,20 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                 case let .FromConnectorPort(constraintView, connectorPort):
                     if let connectorLabel = connectorLabelAtPoint(point) {
                         connectorEnds = (connectorLabel, constraintView, connectorPort)
+                    } else if let (secondConstraintView, secondConnectorPort) = connectorPortAtLocation(point) {
+                        // We are dragging from one constraint directly to another constraint. To accomodate, we create a connector in-between and make two connections
+                        let midPoint = (constraintView.center + secondConstraintView.center) / 2.0
+                        
+                        let newConnector = Connector()
+                        let newLabel = ConnectorLabel(connector: newConnector)
+                        newLabel.sizeToFit()
+                        newLabel.center = midPoint
+                        self.addConnectorLabel(newLabel, topPriority: false)
+                        
+                        // We make this connection now, and let the second connection be made by the common code further down
+                        secondConstraintView.connectPort(secondConnectorPort, connector: newConnector)
+                        
+                        connectorEnds = (newLabel, constraintView, connectorPort)
                     }
                 }
                 
