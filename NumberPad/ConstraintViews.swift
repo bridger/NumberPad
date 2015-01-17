@@ -144,8 +144,8 @@ class ConstraintView: UIView {
     }
 }
 
-class MultiInputOutputConstraintView<Constraint: MultiInputOutputConstraint>: ConstraintView {
-    let constraint: Constraint
+class MultiInputOutputConstraintView: ConstraintView {
+    let constraint: MultiInputOutputConstraint
     
     let redInput = InternalConnectorPort(color: UIColor.redColor(), isOutput: false)
     let blueInput = InternalConnectorPort(color: UIColor.blueColor(), isOutput: false)
@@ -203,22 +203,12 @@ class MultiInputOutputConstraintView<Constraint: MultiInputOutputConstraint>: Co
         }
     }
     
-    init(constraint: Constraint) {
-        self.constraint = constraint
-        super.init(frame: CGRectZero)
-        multiInputOutputConstraintViewInitialize()
-    }
-    
-    override init(coder aDecoder: NSCoder) {
-        self.constraint = Constraint()
-        super.init(coder: aDecoder)
-        multiInputOutputConstraintViewInitialize()
-    }
-    
     let redLayer: CALayer = CALayer()
     let blueLayer: CALayer = CALayer()
     let purpleLayer: CALayer = CALayer()
-    private func multiInputOutputConstraintViewInitialize() {
+    init(constraint: MultiInputOutputConstraint) {
+        self.constraint = constraint
+        super.init(frame: CGRectZero)
         self.layer.cornerRadius = 5
         addSentinelConnectorToPort(self.redInput)
         addSentinelConnectorToPort(self.blueInput)
@@ -230,12 +220,16 @@ class MultiInputOutputConstraintView<Constraint: MultiInputOutputConstraint>: Co
             self.layer.addSublayer(layer)
         }
     }
+    
+    override init(coder aDecoder: NSCoder) {
+        fatalError("Initializer not supported")
+    }
 }
 
-// This is a hack because subclasses of MultiInputOutputConstraintView must also be generic, but can use a throwaway generic apparently
-typealias MultiplierView = MultiplierViewGeneric<AnyObject>
-class MultiplierViewGeneric<T>: MultiInputOutputConstraintView<Multiplier> {
+class MultiplierView: MultiInputOutputConstraintView {
+    let multiplier: Multiplier
     init(multiplier: Multiplier) {
+        self.multiplier = multiplier
         super.init(constraint: multiplier)
     }
     
@@ -262,9 +256,10 @@ class MultiplierViewGeneric<T>: MultiInputOutputConstraintView<Multiplier> {
     }
 }
 
-typealias AdderView = AdderViewGeneric<AnyObject>
-class AdderViewGeneric<T>: MultiInputOutputConstraintView<Adder> {
+class AdderView: MultiInputOutputConstraintView {
+    let adder: Adder
     init(adder: Adder) {
+        self.adder = adder
         super.init(constraint: adder)
     }
     
