@@ -37,8 +37,9 @@ class Stroke {
     }
 }
 
-class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintViewDelegate {
+class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintViewDelegate, NumberSlideViewDelegate {
     var scrollView: UIScrollView!
+    var valuePicker: NumberSlideView!
     
     var strokeRecognizer: StrokeGestureRecognizer!
     var currentStroke: Stroke?
@@ -69,6 +70,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
     }
     func removeConnectorLabel(label: ConnectorLabel) {
         if let index = find(connectorLabels, label) {
+            if label == selectedConnectorLabel {
+                selectedConnectorLabel = nil
+            }
             connectorLabels.removeAtIndex(index)
             label.removeFromSuperview()
             connectorToLabel[label.connector] = nil
@@ -83,6 +87,18 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
             }
         } else {
             println("Cannot remove that label!")
+        }
+    }
+    var selectedConnectorLabel: ConnectorLabel? {
+        didSet {
+            if let connectorLabel = selectedConnectorLabel {
+                let value = connectorLabel.connector.value ?? 0.0
+                valuePicker.resetToValue( NSDecimalNumber(double: Double(value)) , scale: 0)
+                
+                valuePicker.hidden = false
+            } else {
+                valuePicker.hidden = true
+            }
         }
     }
     
@@ -147,11 +163,21 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
         let deleteRecognizer = UITapGestureRecognizer(target: self, action: "handleDelete:")
         deleteRecognizer.numberOfTouchesRequired = 2
         self.scrollView.addGestureRecognizer(deleteRecognizer)
+        
+        let selectRecognizer = UITapGestureRecognizer(target: self, action: "handleSelect:")
+        self.scrollView.addGestureRecognizer(selectRecognizer)
+        
+        let valuePickerHeight: CGFloat = 100.0
+        valuePicker = NumberSlideView(frame: CGRectMake(0, self.view.bounds.size.height - valuePickerHeight, self.view.bounds.size.width, valuePickerHeight))
+        valuePicker.delegate = self
+        self.view.addSubview(valuePicker)
+        self.selectedConnectorLabel = nil
     }
     
     func handleMove(recognizer: UILongPressGestureRecognizer) {
         let point = recognizer.locationInView(self.scrollView)
         
+        let pickedUpScale: CGFloat = 1.3
         switch recognizer.state {
         case .Began:
             var pickedUpView: UIView?
@@ -184,7 +210,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                     pickedUpView.layer.shadowOpacity = 0.4
                     pickedUpView.layer.shadowRadius = 10
                     pickedUpView.layer.shadowOffset = CGSizeMake(5, 5)
-                    pickedUpView.transform = CGAffineTransformMakeScale(1.3, 1.3)
                 }
                 self.rebuildAllConnectionLayers()
             }
@@ -197,7 +222,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                 case let .Constraint(constraintView, offset):
                     constraintView.center = point + offset
                 }
-                
+                layoutConstraintViews()
                 rebuildAllConnectionLayers()
             }
             
@@ -217,9 +242,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                     UIView.animateWithDuration(0.2) {
                         pickedUpView.layer.shadowColor = nil
                         pickedUpView.layer.shadowOpacity = 0
-                        pickedUpView.transform = CGAffineTransformIdentity
                     }
                 }
+                layoutConstraintViews()
                 rebuildAllConnectionLayers()
                 updateScrollableSize()
                 self.currentDrag = nil
@@ -232,28 +257,30 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
     func handleDelete(recognizer: UITapGestureRecognizer) {
         let point = recognizer.locationInView(self.scrollView)
         var deletedSomething = false
-        for connectorLabel in self.connectorLabels {
-            if CGRectContainsPoint(connectorLabel.frame, point) {
-                // Delete this connector!
-                removeConnectorLabel(connectorLabel)
-                deletedSomething = true
-                break
-            }
+        if let connectorLabel = self.connectorLabelAtPoint(point) {
+            // Delete this connector!
+            removeConnectorLabel(connectorLabel)
+            deletedSomething = true
         }
         if deletedSomething == false {
-            for constraintView in self.constraintViews {
-                if CGRectContainsPoint(constraintView.frame, point) {
-                    // Delete this constraint!
-                    removeConstraintView(constraintView)
-                    deletedSomething = true
-                    break
-                }
+            if let constraintView = self.constraintViewAtPoint(point) {
+                // Delete this constraint!
+                removeConstraintView(constraintView)
+                deletedSomething = true
             }
         }
         
         if deletedSomething {
             runSolver([:])
+            layoutConstraintViews()
             rebuildAllConnectionLayers()
+        }
+    }
+    
+    func handleSelect(recognizer: UITapGestureRecognizer) {
+        let point = recognizer.locationInView(self.scrollView)
+        if let connectorLabel = self.connectorLabelAtPoint(point) {
+            self.selectedConnectorLabel = connectorLabel
         }
     }
     
@@ -383,6 +410,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                     } else {
                         runSolver([:])
                     }
+                    layoutConstraintViews()
                     rebuildAllConnectionLayers()
                 }
                 
@@ -515,13 +543,31 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
             
             let distance: CGFloat = 80 + max(constraintView.bounds.width, constraintView.bounds.height)
             // If the connectorPort is at the bottom-right, then we want to place it distance points off to the bottom-right
-            let constraintMiddle = CGPointMake(CGRectGetMidX(constraintView.bounds), CGRectGetMidY(constraintView.bounds))
-            let displacement = connectorPort.center - constraintMiddle
+            let constraintMiddle = constraintView.bounds.center()
+            let displacement = connectorPort.center - constraintView.bounds.center()
             let newDisplacement = displacement * (distance / displacement.length())
             
             let newPoint = self.scrollView.convertPoint(newDisplacement + constraintMiddle, fromView: constraintView)
             newLabel.center = newPoint
             addConnectorLabel(newLabel, topPriority: false)
+        }
+    }
+    
+    func numberSlideView(NumberSlideView, didSelectNewValue newValue: NSDecimalNumber) {
+        if let selectedConnectorLabel = self.selectedConnectorLabel {
+            moveConnectorToTopPriority(selectedConnectorLabel)
+            
+            runSolver([selectedConnectorLabel.connector : newValue.doubleValue])
+        }
+    }
+    
+    func layoutConstraintViews() {
+        var connectorPositions: [Connector: CGPoint] = [:]
+        for connectorLabel in connectorLabels {
+            connectorPositions[connectorLabel.connector] = connectorLabel.center
+        }
+        for constraintView in constraintViews {
+            constraintView.layoutWithConnectorPositions(connectorPositions)
         }
     }
     

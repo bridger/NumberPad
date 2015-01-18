@@ -8,6 +8,42 @@
 
 import UIKit
 
+// I put this here because it really benefits from compiler optimization
+public func optimizeAngles(angles: [(ChangeableAngle: CGFloat, TargetAngle: CGFloat)]) -> (Angle: CGFloat, FlipVertically: Bool) {
+    
+    if angles.count == 0 {
+        return (0, false)
+    } else {
+        var minError: Double?
+        var minAngle: CGFloat = 0
+        var minFlip: Bool = false
+        let angleStep: CGFloat = CGFloat(2 * M_PI) / 270.0
+        
+        // We don't flip if there is only one angle to optimize
+        var possibleFlips = angles.count > 1 ? [false, true] : [false]
+        
+        for flip in possibleFlips {
+            for var testAngle: CGFloat = 0; testAngle < CGFloat(2 * M_PI); testAngle += angleStep {
+                
+                var error: Double = 0.0
+                for angleSet in angles {
+                    let angleDifference = (flip
+                        ? -angleSet.ChangeableAngle - angleSet.TargetAngle
+                        :  angleSet.ChangeableAngle - angleSet.TargetAngle)
+                    error += 1.0 - cos(Double(testAngle + angleDifference))
+                }
+                if minError == nil || error < minError! {
+                    minError = error
+                    minAngle = flip ? -testAngle : testAngle
+                    minFlip = flip
+                }
+            }
+        }
+        
+        return (minAngle, minFlip)
+    }
+}
+
 
 public func visualizeNormalizedStrokes(strokes: DTWDigitClassifier.DigitStrokes, imageSize: CGSize) -> UIImage {
     

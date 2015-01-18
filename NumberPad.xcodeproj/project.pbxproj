@@ -49,6 +49,7 @@
 		AEC9EEC21A3CDC4A002C7B08 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEC11A3CDC4A002C7B08 /* ViewController.swift */; };
 		AEC9EEC71A3CDC4A002C7B08 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AEC9EEC61A3CDC4A002C7B08 /* Images.xcassets */; };
 		AEC9EED61A3CDC4A002C7B08 /* NumberPadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EED51A3CDC4A002C7B08 /* NumberPadTests.swift */; };
+		AECB34FC1A6B1F460034A2AB /* NumberSlideView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AECB34FB1A6B1F460034A2AB /* NumberSlideView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -156,9 +157,8 @@
 		AEC9EED41A3CDC4A002C7B08 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AEC9EED51A3CDC4A002C7B08 /* NumberPadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberPadTests.swift; sourceTree = "<group>"; };
 		AEC9EEDF1A3CEB3A002C7B08 /* StrokeGestureRecognizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StrokeGestureRecognizer.swift; sourceTree = "<group>"; };
-		AEC9EEE21A3CEC7F002C7B08 /* NumberPad-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NumberPad-Bridging-Header.h"; sourceTree = "<group>"; };
-		AEC9EEFE1A3F87F0002C7B08 /* BitmapDigitClassier.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = BitmapDigitClassier.mm; sourceTree = "<group>"; };
-		AEC9EF001A3F880A002C7B08 /* BitmapDigitClassifier.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BitmapDigitClassifier.h; sourceTree = "<group>"; };
+		AECB34F31A6AEC540034A2AB /* NumberPad-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NumberPad-Bridging-Header.h"; sourceTree = "<group>"; };
+		AECB34FB1A6B1F460034A2AB /* NumberSlideView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NumberSlideView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -315,13 +315,12 @@
 				AE064B6A1A64679200A10381 /* Constraints.swift */,
 				AE064B6D1A646A6300A10381 /* ConstraintViews.swift */,
 				AE064B6F1A646FB200A10381 /* Utils.swift */,
-				AEC9EF001A3F880A002C7B08 /* BitmapDigitClassifier.h */,
-				AEC9EEFE1A3F87F0002C7B08 /* BitmapDigitClassier.mm */,
+				AECB34FB1A6B1F460034A2AB /* NumberSlideView.swift */,
 				AE5554FA1A5CE0A5007DCF1D /* Main.storyboard */,
 				AE890D0B1A65AFAE00E604C4 /* Launch Screen.xib */,
 				AEC9EEC61A3CDC4A002C7B08 /* Images.xcassets */,
 				AEC9EEBD1A3CDC4A002C7B08 /* Supporting Files */,
-				AEC9EEE21A3CEC7F002C7B08 /* NumberPad-Bridging-Header.h */,
+				AECB34F31A6AEC540034A2AB /* NumberPad-Bridging-Header.h */,
 			);
 			path = NumberPad;
 			sourceTree = "<group>";
@@ -610,6 +609,7 @@
 				AE064B701A646FB200A10381 /* Utils.swift in Sources */,
 				AEC9EEC21A3CDC4A002C7B08 /* ViewController.swift in Sources */,
 				AE064B6B1A64679200A10381 /* Constraints.swift in Sources */,
+				AECB34FC1A6B1F460034A2AB /* NumberSlideView.swift in Sources */,
 				AEC9EEC01A3CDC4A002C7B08 /* AppDelegate.swift in Sources */,
 				AE064B6E1A646A6300A10381 /* ConstraintViews.swift in Sources */,
 			);
@@ -725,7 +725,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_OPTIMIZATION_LEVEL = "-Ounchecked";
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -745,7 +745,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_OPTIMIZATION_LEVEL = "-Ounchecked";
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -872,6 +872,7 @@
 				INFOPLIST_FILE = NumberPad/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "NumberPad/NumberPad-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -884,6 +885,7 @@
 				INFOPLIST_FILE = NumberPad/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "NumberPad/NumberPad-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

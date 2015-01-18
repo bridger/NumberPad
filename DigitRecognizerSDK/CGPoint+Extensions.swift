@@ -243,3 +243,13 @@ public func /= (inout left: CGPoint, right: CGVector) {
 public func lerp(#start: CGPoint, #end: CGPoint, #t: CGFloat) -> CGPoint {
   return start + (end - start) * t
 }
+
+public extension CGRect {
+    /**
+    * Returns a point in the center of this rect
+    */
+    public func center() -> CGPoint {
+        return CGPointMake(CGRectGetMidX(self), CGRectGetMidY(self))
+    }
+}
+

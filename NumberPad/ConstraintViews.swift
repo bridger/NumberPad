@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import DigitRecognizerSDK
 
 // Views that contain and draw Connector, Adder, or Multiplier. Their center stays the same, but otherwise they can rotate and resize to fit
 
@@ -224,6 +225,30 @@ class MultiInputOutputConstraintView: ConstraintView {
     override init(coder aDecoder: NSCoder) {
         fatalError("Initializer not supported")
     }
+    
+    
+    
+    override func layoutWithConnectorPositions(positions: [Connector: CGPoint]) {
+        // Subclasses should have overriden this method, layed out the connectors, then called super
+        
+        var angles: [(ChangeableAngle: CGFloat, TargetAngle: CGFloat)] = []
+        var flippedPortAngles: [CGFloat] = []
+        for internalConnector in self.internalConnectorPorts() {
+            if let connector = internalConnector.connector {
+                if let position = positions[connector] {
+                    let portAngle = (internalConnector.center - self.bounds.center()).angle
+                    let connectorAngle = (position - self.center).angle
+                    
+                    angles.append((ChangeableAngle: portAngle, TargetAngle: connectorAngle))
+                }
+            }
+        }
+        
+        let (idealAngle, idealFlip) = optimizeAngles(angles)
+        let baseTransform = idealFlip ? CGAffineTransformMakeScale(1, -1) : CGAffineTransformIdentity
+        self.transform = CGAffineTransformRotate(baseTransform, idealAngle)
+    }
+    
 }
 
 class MultiplierView: MultiInputOutputConstraintView {
@@ -249,6 +274,8 @@ class MultiplierView: MultiInputOutputConstraintView {
         self.redInput.layer.position = CGPointMake(barSize / 2.0, purpleSquareSize / 2.0 + marginSpace)
         self.blueInput.layer.position = CGPointMake(purpleSquareSize / 2.0 + marginSpace, barSize / 2.0)
         self.purpleOutput.layer.position = CGPointMake(mySize, mySize)
+        
+        super.layoutWithConnectorPositions(positions)
     }
     
     override func sizeThatFits(size: CGSize) -> CGSize {
@@ -275,6 +302,8 @@ class AdderView: MultiInputOutputConstraintView {
         self.redLayer.frame = CGRectMake(0, 0, myWidth / 2.0, barHeight)
         self.blueLayer.frame = CGRectMake(myWidth / 2.0, 0, myWidth / 2.0, barHeight)
         self.purpleLayer.frame = CGRectMake(0, barHeight + spacing, myWidth, barHeight)
+        
+        super.layoutWithConnectorPositions(positions)
     }
     
     override func sizeThatFits(size: CGSize) -> CGSize {
