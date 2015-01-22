@@ -403,7 +403,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                 if let (connectorLabel, constraintView, connectorPort) = connectorEnds {
                     let savedValue = connectorLabel.connector.value
                     connectorLabel.connector.forgetValue()
-                    moveConnectorToTopPriority(connectorLabel) // Is this actually a good idea? When you drag a connector to a constraint, do you expect that connector to influence the constraint, or the other way around?
                     constraintView.connectPort(connectorPort, connector: connectorLabel.connector)
                     if let savedValue = savedValue {
                         runSolver([connectorLabel.connector : savedValue])
@@ -538,6 +537,11 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
         // This is called when a constraint makes a connector on it's own. For example, if you set two inputs on a multiplier then it will resolve the output automatically. We need to add a view for it and display it
         // This is called during runSolver, so we need to be careful about what we mutate
         if let newConnector = connectorPort.connector {
+            if let connector = connectorToLabel[newConnector] {
+                // This was a ? connector that is alredy a view. Great
+                return
+            }
+            
             let newLabel = ConnectorLabel(connector: newConnector)
             newLabel.sizeToFit()
             
@@ -555,8 +559,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
     
     func numberSlideView(NumberSlideView, didSelectNewValue newValue: NSDecimalNumber) {
         if let selectedConnectorLabel = self.selectedConnectorLabel {
-            moveConnectorToTopPriority(selectedConnectorLabel)
-            
             runSolver([selectedConnectorLabel.connector : newValue.doubleValue])
         }
     }
@@ -607,6 +609,11 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                 }
                 connector.forgetValue()
             }
+        }
+        
+        // These are the first priority
+        for (connector, value) in values {
+            connector.setValue(value, informant: nil)
         }
         
         // We loop through connectorLabels like this, because it can mutate during the simulation, if a constraint "resolves a port"
