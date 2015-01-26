@@ -163,6 +163,13 @@ class MultiInputOutputConstraintView: ConstraintView {
         return port === redInput || port === blueInput || port === purpleOutput
     }
     
+    func inputConnectorPorts() -> [ConnectorPort] {
+        return [redInput, blueInput]
+    }
+    func outputConnectorPorts() -> [ConnectorPort] {
+        return [purpleOutput]
+    }
+    
     override func connectorPortForDragAtLocation(location: CGPoint) -> ConnectorPort? {
         for internalPort in internalConnectorPorts() {
             if euclidianDistanceSquared(internalPort.layer.position, location) < 400 {

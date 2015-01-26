@@ -57,6 +57,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
         connectorToLabel[label.connector] = label
         self.scrollView.addSubview(label)
         updateScrollableSize()
+        
+        self.lastDrawnConnector = label
+        if let (lastConstraint, inputPort) = self.lastDrawnConstraint {
+            lastConstraint.connectPort(inputPort, connector: label.connector)
+        }
+        self.lastDrawnConstraint = nil
     }
     func moveConnectorToTopPriority(connectorLabel: ConnectorLabel) {
         if let index = find(connectorLabels, connectorLabel) {
@@ -85,6 +91,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                     }
                 }
             }
+            if self.lastDrawnConnector == label {
+                self.lastDrawnConnector = nil
+            }
         } else {
             println("Cannot remove that label!")
         }
@@ -103,11 +112,23 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
     }
     
     var constraintViews: [ConstraintView] = []
-    func addConstraintView(constraintView: ConstraintView) {
+    func addConstraintView(constraintView: ConstraintView, firstInputPort: ConnectorPort?, secondInputPort: ConnectorPort?) {
         constraintViews.append(constraintView)
         constraintView.delegate = self
         self.scrollView.addSubview(constraintView)
         updateScrollableSize()
+        
+        if let secondInputPort = secondInputPort {
+            self.lastDrawnConstraint = (constraintView, secondInputPort)
+        } else {
+            self.lastDrawnConstraint = nil
+        }
+        if let firstInputPort = firstInputPort {
+            if let lastDrawnConnector = self.lastDrawnConnector {
+                constraintView.connectPort(firstInputPort, connector: lastDrawnConnector.connector)
+            }
+        }
+        self.lastDrawnConnector = nil
     }
     func removeConstraintView(constraintView: ConstraintView) {
         if let index = find(constraintViews, constraintView) {
@@ -130,6 +151,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
     }
     var currentDrawingConnection: DrawConnectionInfo?
     var currentDrawConnectionLine: CAShapeLayer?
+    
+    // For automatically hooking up drawn symbols
+    var lastDrawnConnector: ConnectorLabel?
+    var lastDrawnConstraint: (ConstraintView, ConnectorPort)?
     
     // For dragging views around
     enum DragViewInfo {
@@ -493,6 +518,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                     
                     // TODO: Try to actually parse out an equation, instead of just one component
                     let combinedLabels = classifiedLabels.reduce("", +)
+                    var recognized = false
                     if let writtenNumber = combinedLabels.toInt() {
                         // We recognized a number!
                         let newConnector = Connector()
@@ -501,6 +527,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                         newLabel.center = centerPoint
                         self.addConnectorLabel(newLabel, topPriority: true)
                         
+                        recognized = true
                         self.runSolver([newConnector: Double(writtenNumber)])
                         
                     } else if combinedLabels == "x" || combinedLabels == "/" {
@@ -509,7 +536,15 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                         let newView = MultiplierView(multiplier: newMultiplier)
                         newView.layoutWithConnectorPositions([:])
                         newView.center = centerPoint
-                        self.addConstraintView(newView)
+                        if combinedLabels == "x" {
+                            let inputs = newView.inputConnectorPorts()
+                            self.addConstraintView(newView, firstInputPort: inputs[0], secondInputPort: inputs[1])
+                        } else if combinedLabels == "/" {
+                            self.addConstraintView(newView, firstInputPort: newView.outputConnectorPorts()[0], secondInputPort: newView.inputConnectorPorts()[0])
+                        } else {
+                            self.addConstraintView(newView, firstInputPort: nil, secondInputPort: nil)
+                        }
+                        recognized = true
                         
                     } else if combinedLabels == "+" || combinedLabels == "-" || combinedLabels == "1-" { // The last is a hack for a common misclassification
                         // We recognized an add or subtract!
@@ -517,10 +552,22 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                         let newView = AdderView(adder: newAdder)
                         newView.layoutWithConnectorPositions([:])
                         newView.center = centerPoint
-                        self.addConstraintView(newView)
+                        if combinedLabels == "+" || combinedLabels == "1-" {
+                            let inputs = newView.inputConnectorPorts()
+                            self.addConstraintView(newView, firstInputPort: inputs[0], secondInputPort: inputs[1])
+                        } else if combinedLabels == "-" {
+                            self.addConstraintView(newView, firstInputPort: newView.outputConnectorPorts()[0], secondInputPort: newView.inputConnectorPorts()[0])
+                        } else {
+                            self.addConstraintView(newView, firstInputPort: nil, secondInputPort: nil)
+                        }
+                        recognized = true
                         
                     } else {
                         println("Unable to parse written text: \(combinedLabels)")
+                    }
+                    if recognized {
+                        self.layoutConstraintViews()
+                        self.rebuildAllConnectionLayers()
                     }
                 } else {
                     println("Unable to recognize all \(allStrokes.count) strokes")
