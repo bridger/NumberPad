@@ -127,7 +127,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 }
                 connectorLabel.isSelected = true
                 let value = self.lastValueForConnector(connectorLabel.connector) ?? 0.0
-                valuePicker.resetToValue( NSDecimalNumber(double: Double(value)) , scale: 0)
+                var scale: Int16 = 0
+                if abs(value) < 2 {
+                    scale = -1
+                } else if abs(value) >= 100 {
+                    scale = 1
+                }
+                valuePicker.resetToValue( NSDecimalNumber(double: Double(value)) , scale: scale)
                 
                 updateDisplay(needsSolving: true)
                 

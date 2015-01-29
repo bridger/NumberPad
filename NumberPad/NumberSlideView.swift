@@ -173,11 +173,12 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
             // to kick off the tiling we need to make sure there's at least one label
             if visibleLabels.count == 0 {
                 // We need to add the first label! If we have a valueAnchor at 60.6 and a scale of 0, then we would place a label of 60 at (60% * spacing) to the left of the anchor.
-                let labelRoundBehavior = NSDecimalNumberHandler(roundingMode: .RoundDown, scale: scale, raiseOnExactness: false, raiseOnOverflow: false, raiseOnUnderflow: false, raiseOnDivideByZero: false)
-                let labelValue = valueAnchor.Value.decimalNumberByRoundingAccordingToBehavior(labelRoundBehavior)
+                let labelRoundBehavior = NSDecimalNumberHandler(roundingMode: .RoundDown, scale: -scale, raiseOnExactness: false, raiseOnOverflow: false, raiseOnUnderflow: false, raiseOnDivideByZero: false)
+                let closestLabelValue = valueAnchor.Value.decimalNumberByRoundingAccordingToBehavior(labelRoundBehavior)
                 
-                let offset = CGFloat(labelValue.doubleValue - valueAnchor.Value.doubleValue) * spacingBetweenLabels
-                let label = addLabelCenteredAt(labelValue, centerX: valueAnchor.Offset + offset)
+                let valueDifference = (closestLabelValue.doubleValue - valueAnchor.Value.doubleValue)
+                let offset = CGFloat(valueDifference / valueBetweenLabels.doubleValue) * spacingBetweenLabels
+                let label = addLabelCenteredAt(closestLabelValue, centerX: valueAnchor.Offset + offset)
                 visibleLabels.append(label)
             }
             

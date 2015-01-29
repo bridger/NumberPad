@@ -55,7 +55,7 @@ class ConnectorLabel: UILabel {
         self.sizeThatFits(CGSizeZero)
         if let value = value {
             if abs(value) < 2 {
-                self.text = String(format: "%.3f", value)
+                self.text = String(format: "%.2f", value)
             } else if abs(value) < 100 {
                 self.text = String(format: "%.1f", value)
             } else {
