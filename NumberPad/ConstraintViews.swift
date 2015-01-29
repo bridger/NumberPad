@@ -28,16 +28,31 @@ class ConnectorLabel: UILabel {
         connectorLabelInitialize()
     }
     
+    let borderWidth: CGFloat = 12
     private func connectorLabelInitialize() {
         self.font = UIFont.boldSystemFontOfSize(22)
-        self.layer.borderWidth = 3
+        self.layer.borderWidth = borderWidth
+        self.layer.cornerRadius = borderWidth + 8
         self.textAlignment = .Center
+        self.layer.borderColor = UIColor.lightGrayColor().CGColor
+        self.layer.masksToBounds = true
+    }
+    
+    var isSelected: Bool = false {
+        didSet {
+            if self.isSelected {
+                self.backgroundColor = UIColor.darkGrayColor()
+                self.textColor = UIColor.whiteColor()
+            } else {
+                self.backgroundColor = UIColor.whiteColor()
+                self.textColor = UIColor.grayColor()
+            }
+        }
     }
     
     // Returns whether it changed size
     func displayValue(value: Double?) -> Bool {
-
-        var color: UIColor = UIColor.blackColor()
+        self.sizeThatFits(CGSizeZero)
         if let value = value {
             if abs(value) < 2 {
                 self.text = String(format: "%.3f", value)
@@ -48,10 +63,7 @@ class ConnectorLabel: UILabel {
             }
         } else {
             self.text = "?"
-            color = UIColor.redColor()
         }
-        self.layer.borderColor = color.CGColor
-        self.textColor = color
         
         let center = self.center
         let size = self.bounds.size
@@ -65,8 +77,8 @@ class ConnectorLabel: UILabel {
     
     override func sizeThatFits(size: CGSize) -> CGSize {
         var newSize = super.sizeThatFits(size)
-        newSize.width += 15.0
-        newSize.height += 15.0
+        newSize.width += 30.0 + borderWidth
+        newSize.height += 25.0 + borderWidth
         return newSize
     }
 }

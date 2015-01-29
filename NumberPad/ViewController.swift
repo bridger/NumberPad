@@ -59,7 +59,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             connectorLabels.append(label)
         }
         connectorToLabel[label.connector] = label
-        label.backgroundColor = deselectedConnectorLabelBackground
+        label.isSelected = false
         self.scrollView.addSubview(label)
         label.layer.zPosition = connectorZPosition
         updateScrollableSize()
@@ -119,14 +119,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             println("Cannot remove that label!")
         }
     }
-    let deselectedConnectorLabelBackground = UIColor(white: 0.9, alpha: 1.0)
     var selectedConnectorLabel: ConnectorLabel? {
         didSet {
             if let connectorLabel = selectedConnectorLabel {
                 if let oldConnectorLabel = oldValue {
-                    oldConnectorLabel.backgroundColor = deselectedConnectorLabelBackground
+                    oldConnectorLabel.isSelected = false
                 }
-                connectorLabel.backgroundColor = UIColor.whiteColor()
+                connectorLabel.isSelected = true
                 let value = self.lastValueForConnector(connectorLabel.connector) ?? 0.0
                 valuePicker.resetToValue( NSDecimalNumber(double: Double(value)) , scale: 0)
                 

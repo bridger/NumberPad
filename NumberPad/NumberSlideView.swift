@@ -63,7 +63,7 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
     let scrollingContentContainer = UIView()
     let centerMarker = UIView()
     func setup() {
-        self.backgroundColor = UIColor(red: 209.0/255.0, green: 214.0/255.0, blue: 219.0/255.0, alpha: 1.0)
+        self.backgroundColor = UIColor.darkGrayColor()
         centerMarker.backgroundColor = UIColor.redColor()
         self.addSubview(centerMarker)
         
@@ -234,6 +234,7 @@ class NumberLabel: UILabel {
         self.number = number
         super.init(frame: CGRectZero)
         self.text = number.description
+        self.textColor = UIColor.whiteColor()
     }
 
     required init(coder aDecoder: NSCoder) {
