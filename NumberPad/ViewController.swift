@@ -85,6 +85,16 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             println("Tried to move connector to top priority, but couldn't find it!")
         }
     }
+    func moveConnectorToBottomPriority(connectorLabel: ConnectorLabel) {
+        if let index = find(connectorLabels, connectorLabel) {
+            if index != connectorLabels.count - 1 {
+                connectorLabels.removeAtIndex(index)
+                connectorLabels.append(connectorLabel)
+            }
+        } else {
+            println("Tried to move connector to bottom priority, but couldn't find it!")
+        }
+    }
     func removeConnectorLabel(label: ConnectorLabel) {
         if let index = find(connectorLabels, label) {
             if label == selectedConnectorLabel {
@@ -222,6 +232,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         let valuePickerHeight: CGFloat = 100.0
         valuePicker = NumberSlideView(frame: CGRectMake(0, self.view.bounds.size.height - valuePickerHeight, self.view.bounds.size.width, valuePickerHeight))
         valuePicker.delegate = self
+        valuePicker.autoresizingMask = .FlexibleWidth | .FlexibleTopMargin
         self.view.addSubview(valuePicker)
         self.selectedConnectorLabel = nil
     }
@@ -329,6 +340,20 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         let point = recognizer.locationInView(self.scrollView)
         if let connectorLabel = self.connectorLabelAtPoint(point) {
             self.selectedConnectorLabel = connectorLabel
+        } else if let (connectorLabel, constraintView, connectorPort) = self.connectionLineAtPoint(point) {
+            let lastValue = self.lastValueForConnector(connectorLabel.connector)
+            let lastValueWasDependent = self.lastValueWasDependentForConnector(connectorLabel.connector)
+            
+            if (lastValueWasDependent != nil && lastValueWasDependent!) {
+                // Try to make this connector high priority, so it is constant instead of dependent
+                moveConnectorToTopPriority(connectorLabel)
+            } else {
+                // Lower the priority of this connector, so it will be dependent
+                moveConnectorToBottomPriority(connectorLabel)
+            }
+            updateDisplay(needsSolving: true)
+            
+            println("Tapped connectorLabel \(lastValue) \(lastValueWasDependent)")
         }
     }
     
@@ -496,6 +521,36 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             }
         }
         return nil
+    }
+    
+    func connectionLineAtPoint(point: CGPoint) -> (ConnectorLabel: ConnectorLabel, ConstraintView: ConstraintView, ConnectorPort: ConnectorPort)? {
+        // This is a hit-test to see if the user has tapped on a line between a connector and a connectorPort.
+        let distanceCutoff: CGFloat = 10
+        let squaredDistanceCutoff = distanceCutoff * distanceCutoff
+        
+        var minSquaredDistance: CGFloat?
+        var minMatch: (ConnectorLabel, ConstraintView, ConnectorPort)?
+        for constraintView in constraintViews {
+            for connectorPort in constraintView.connectorPorts() {
+                if let connector = connectorPort.connector {
+                    if let connectorLabel = connectorToLabel[connector] {
+                        let connectorPoint = self.scrollView.convertPoint(connectorPort.center, fromView: constraintView)
+                        let labelPoint = connectorLabel.center
+                        
+                        let squaredDistance = shortestDistanceSquaredToLineSegmentFromPoint(connectorPoint, labelPoint, point)
+                        if squaredDistance < squaredDistanceCutoff {
+                            if minSquaredDistance == nil || squaredDistance < minSquaredDistance! {
+                                println("Found elligible distance of \(sqrt(squaredDistance))")
+                                minMatch = (connectorLabel, constraintView, connectorPort)
+                                minSquaredDistance = squaredDistance
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return minMatch
     }
     
     func processStrokes() {
@@ -695,11 +750,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 
                 if let label = self.connectorToLabel[connector] {
                     label.displayValue(resolvedValue.DoubleValue)
-                    if resolvedValue.WasDependent {
-                        label.layer.borderColor = UIColor.lightGrayColor().CGColor
-                    } else {
-                        label.layer.borderColor = UIColor.blackColor().CGColor
-                    }
                     if label.isDependent != resolvedValue.WasDependent {
                         self.needsRebuildConnectionLayers = true
                         label.isDependent = resolvedValue.WasDependent

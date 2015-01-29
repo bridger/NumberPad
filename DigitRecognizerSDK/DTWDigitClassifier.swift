@@ -33,8 +33,9 @@ public class DTWDigitClassifier {
     
     public func learnDigit(label: DigitLabel, digit: DigitStrokes) {
         addToLibrary(&self.rawPrototypeLibrary, label: label, digit: digit)
-        let normalizedDigit = normalizeDigit(digit)
-        addToLibrary(&self.normalizedPrototypeLibrary, label: label, digit: normalizedDigit)
+        if let normalizedDigit = normalizeDigit(digit) {
+            addToLibrary(&self.normalizedPrototypeLibrary, label: label, digit: normalizedDigit)
+        }
     }
     
     
@@ -112,58 +113,62 @@ public class DTWDigitClassifier {
     // Can be called from the background
     public typealias Classification = (Label: DigitLabel, Confidence: CGFloat, BestPrototypeIndex: Int)
     public func classifyDigit(digit: DigitStrokes, votesCounted: Int = 5, scoreCutoff: CGFloat = 0.8) -> Classification? {
-        let normalizedDigit = normalizeDigit(digit)
-        
-        let serviceGroup = dispatch_group_create()
-        let queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0)
-        let serialResultsQueue = dispatch_queue_create("collect_results", nil)
-        
-        var bestMatches = SortedMinArray<CGFloat, (DigitLabel, Int)>(capacity: votesCounted)
-        for (label, prototypes) in self.normalizedPrototypeLibrary {
+        if let normalizedDigit = normalizeDigit(digit) {
+            let serviceGroup = dispatch_group_create()
+            let queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0)
+            let serialResultsQueue = dispatch_queue_create("collect_results", nil)
             
-            dispatch_group_async(serviceGroup, queue) {
-                var localBestMatches = SortedMinArray<CGFloat, (DigitLabel, Int)>(capacity: votesCounted)
-                var index = 0
-                for prototype in prototypes {
-                    if prototype.count == digit.count {
-                        let score = self.classificationScore(normalizedDigit, prototype: prototype)
-                        //if score < scoreCutoff {
+            var bestMatches = SortedMinArray<CGFloat, (DigitLabel, Int)>(capacity: votesCounted)
+            for (label, prototypes) in self.normalizedPrototypeLibrary {
+                
+                dispatch_group_async(serviceGroup, queue) {
+                    var localBestMatches = SortedMinArray<CGFloat, (DigitLabel, Int)>(capacity: votesCounted)
+                    var index = 0
+                    for prototype in prototypes {
+                        if prototype.count == digit.count {
+                            let score = self.classificationScore(normalizedDigit, prototype: prototype)
+                            //if score < scoreCutoff {
                             localBestMatches.add(score, element: (label, index))
-                        //}
+                            //}
+                        }
+                        index++
                     }
-                    index++
-                }
-                dispatch_group_async(serviceGroup, serialResultsQueue) {
-                    for (score, bestMatch) in localBestMatches {
-                        bestMatches.add(score, element: bestMatch)
+                    dispatch_group_async(serviceGroup, serialResultsQueue) {
+                        for (score, bestMatch) in localBestMatches {
+                            bestMatches.add(score, element: bestMatch)
+                        }
                     }
                 }
             }
-        }
-        
-        // Wait for all results
-        dispatch_group_wait(serviceGroup, DISPATCH_TIME_FOREVER);
-        
-        var votes: [DigitLabel: Int] = [:]
-        for (score, (label, index)) in bestMatches {
-            votes[label] = (votes[label] ?? 0) + 1
-        }
-        
-        var maxVotes: Int?
-        var maxVotedLabel: DigitLabel?
-        for (label, labelVotes) in votes {
-            if maxVotes == nil || labelVotes > maxVotes! {
-                maxVotedLabel = label
-                maxVotes = labelVotes
-            }
-        }
-        if let maxVotedLabel = maxVotedLabel {
+            
+            // Wait for all results
+            dispatch_group_wait(serviceGroup, DISPATCH_TIME_FOREVER);
+            
+            var votes: [DigitLabel: Int] = [:]
             for (score, (label, index)) in bestMatches {
-                if label == maxVotedLabel {
-                    return (maxVotedLabel, score, index)
+                votes[label] = (votes[label] ?? 0) + 1
+            }
+            
+            var maxVotes: Int?
+            var maxVotedLabel: DigitLabel?
+            for (label, labelVotes) in votes {
+                if maxVotes == nil || labelVotes > maxVotes! {
+                    maxVotedLabel = label
+                    maxVotes = labelVotes
                 }
             }
+            if let maxVotedLabel = maxVotedLabel {
+                for (score, (label, index)) in bestMatches {
+                    if label == maxVotedLabel {
+                        return (maxVotedLabel, score, index)
+                    }
+                }
+            }
+
+        } else {
+            println("Unable to normalize digit")
         }
+        
         
         return nil
     }
@@ -259,12 +264,13 @@ public class DTWDigitClassifier {
         if !loadedNormalizedData {
             for (label, prototypes) in self.rawPrototypeLibrary {
                 for (index, prototype) in enumerate(prototypes) {
-                    let normalizedDigit = normalizeDigit(prototype)
-                    let totalPoints = normalizedDigit.reduce(0) {(total, stroke) -> Int in
-                        return total + stroke.count
+                    if let normalizedDigit = normalizeDigit(prototype) {
+                        let totalPoints = normalizedDigit.reduce(0) {(total, stroke) -> Int in
+                            return total + stroke.count
+                        }
+                        //println("Normalized digit \(label) to \(totalPoints) points")
+                        addToLibrary(&self.normalizedPrototypeLibrary, label: label, digit: normalizedDigit)
                     }
-                    //println("Normalized digit \(label) to \(totalPoints) points")
-                    addToLibrary(&self.normalizedPrototypeLibrary, label: label, digit: normalizedDigit)
                 }
             }
         }
@@ -399,7 +405,7 @@ public class DTWDigitClassifier {
         return result / CGFloat(pathLength)
     }
     
-    public func normalizeDigit(inputDigit: DigitStrokes) -> DigitStrokes {
+    public func normalizeDigit(inputDigit: DigitStrokes) -> DigitStrokes? {
         let targetPointCount = 32
         
         var newInputDigit: DigitStrokes = []
@@ -412,6 +418,9 @@ public class DTWDigitClassifier {
                     totalDistance += euclidianDistance(lastPoint, point)
                 }
                 lastPoint = point
+            }
+            if totalDistance < 1.0 {
+                return nil
             }
             
             // Now, divide this arc length into 32 segments

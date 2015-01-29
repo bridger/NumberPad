@@ -85,6 +85,14 @@ public extension CGPoint {
   public func distanceTo(point: CGPoint) -> CGFloat {
     return (self - point).length()
   }
+    
+  public func distanceSquaredTo(point: CGPoint) -> CGFloat {
+    return (self - point).lengthSquared()
+  }
+    
+  public func dot(point: CGPoint) -> CGFloat {
+    return self.x * point.x + self.y * point.y
+  }
 
   /**
    * Returns the angle in radians of the vector described by the CGPoint.

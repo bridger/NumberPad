@@ -44,6 +44,28 @@ public func optimizeAngles(angles: [(ChangeableAngle: CGFloat, TargetAngle: CGFl
     }
 }
 
+// Adapted from http://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
+public func shortestDistanceSquaredToLineSegmentFromPoint(segmentStart: CGPoint, segmentEnd: CGPoint, testPoint: CGPoint) -> CGFloat {
+    let segmentVector = (segmentEnd - segmentStart)
+    let segmentSizeSquared = segmentVector.lengthSquared()
+    if segmentSizeSquared == 0.0 {
+        return segmentStart.distanceSquaredTo(testPoint)
+    }
+    
+    // Consider the line extending the segment, parameterized as v + t (w - v).
+    // We find projection of point p onto the line.
+    // It falls where t = [(test-start) . (end-start)] / |end-start|^2
+    let t = (testPoint - segmentStart).dot(segmentVector) / segmentSizeSquared
+    if (t < 0.0) {
+        return segmentStart.distanceSquaredTo(testPoint) // Beyond the start of the segment
+    } else if (t > 1.0) {
+        return segmentEnd.distanceSquaredTo(testPoint) // Beyond the end of the segment
+    } else {
+        // Projection falls on the segment
+        let projection = segmentStart + (segmentVector * t)
+        return projection.distanceSquaredTo(testPoint)
+    }
+}
 
 public func visualizeNormalizedStrokes(strokes: DTWDigitClassifier.DigitStrokes, imageSize: CGSize) -> UIImage {
     
