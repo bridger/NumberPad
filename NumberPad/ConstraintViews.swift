@@ -14,6 +14,7 @@ import DigitRecognizerSDK
 class ConnectorLabel: UILabel {
     var scale: Double = 1
     let connector: Connector
+    var isDependent: Bool = false
 
     init(connector: Connector) {
         self.connector = connector
@@ -22,7 +23,7 @@ class ConnectorLabel: UILabel {
     }
     
     required init(coder aDecoder: NSCoder) {
-        self.connector = Connector(constant: 3)
+        self.connector = Connector()
         super.init(coder: aDecoder)
         connectorLabelInitialize()
     }
@@ -31,19 +32,11 @@ class ConnectorLabel: UILabel {
         self.font = UIFont.boldSystemFontOfSize(22)
         self.layer.borderWidth = 3
         self.textAlignment = .Center
-        
-        weak var weakSelf = self
-        connector.addObserver{ value in
-            if let strongSelf = weakSelf {
-                strongSelf.updateToValue()
-            }
-        }
-        self.updateToValue()
     }
     
-    func updateToValue() {
-        let value = self.connector.value
-        
+    // Returns whether it changed size
+    func displayValue(value: Double?) -> Bool {
+
         var color: UIColor = UIColor.blackColor()
         if let value = value {
             if abs(value) < 2 {
@@ -60,8 +53,14 @@ class ConnectorLabel: UILabel {
         self.layer.borderColor = color.CGColor
         self.textColor = color
         
+        let center = self.center
+        let size = self.bounds.size
         self.sizeToFit()
-
+        if !CGSizeEqualToSize(size, self.bounds.size) {
+            self.center = center
+            return true
+        }
+        return false
     }
     
     override func sizeThatFits(size: CGSize) -> CGSize {
@@ -105,12 +104,12 @@ class InternalConnectorPort: NSObject, ConnectorPort {
     }
 }
 
-protocol ConstraintViewDelegate: NSObjectProtocol {
-    func constraintView(constraintView: ConstraintView, didResolveConnectorPort connectorPort: ConnectorPort)
-}
-
 class ConstraintView: UIView {
-    weak var delegate: ConstraintViewDelegate?
+    var constraint: Constraint {
+        get {
+            fatalError("This method must be overriden")
+        }
+    }
     
     func connectorPorts() -> [ConnectorPort] {
         fatalError("This method must be overriden")
@@ -129,24 +128,17 @@ class ConstraintView: UIView {
     }
     
     private func addSentinelConnectorToPort(connectorPort: InternalConnectorPort) {
-        let connector = Connector()
-        var hasResolvedAtLeastOnce = false
-        connector.addObserver { [weak self, weak connectorPort] value in
-            if value != nil && !hasResolvedAtLeastOnce {
-                if let delegate = self?.delegate {
-                    if let connectorPort = connectorPort {
-                        hasResolvedAtLeastOnce = true
-                        delegate.constraintView(self!, didResolveConnectorPort: connectorPort)
-                    }
-                }
-            }
-        }
-        self.connectPort(connectorPort, connector: connector)
+        self.connectPort(connectorPort, connector: Connector())
     }
 }
 
 class MultiInputOutputConstraintView: ConstraintView {
-    let constraint: MultiInputOutputConstraint
+    let innerConstraint: MultiInputOutputConstraint
+    override var constraint: Constraint {
+        get {
+            return innerConstraint
+        }
+    }
     
     let redInput = InternalConnectorPort(color: UIColor.redColor(), isOutput: false)
     let blueInput = InternalConnectorPort(color: UIColor.blueColor(), isOutput: false)
@@ -184,16 +176,16 @@ class MultiInputOutputConstraintView: ConstraintView {
             if internalPort === port {
                 if let oldConnector = internalPort.connector {
                     if internalPort.isOutput {
-                        constraint.removeOutput(oldConnector)
+                        innerConstraint.removeOutput(oldConnector)
                     } else {
-                        constraint.removeInput(oldConnector)
+                        innerConstraint.removeInput(oldConnector)
                     }
                 }
                 
                 if internalPort.isOutput {
-                    constraint.addOutput(connector)
+                    innerConstraint.addOutput(connector)
                 } else {
-                    constraint.addInput(connector)
+                    innerConstraint.addInput(connector)
                 }
                 internalPort.connector = connector
                 
@@ -215,7 +207,7 @@ class MultiInputOutputConstraintView: ConstraintView {
     let blueLayer: CALayer = CALayer()
     let purpleLayer: CALayer = CALayer()
     init(constraint: MultiInputOutputConstraint) {
-        self.constraint = constraint
+        self.innerConstraint = constraint
         super.init(frame: CGRectZero)
         self.layer.cornerRadius = 5
         addSentinelConnectorToPort(self.redInput)

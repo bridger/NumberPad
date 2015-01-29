@@ -37,7 +37,7 @@ class Stroke {
     }
 }
 
-class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintViewDelegate, NumberSlideViewDelegate {
+class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlideViewDelegate {
     var scrollView: UIScrollView!
     var valuePicker: NumberSlideView!
     
@@ -45,6 +45,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
     var currentStroke: Stroke?
     var unprocessedStrokes: [Stroke] = []
     var digitClassifier: DTWDigitClassifier
+    
+    let connectorZPosition: CGFloat = -1
+    let constraintZPosition: CGFloat = -2
+    let connectionLayersZPosition: CGFloat = -3
     
     var connectorLabels: [ConnectorLabel] = []
     var connectorToLabel: [Connector: ConnectorLabel] = [:]
@@ -55,12 +59,19 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
             connectorLabels.append(label)
         }
         connectorToLabel[label.connector] = label
+        label.backgroundColor = deselectedConnectorLabelBackground
         self.scrollView.addSubview(label)
+        label.layer.zPosition = connectorZPosition
         updateScrollableSize()
         
         self.lastDrawnConnector = label
         if let (lastConstraint, inputPort) = self.lastDrawnConstraint {
-            lastConstraint.connectPort(inputPort, connector: label.connector)
+            let connectorPortUsed = inputPort.connector != nil && connectorToLabel[inputPort.connector!] != nil
+            if !connectorPortUsed {
+                lastConstraint.connectPort(inputPort, connector: label.connector)
+                self.needsLayout = true
+                self.needsSolving = true
+            }
         }
         self.lastDrawnConstraint = nil
     }
@@ -98,11 +109,18 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
             println("Cannot remove that label!")
         }
     }
+    let deselectedConnectorLabelBackground = UIColor(white: 0.9, alpha: 1.0)
     var selectedConnectorLabel: ConnectorLabel? {
         didSet {
             if let connectorLabel = selectedConnectorLabel {
-                let value = connectorLabel.connector.value ?? 0.0
+                if let oldConnectorLabel = oldValue {
+                    oldConnectorLabel.backgroundColor = deselectedConnectorLabelBackground
+                }
+                connectorLabel.backgroundColor = UIColor.whiteColor()
+                let value = self.lastValueForConnector(connectorLabel.connector) ?? 0.0
                 valuePicker.resetToValue( NSDecimalNumber(double: Double(value)) , scale: 0)
+                
+                updateDisplay(needsSolving: true)
                 
                 valuePicker.hidden = false
             } else {
@@ -114,8 +132,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
     var constraintViews: [ConstraintView] = []
     func addConstraintView(constraintView: ConstraintView, firstInputPort: ConnectorPort?, secondInputPort: ConnectorPort?) {
         constraintViews.append(constraintView)
-        constraintView.delegate = self
         self.scrollView.addSubview(constraintView)
+        constraintView.layer.zPosition = constraintZPosition
         updateScrollableSize()
         
         if let secondInputPort = secondInputPort {
@@ -126,6 +144,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
         if let firstInputPort = firstInputPort {
             if let lastDrawnConnector = self.lastDrawnConnector {
                 constraintView.connectPort(firstInputPort, connector: lastDrawnConnector.connector)
+                self.needsLayout = true
+                self.needsSolving = true
             }
         }
         self.lastDrawnConnector = nil
@@ -143,6 +163,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
     }
     
     var connectionLayers: [CAShapeLayer] = []
+    var lastSimulationContext: SimulationContext?
+    func lastValueForConnector(connector: Connector) -> Double? {
+        return self.lastSimulationContext?.connectorValues[connector]?.DoubleValue
+    }
+    func lastValueWasDependentForConnector(connector: Connector) -> Bool? {
+        return self.lastSimulationContext?.connectorValues[connector]?.WasDependent
+    }
     
     // For drawing connections
     enum DrawConnectionInfo {
@@ -236,7 +263,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                     pickedUpView.layer.shadowRadius = 10
                     pickedUpView.layer.shadowOffset = CGSizeMake(5, 5)
                 }
-                self.rebuildAllConnectionLayers()
+                updateDisplay(needsLayout: true)
             }
             
         case .Changed:
@@ -247,8 +274,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                 case let .Constraint(constraintView, offset):
                     constraintView.center = point + offset
                 }
-                layoutConstraintViews()
-                rebuildAllConnectionLayers()
+                updateDisplay(needsLayout: true)
             }
             
         case .Ended, .Cancelled, .Failed:
@@ -269,8 +295,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                         pickedUpView.layer.shadowOpacity = 0
                     }
                 }
-                layoutConstraintViews()
-                rebuildAllConnectionLayers()
+                updateDisplay(needsLayout: true)
                 updateScrollableSize()
                 self.currentDrag = nil
             }
@@ -296,9 +321,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
         }
         
         if deletedSomething {
-            runSolver([:])
-            layoutConstraintViews()
-            rebuildAllConnectionLayers()
+            updateDisplay(needsSolving: true, needsLayout: true)
         }
     }
     
@@ -355,21 +378,25 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                 if let oldDragLine = currentDrawConnectionLine {
                     oldDragLine.removeFromSuperlayer()
                 }
-                var dragLine: CAShapeLayer?
+                var dragLine: CAShapeLayer!
                 switch drawConnectionInfo {
                 case let .FromConnector(connectorLabel):
                     let targetPort = connectorPortAtLocation(point)?.ConnectorPort
-                    let labelPoint = closestPointOnRectPerimeter(point, CGRectInset(connectorLabel.frame, 1, 1))
-                    dragLine = createConnectionLayer(labelPoint, endPoint: point, color: targetPort?.color)
+                    let labelPoint = connectorLabel.center
+                    var dependent = lastValueWasDependentForConnector(connectorLabel.connector) ?? false
+                    dragLine = createConnectionLayer(labelPoint, endPoint: point, color: targetPort?.color, isDependent: dependent)
                 case let .FromConnectorPort(constraintView, connectorPort):
                     let startPoint = self.scrollView.convertPoint(connectorPort.center, fromView: constraintView)
                     var endPoint = point
+                    var dependent = false
                     if let targetConnector = connectorLabelAtPoint(point) {
-                        endPoint = closestPointOnRectPerimeter(startPoint, targetConnector.frame)
+                        endPoint = targetConnector.center
+                        dependent = lastValueWasDependentForConnector(targetConnector.connector) ?? false
                     }
-                    dragLine = createConnectionLayer(startPoint, endPoint: endPoint, color: connectorPort.color)
+                    dragLine = createConnectionLayer(startPoint, endPoint: endPoint, color: connectorPort.color, isDependent: dependent)
                 }
                 
+                dragLine.zPosition = connectionLayersZPosition
                 self.scrollView.layer.addSublayer(dragLine)
                 self.currentDrawConnectionLine = dragLine
             }
@@ -426,16 +453,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                 }
                 
                 if let (connectorLabel, constraintView, connectorPort) = connectorEnds {
-                    let savedValue = connectorLabel.connector.value
-                    connectorLabel.connector.forgetValue()
+                    let savedValue = self.lastValueForConnector(connectorLabel.connector)
                     constraintView.connectPort(connectorPort, connector: connectorLabel.connector)
-                    if let savedValue = savedValue {
-                        runSolver([connectorLabel.connector : savedValue])
-                    } else {
-                        runSolver([:])
-                    }
-                    layoutConstraintViews()
-                    rebuildAllConnectionLayers()
+                    updateDisplay(needsSolving: true, needsLayout: true)
                 }
                 
                 if let dragLine = currentDrawConnectionLine {
@@ -528,7 +548,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                         self.addConnectorLabel(newLabel, topPriority: true)
                         
                         recognized = true
-                        self.runSolver([newConnector: Double(writtenNumber)])
+                        self.updateDisplay(values: [newConnector: Double(writtenNumber)], needsSolving: true)
                         
                     } else if combinedLabels == "x" || combinedLabels == "/" {
                         // We recognized a multiply or divide!
@@ -565,10 +585,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
                     } else {
                         println("Unable to parse written text: \(combinedLabels)")
                     }
-                    if recognized {
-                        self.layoutConstraintViews()
-                        self.rebuildAllConnectionLayers()
-                    }
+                    self.updateDisplay();
                 } else {
                     println("Unable to recognize all \(allStrokes.count) strokes")
                 }
@@ -580,108 +597,184 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, ConstraintV
         }
     }
     
-    func constraintView(constraintView: ConstraintView, didResolveConnectorPort connectorPort: ConnectorPort) {
-        // This is called when a constraint makes a connector on it's own. For example, if you set two inputs on a multiplier then it will resolve the output automatically. We need to add a view for it and display it
-        // This is called during runSolver, so we need to be careful about what we mutate
-        if let newConnector = connectorPort.connector {
-            if let connector = connectorToLabel[newConnector] {
-                // This was a ? connector that is alredy a view. Great
-                return
-            }
-            
-            let newLabel = ConnectorLabel(connector: newConnector)
-            newLabel.sizeToFit()
-            
-            let distance: CGFloat = 80 + max(constraintView.bounds.width, constraintView.bounds.height)
-            // If the connectorPort is at the bottom-right, then we want to place it distance points off to the bottom-right
-            let constraintMiddle = constraintView.bounds.center()
-            let displacement = connectorPort.center - constraintView.bounds.center()
-            let newDisplacement = displacement * (distance / displacement.length())
-            
-            let newPoint = self.scrollView.convertPoint(newDisplacement + constraintMiddle, fromView: constraintView)
-            newLabel.center = newPoint
-            addConnectorLabel(newLabel, topPriority: false)
-        }
-    }
-    
     func numberSlideView(NumberSlideView, didSelectNewValue newValue: NSDecimalNumber) {
         if let selectedConnectorLabel = self.selectedConnectorLabel {
-            runSolver([selectedConnectorLabel.connector : newValue.doubleValue])
+            self.updateDisplay(values: [selectedConnectorLabel.connector : newValue.doubleValue], needsSolving: true)
         }
     }
     
-    func layoutConstraintViews() {
-        var connectorPositions: [Connector: CGPoint] = [:]
-        for connectorLabel in connectorLabels {
-            connectorPositions[connectorLabel.connector] = connectorLabel.center
-        }
-        for constraintView in constraintViews {
-            constraintView.layoutWithConnectorPositions(connectorPositions)
-        }
-    }
+    var needsLayout = false
+    var needsRebuildConnectionLayers = false
+    var needsSolving = false
     
-    func rebuildAllConnectionLayers() {
-        for oldLayer in self.connectionLayers {
-            oldLayer.removeFromSuperlayer()
-        }
-        self.connectionLayers.removeAll(keepCapacity: true)
+    func updateDisplay(values: [Connector: Double] = [:], needsSolving: Bool = false, needsLayout: Bool = false)
+    {
+        // See how these variables are used at the end of this function, after the internal definitions
+        self.needsLayout |= needsLayout
+        self.needsSolving |= needsSolving || values.count > 0
         
-        for constraintView in constraintViews {
-            for connectorPort in constraintView.connectorPorts() {
-                if let connector = connectorPort.connector {
-                    if let connectorLabel = connectorToLabel[connector] {
-                        let connectorPoint = self.scrollView.convertPoint(connectorPort.center, fromView: constraintView)
-                        let labelPoint = closestPointOnRectPerimeter(connectorPoint, CGRectInset(connectorLabel.frame, 1, 1))
-                        
-                        let connectionLayer = createConnectionLayer(labelPoint, endPoint: connectorPoint, color: connectorPort.color)
-                        
-                        self.connectionLayers.append(connectionLayer)
-                        self.scrollView.layer.addSublayer(connectionLayer)
+        func rebuildAllConnectionLayers() {
+            for oldLayer in self.connectionLayers {
+                oldLayer.removeFromSuperlayer()
+            }
+            self.connectionLayers.removeAll(keepCapacity: true)
+            
+            for constraintView in constraintViews {
+                for connectorPort in constraintView.connectorPorts() {
+                    if let connector = connectorPort.connector {
+                        if let connectorLabel = connectorToLabel[connector] {
+                            let connectorPoint = self.scrollView.convertPoint(connectorPort.center, fromView: constraintView)
+                            let labelPoint = connectorLabel.center
+                            
+                            let dependent = lastValueWasDependentForConnector(connectorLabel.connector) ?? false
+                            let connectionLayer = createConnectionLayer(labelPoint, endPoint: connectorPoint, color: connectorPort.color, isDependent: dependent)
+                            
+                            self.connectionLayers.append(connectionLayer)
+                            connectionLayer.zPosition = connectionLayersZPosition
+                            self.scrollView.layer.addSublayer(connectionLayer)
+                        }
                     }
                 }
             }
+            self.needsRebuildConnectionLayers = false
+        }
+        
+        func layoutConstraintViews() {
+            var connectorPositions: [Connector: CGPoint] = [:]
+            for connectorLabel in connectorLabels {
+                connectorPositions[connectorLabel.connector] = connectorLabel.center
+            }
+            for constraintView in constraintViews {
+                constraintView.layoutWithConnectorPositions(connectorPositions)
+            }
+            self.needsLayout = false
+            self.needsRebuildConnectionLayers = true
+        }
+        
+        func runSolver(values: [Connector: Double]) {
+            let lastSimulationContext = self.lastSimulationContext
             
-        }
-    }
-    
-    func runSolver(values: [Connector: Double]) {
-        // First we save all of the values for each connector. Then, we set them all again
-        var savedValues = values
-        
-        for connectorLabel in self.connectorLabels {
-            let connector = connectorLabel.connector
-            if let value = connector.value {
-                if savedValues[connector] == nil {
-                    savedValues[connector] = value
+            let simulationContext = SimulationContext(connectorResolvedCallback: { (connector, resolvedValue, informant) -> Void in
+                if self.connectorToLabel[connector] == nil {
+                    if let constraint = informant {
+                        // This happens when a constraint makes a connector on it's own. For example, if you set two inputs on a multiplier then it will resolve the output automatically. We need to add a view for it and display it
+                        
+                        // We need to find the constraintView and the connectorPort this belongs to
+                        var connectTo: (constraintView: ConstraintView, connectorPort: ConnectorPort)!
+                        for possibleView in self.constraintViews {
+                            if possibleView.constraint == constraint {
+                                for possiblePort in possibleView.connectorPorts() {
+                                    if possiblePort.connector == connector {
+                                        connectTo = (possibleView, possiblePort)
+                                        break
+                                    }
+                                }
+                                break
+                            }
+                        }
+                        if connectTo == nil {
+                            println("Unable to find constraint view for newly resolved connector! \(connector), \(resolvedValue), \(constraint)")
+                            return
+                        }
+                        
+                        let newLabel = ConnectorLabel(connector: connector)
+                        newLabel.sizeToFit()
+                        
+                        let distance: CGFloat = 80 + max(connectTo.constraintView.bounds.width, connectTo.constraintView.bounds.height)
+                        // If the connectorPort is at the bottom-right, then we want to place it distance points off to the bottom-right
+                        let constraintMiddle = connectTo.constraintView.bounds.center()
+                        let displacement = connectTo.connectorPort.center - connectTo.constraintView.bounds.center()
+                        let newDisplacement = displacement * (distance / displacement.length())
+                        
+                        let newPoint = self.scrollView.convertPoint(newDisplacement + constraintMiddle, fromView: connectTo.constraintView)
+                        newLabel.center = newPoint
+                        self.addConnectorLabel(newLabel, topPriority: false)
+                        self.needsLayout = true
+                    }
                 }
-                connector.forgetValue()
+                
+                if let label = self.connectorToLabel[connector] {
+                    label.displayValue(resolvedValue.DoubleValue)
+                    if resolvedValue.WasDependent {
+                        label.layer.borderColor = UIColor.lightGrayColor().CGColor
+                    } else {
+                        label.layer.borderColor = UIColor.blackColor().CGColor
+                    }
+                    if label.isDependent != resolvedValue.WasDependent {
+                        self.needsRebuildConnectionLayers = true
+                        label.isDependent = resolvedValue.WasDependent
+                    }
+                }
+                }, connectorConflictCallback: { (connector, resolvedValue, informant) -> Void in
+                    if let label = self.connectorToLabel[connector] {
+                        label.layer.borderColor = UIColor.redColor().CGColor
+                    }
+            })
+            
+            // First, the selected connector
+            if let selectedConnector = selectedConnectorLabel?.connector {
+                if let value = (values[selectedConnector] ?? lastSimulationContext?.connectorValues[selectedConnector]?.DoubleValue) {
+                    simulationContext.setConnectorValue(selectedConnector, value: (DoubleValue: value, WasDependent: true), informant: nil)
+                }
+            }
+            
+            // These are the first priority
+            for (connector, value) in values {
+                simulationContext.setConnectorValue(connector, value: (DoubleValue: value, WasDependent: false), informant: nil)
+            }
+            
+            // We loop through connectorLabels like this, because it can mutate during the simulation, if a constraint "resolves a port"
+            var index = 0
+            while index < self.connectorLabels.count {
+                let connector = self.connectorLabels[index].connector
+                
+                // If we haven't already resolved this connector, then set it as a non-dependent variable to the value from the last simulation
+                if simulationContext.connectorValues[connector] == nil {
+                    if let lastValue = lastSimulationContext?.connectorValues[connector]?.DoubleValue {
+                        simulationContext.setConnectorValue(connector, value: (DoubleValue: lastValue, WasDependent: false), informant: nil)
+                    }
+                }
+                index += 1
+            }
+            
+            // Update the labels that still don't have a value
+            for label in self.connectorLabels {
+                if simulationContext.connectorValues[label.connector] == nil {
+                    label.displayValue(nil)
+                    label.layer.backgroundColor = UIColor.blackColor().CGColor
+                }
+            }
+            
+            self.lastSimulationContext = simulationContext
+            self.needsSolving = false
+        }
+        
+        
+        while (self.needsLayout || self.needsSolving) {
+            // First, we layout. This way, if solving generates a new connector then it will be pointed in a sane direction
+            // But, solving means we might need to layout, and so on...
+            if (self.needsLayout) {
+                layoutConstraintViews()
+            }
+            if (self.needsSolving) {
+                runSolver(values)
             }
         }
         
-        // These are the first priority
-        for (connector, value) in values {
-            connector.setValue(value, informant: nil)
-        }
-        
-        // We loop through connectorLabels like this, because it can mutate during the simulation, if a constraint "resolves a port"
-        var index = 0
-        while index < self.connectorLabels.count {
-            let connector = self.connectorLabels[index].connector
-            if connector.value == nil {
-                if let value = savedValues[connector] {
-                    connector.setValue(value, informant: nil)
-                }
-            }
-            index += 1
+        if (self.needsRebuildConnectionLayers) {
+            rebuildAllConnectionLayers()
         }
     }
     
-    func createConnectionLayer(startPoint: CGPoint, endPoint: CGPoint, color: UIColor?) -> CAShapeLayer {
+    func createConnectionLayer(startPoint: CGPoint, endPoint: CGPoint, color: UIColor?, isDependent: Bool) -> CAShapeLayer {
         let dragLine = CAShapeLayer()
         dragLine.lineWidth = 3
         dragLine.fillColor = nil
         dragLine.lineCap = kCALineCapRound
         dragLine.strokeColor = color?.CGColor ?? UIColor.blackColor().CGColor
+        if isDependent {
+            dragLine.lineDashPattern = [4, 6]
+        }
         
         let path = CGPathCreateMutable()
         CGPathMoveToPoint(path, nil, startPoint.x, startPoint.y)

@@ -26,10 +26,12 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
         }
         visibleLabels.removeAll(keepCapacity: true)
         
+        // Stop the scrolling
+        scrollView.setContentOffset(scrollView.contentOffset, animated: false)
+        
         self.scale = scale
         let center = self.convertPoint(scrollView.center, toView: scrollingContentContainer)
         valueAnchor = (Value: value, Offset: center.x)
-        
         
         fixScrollableContent()
     }
