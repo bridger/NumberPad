@@ -50,6 +50,7 @@
 		AEC9EEC71A3CDC4A002C7B08 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AEC9EEC61A3CDC4A002C7B08 /* Images.xcassets */; };
 		AEC9EED61A3CDC4A002C7B08 /* NumberPadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EED51A3CDC4A002C7B08 /* NumberPadTests.swift */; };
 		AECB34FC1A6B1F460034A2AB /* NumberSlideView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AECB34FB1A6B1F460034A2AB /* NumberSlideView.swift */; };
+		AEF546551A7AD6DF00E72D0B /* bridger_normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = AE890D171A69DA0300E604C4 /* bridger_normalized.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -520,6 +521,7 @@
 			files = (
 				AE5554F31A5CBC89007DCF1D /* ujipenchars2.json in Resources */,
 				AE5554881A5CBAE1007DCF1D /* bridger_train.json in Resources */,
+				AEF546551A7AD6DF00E72D0B /* bridger_normalized.json in Resources */,
 				AE890D131A68D33F00E604C4 /* ujipenchars2_train.json in Resources */,
 				AE55546D1A5CB9D3007DCF1D /* Images.xcassets in Resources */,
 				AE5554F91A5CE08C007DCF1D /* Main.storyboard in Resources */,

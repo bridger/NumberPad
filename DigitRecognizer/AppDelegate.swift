@@ -95,7 +95,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let normalizedTestStroke = self.digitClassifier.normalizeDigit(testStroke)
             let trainStroke = self.digitClassifier.normalizedPrototypeLibrary[trainLabel]![trainIndex]
             
-            let testStrokeImage = visualizeNormalizedStrokes(normalizedTestStroke, imageSize)
+            let testStrokeImage = visualizeNormalizedStrokes(normalizedTestStroke!, imageSize)
             let trainStrokeImage = visualizeNormalizedStrokes(trainStroke, imageSize)
     
             func safeName(name: String) -> String {

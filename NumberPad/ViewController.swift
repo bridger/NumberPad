@@ -126,9 +126,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                     oldConnectorLabel.isSelected = false
                 }
                 connectorLabel.isSelected = true
-                let value = self.lastValueForConnector(connectorLabel.connector) ?? 0.0
+                var value = self.lastValueForConnector(connectorLabel.connector) ?? 0.0
+                if !isfinite(value) {
+                    value = 0.0
+                }
                 var scale: Int16 = 0
-                if abs(value) < 2 {
+                if abs(value) < 3 {
                     scale = -1
                 } else if abs(value) >= 100 {
                     scale = 1
@@ -486,6 +489,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                     let savedValue = self.lastValueForConnector(connectorLabel.connector)
                     constraintView.connectPort(connectorPort, connector: connectorLabel.connector)
                     updateDisplay(needsSolving: true, needsLayout: true)
+                    
+                    // Clear any information about the last drawn constraint or connector
+                    self.lastDrawnConstraint = nil
+                    self.lastDrawnConnector = nil
                 }
                 
                 if let dragLine = currentDrawConnectionLine {
@@ -642,6 +649,31 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         }
                         recognized = true
                         
+                    } else if combinedLabels == "e" || combinedLabels == "^" {
+                        let newExponent = Exponent()
+                        let newView = ExponentView(exponent: newExponent)
+                        newView.layoutWithConnectorPositions([:])
+                        newView.center = centerPoint
+                        
+                        var eLabel: ConnectorLabel?
+                        if combinedLabels == "e" {
+                            let eConnector = Connector()
+                            let newLabel = ConnectorLabel(connector: eConnector)
+                            newLabel.sizeToFit()
+                            newLabel.center = CGPointMake(centerPoint.x - 80, centerPoint.y)
+                            // Make sure this doesn't get connected to a previously drawn constraint
+                            self.lastDrawnConstraint = nil
+                            self.addConnectorLabel(newLabel, topPriority: true)
+                            
+                            eLabel = newLabel
+                        }
+                        
+                        self.addConstraintView(newView, firstInputPort: newView.basePort, secondInputPort: newView.exponentPort)
+                        recognized = true
+                        if let eLabel = eLabel {
+                            self.updateDisplay(values: [eLabel.connector: Double(M_E)], needsSolving: true)
+                        }
+                    
                     } else {
                         println("Unable to parse written text: \(combinedLabels)")
                     }

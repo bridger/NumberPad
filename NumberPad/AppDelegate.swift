@@ -26,28 +26,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         return true
     }
-
-    func applicationWillResignActive(application: UIApplication) {
-        saveData()
-    }
     
     func documentsDirectory() -> String {
         return NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)[0] as String
-    }
-    
-    func saveData() {
-        let dataToSave = self.rootViewController.digitClassifier.dataToSave(true, saveNormalizedData: true)
-        
-        var saveNumber = 1
-        if let lastSave = newestSavedData() {
-            if let lastNumber = lastSave.substringFromIndex(filePrefix.endIndex).toInt() {
-                saveNumber = lastNumber + 1
-            }
-        }
-        
-        let documentName = self.documentsDirectory().stringByAppendingPathComponent( filePrefix + String(saveNumber))
-        
-        NSJSONSerialization.dataWithJSONObject(dataToSave, options: nil, error: nil)!.writeToFile(documentName, atomically: false)
     }
     
     func loadData(path: String) {

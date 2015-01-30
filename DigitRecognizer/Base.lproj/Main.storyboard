@@ -108,7 +108,7 @@
                                 </connections>
                             </button>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="zcm-Or-enl">
-                                <rect key="frame" x="16" y="72" width="568" height="29"/>
+                                <rect key="frame" x="16.5" y="72" width="568" height="29"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="568" id="CZR-09-qix"/>
                                 </constraints>
@@ -127,6 +127,8 @@
                                     <segment title="-"/>
                                     <segment title="x"/>
                                     <segment title="/"/>
+                                    <segment title="^"/>
+                                    <segment title="e"/>
                                     <segment title="Test"/>
                                 </segments>
                                 <connections>

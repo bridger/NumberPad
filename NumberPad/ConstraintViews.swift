@@ -54,7 +54,7 @@ class ConnectorLabel: UILabel {
     func displayValue(value: Double?) -> Bool {
         self.sizeThatFits(CGSizeZero)
         if let value = value {
-            if abs(value) < 2 {
+            if abs(value) < 3 {
                 self.text = String(format: "%.2f", value)
             } else if abs(value) < 100 {
                 self.text = String(format: "%.1f", value)
@@ -281,6 +281,9 @@ class MultiplierView: MultiInputOutputConstraintView {
         self.redLayer.frame = CGRectMake(0, marginSpace, barSize, purpleSquareSize)
         self.blueLayer.frame = CGRectMake(marginSpace, 0, purpleSquareSize, barSize)
         self.purpleLayer.frame = CGRectMake(marginSpace, marginSpace, purpleSquareSize, purpleSquareSize)
+        self.redLayer.cornerRadius = barSize / 2
+        self.blueLayer.cornerRadius = barSize / 2
+        self.purpleLayer.cornerRadius = barSize / 2
         
         self.redInput.layer.position = CGPointMake(barSize / 2.0, purpleSquareSize / 2.0 + marginSpace)
         self.blueInput.layer.position = CGPointMake(purpleSquareSize / 2.0 + marginSpace, barSize / 2.0)
@@ -313,6 +316,9 @@ class AdderView: MultiInputOutputConstraintView {
         self.redLayer.frame = CGRectMake(0, 0, myWidth / 2.0, barHeight)
         self.blueLayer.frame = CGRectMake(myWidth / 2.0, 0, myWidth / 2.0, barHeight)
         self.purpleLayer.frame = CGRectMake(0, barHeight + spacing, myWidth, barHeight)
+        self.redLayer.cornerRadius = barHeight / 2
+        self.blueLayer.cornerRadius = barHeight / 2
+        self.purpleLayer.cornerRadius = barHeight / 2
         
         super.layoutWithConnectorPositions(positions)
     }
@@ -322,3 +328,150 @@ class AdderView: MultiInputOutputConstraintView {
     }
 }
 
+
+class ExponentView: ConstraintView {
+    let exponent: Exponent
+    override var constraint: Constraint {
+        get {
+            return exponent
+        }
+    }
+    var basePort: ConnectorPort {
+        get {
+            return baseInput
+        }
+    }
+    var exponentPort: ConnectorPort {
+        get {
+            return exponentInput
+        }
+    }
+    var resultPort: ConnectorPort {
+        get {
+            return resultOutput
+        }
+    }
+    
+    let baseInput = InternalConnectorPort(color: UIColor.redColor(), isOutput: false)
+    let exponentInput = InternalConnectorPort(color: UIColor.blueColor(), isOutput: false)
+    let resultOutput = InternalConnectorPort(color: UIColor.purpleColor(), isOutput: true)
+    
+    override func connectorPorts() -> [ConnectorPort] {
+        return [baseInput, exponentInput, resultOutput]
+    }
+    
+    func internalConnectorPorts() -> [InternalConnectorPort] {
+        // The order here is the order they will be picked for connectorPortForDragAtLocation
+        return [exponentInput, resultOutput, baseInput]
+    }
+    func connectorPortIsMine(port: ConnectorPort) -> Bool {
+        return port === baseInput || port === exponentInput || port === resultOutput
+    }
+    
+    override func connectorPortForDragAtLocation(location: CGPoint) -> ConnectorPort? {
+        for internalPort in internalConnectorPorts() {
+            if euclidianDistanceSquared(internalPort.layer.position, location) < 400 {
+                return internalPort
+            }
+        }
+        return nil
+    }
+    
+    override func connectPort(port: ConnectorPort, connector: Connector) {
+        if port === baseInput {
+            exponent.base = connector
+            baseInput.connector = connector
+        } else if port === exponentInput {
+            exponent.exponent = connector
+            exponentInput.connector = connector
+        } else if port === resultOutput {
+            exponent.result = connector
+            resultOutput.connector = connector
+        }
+    }
+    
+    override func removeConnectorAtPort(port: ConnectorPort) {
+        for internalPort in internalConnectorPorts() {
+            if internalPort === port {
+                addSentinelConnectorToPort(internalPort) // This will remove the old connector
+                return
+            }
+        }
+    }
+    
+    let resultLayer: CAShapeLayer = CAShapeLayer()
+    init(exponent: Exponent) {
+        self.exponent = exponent
+        super.init(frame: CGRectZero)
+        addSentinelConnectorToPort(self.exponentInput)
+        addSentinelConnectorToPort(self.baseInput)
+        addSentinelConnectorToPort(self.resultOutput)
+        self.resultLayer.strokeColor = UIColor.purpleColor().CGColor
+        self.resultLayer.lineWidth = 4.0
+        self.resultLayer.lineCap = kCALineCapRound
+        self.resultLayer.fillColor = nil
+        for layer in [self.resultLayer, self.exponentInput.layer, self.baseInput.layer, self.resultOutput.layer] {
+            self.layer.addSublayer(layer)
+        }
+    }
+    
+    override init(coder aDecoder: NSCoder) {
+        fatalError("Initializer not supported")
+    }
+    
+    
+    let myWidth: CGFloat = 60.0
+    let myHeight: CGFloat = 50.0
+    let spacing: CGFloat = 10.0
+    let barHeight: CGFloat = 5.0
+    override func layoutWithConnectorPositions(positions: [Connector: CGPoint]) {
+        self.sizeToFit()
+        
+        self.baseInput.layer.zPosition = 0
+        self.exponentInput.layer.zPosition = 1
+        self.resultLayer.zPosition = 2
+        self.resultOutput.layer.zPosition = 3
+        
+        let exponentSize: CGFloat = 18
+        self.exponentInput.layer.frame = CGRectMake(myWidth * 0.4, 0, exponentSize, exponentSize)
+        self.exponentInput.layer.cornerRadius = exponentSize / 2
+        
+        let baseSize: CGFloat = 35
+        let offsetFromExponent = baseSize / 2.0 * CGFloat(M_SQRT1_2)
+        let exponentCenter = self.exponentInput.layer.position
+        self.baseInput.layer.frame = CGRectMake(0, 0, baseSize, baseSize)
+        self.baseInput.layer.position = CGPointMake(exponentCenter.x - offsetFromExponent, exponentCenter.y + offsetFromExponent)
+        self.baseInput.layer.cornerRadius = baseSize / 2
+        
+        let pathBase: CGFloat = 95
+        let scale = myHeight / (pathBase - 1.0)
+        func pointOnExponentAtX(x: CGFloat) -> CGPoint {
+            let percentage = x / myWidth
+            let y = pow(pathBase, percentage)
+            
+            let point = CGPointMake(x, myHeight - (y - 1.0) * scale)
+            return point
+        }
+        
+        let path = CGPathCreateMutable()
+        for var i: CGFloat = 0; i < myWidth; i++ {
+            // Here we draw an exponent curve from x = 0 to x = 1, which results in y=1 to y=base
+            // Then we scale it so y goes from 0 to myHeight
+            let point = pointOnExponentAtX(i)
+            if i == 0 {
+                CGPathMoveToPoint(path, nil, point.x, point.y)
+            } else {
+                CGPathAddLineToPoint(path, nil, point.x, point.y)
+            }
+        }
+        
+        self.resultLayer.path = path
+        
+        self.resultOutput.layer.position = pointOnExponentAtX(myWidth * 0.7)
+    }
+    
+    override func sizeThatFits(size: CGSize) -> CGSize {
+        return CGSizeMake(myWidth, myHeight)
+    }
+    
+}

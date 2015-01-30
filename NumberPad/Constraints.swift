@@ -247,72 +247,92 @@ class Multiplier : MultiInputOutputConstraint {
     }
 }
 
-//class Exponent : Constraint {
-//    
-//    var base: Connector
-//    var exponent: Connector
-//    var result: Connector
-//    
-//    
-//    // result = base ^ exponent
-//    // exponent = log_base(result) = ln(result) / ln(base)
-//    // base = result ^ (1/exponent)
-//    init(base: Connector, exponent: Connector, result: Connector) {
-//        self.base = base
-//        self.exponent = exponent
-//        self.result = result
-//        
-//        super.init()
-//        
-//        self.base.connect(self)
-//        self.exponent.connect(self)
-//        self.result.connect(self)
-//    }
-//    
-//    
-//    override func processNewValues(context: SimulationContext) {
-//        
-//        if result.value == nil {
-//            // result = base ^ exponent
-//            
-//            if exponent.value != nil && exponent.value! == 0 {
-//                // If exponent is 0, then result is 1 (unless base is also zero)
-//                if base.value != nil && base.value! == 0 {
-//                    print("Unable to determine result if exponent and base are 0")
-//                } else {
-//                    result.setValue(1, informant: self)
-//                }
-//                
-//            } else if base.value != nil && base.value! == 0 {
-//                // If base is 0, then result is 0 (unless exponent is also zero)
-//                result.setValue(0, informant: self)
-//                
-//            } else if base.value != nil && exponent.value != nil {
-//                //result = base ^ exponent
-//                result.setValue(pow(base.value!, exponent.value!), informant: self)
-//            }
-//            
-//        } else {
-//            
-//            // TODO: If result = 1 then exponent = 0, regardless of base
-//            
-//            if base.value == nil && exponent.value != nil {
-//                // base = result ^ (1/exponent)
-//                base.setValue( pow(result.value!, 1.0 / exponent.value!), informant: self)
-//                
-//            } else if base.value != nil && exponent.value == nil {
-//                // exponent = log_base(result) = ln(result) / ln(base)
-//                exponent.setValue( log(result.value!) / log(base.value!) , informant: self)
-//                
-//            } else if base.value != nil && exponent.value != nil {
-//                // Sanity check
-//                
-//                let predictedValue = pow(base.value!, exponent.value!)
-//                let value = result.value!
-//                if predictedValue != value {
-//                    println("Something went wrong in exponent. Result \(value) is not equal to \(predictedValue)")
-//                }
-//            }
-//        }
-//    }
-//}
+class Exponent : Constraint {
+    // result = base ^ exponent
+    // exponent = log_base(result) = ln(result) / ln(base)
+    // base = result ^ (1/exponent)
+    
+    var base: Connector! {
+        didSet {
+            if let oldValue = oldValue {
+                oldValue.disconnect(self)
+            }
+            self.base.connect(self)
+        }
+    }
+    var exponent: Connector! {
+        didSet {
+            if let oldValue = oldValue {
+                oldValue.disconnect(self)
+            }
+            self.exponent.connect(self)
+        }
+    }
+    var result: Connector! {
+        didSet {
+            if let oldValue = oldValue {
+                oldValue.disconnect(self)
+            }
+            self.result.connect(self)
+        }
+    }
+    
+    // Before this is called, we must have all three connectors present
+    override func processNewValues(context: SimulationContext) {
+        let resultValue = context.connectorValues[result]
+        let exponentValue = context.connectorValues[exponent]
+        let baseValue = context.connectorValues[base]
+        
+        
+        if resultValue == nil {
+            // result = base ^ exponent
+            
+            if exponentValue != nil && exponentValue!.DoubleValue == 0 {
+                // If exponent is 0, then result is 1 (unless base is also zero)
+                if baseValue != nil && baseValue!.DoubleValue == 0 {
+                    print("Unable to determine result if exponent and base are 0")
+                } else {
+                    let value = (1.0, exponentValue!.WasDependent)
+                    context.setConnectorValue(result, value: value, informant: self)
+                }
+                
+            } else if baseValue != nil && baseValue!.DoubleValue == 0 {
+                // If base is 0, then result is 0 (unless exponent is also zero)
+                let value = (0.0, baseValue!.WasDependent)
+                context.setConnectorValue(result, value: value, informant: self)
+                
+            } else if baseValue != nil && exponentValue != nil {
+                //result = base ^ exponent
+                let doubleValue = pow(baseValue!.DoubleValue, exponentValue!.DoubleValue)
+                let isDependent = baseValue!.WasDependent || exponentValue!.WasDependent
+                context.setConnectorValue(result, value: (doubleValue, isDependent), informant: self)
+            }
+            
+        } else {
+            
+            // TODO: If result = 1 then exponent = 0, regardless of base
+            
+            if baseValue == nil && exponentValue != nil {
+                // base = result ^ (1/exponent)
+                let doubleValue = pow(resultValue!.DoubleValue, 1.0 / exponentValue!.DoubleValue)
+                let isDependent = resultValue!.WasDependent || exponentValue!.WasDependent
+                context.setConnectorValue(base, value: (doubleValue, isDependent), informant: self)
+                
+            } else if baseValue != nil && exponentValue == nil {
+                // exponent = log_base(result) = ln(result) / ln(base)
+                let doubleValue = log(resultValue!.DoubleValue) / log(baseValue!.DoubleValue)
+                let isDependent = resultValue!.WasDependent || baseValue!.WasDependent
+                context.setConnectorValue(exponent, value: (doubleValue, isDependent), informant: self)
+                
+            } else if baseValue != nil && exponentValue != nil {
+                // Sanity check
+                
+                let predictedValue = pow(baseValue!.DoubleValue, exponentValue!.DoubleValue)
+                let value = resultValue!.DoubleValue
+                if predictedValue != value {
+                    println("Something went wrong in exponent. Result \(value) is not equal to \(predictedValue)")
+                }
+            }
+        }
+    }
+}
