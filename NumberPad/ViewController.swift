@@ -52,7 +52,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
     
     var connectorLabels: [ConnectorLabel] = []
     var connectorToLabel: [Connector: ConnectorLabel] = [:]
-    func addConnectorLabel(label: ConnectorLabel, topPriority: Bool) {
+    func addConnectorLabel(label: ConnectorLabel, topPriority: Bool, automaticallyConnect: Bool = true) {
         if topPriority {
             connectorLabels.insert(label, atIndex: 0)
         } else {
@@ -64,16 +64,21 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         label.layer.zPosition = connectorZPosition
         updateScrollableSize()
         
-        self.lastDrawnConnector = label
-        if let (lastConstraint, inputPort) = self.lastDrawnConstraint {
-            let connectorPortUsed = inputPort.connector != nil && connectorToLabel[inputPort.connector!] != nil
-            if !connectorPortUsed {
-                lastConstraint.connectPort(inputPort, connector: label.connector)
-                self.needsLayout = true
-                self.needsSolving = true
+        if automaticallyConnect {
+            self.lastDrawnConnector = label
+            if let (lastConstraint, inputPort) = self.lastDrawnConstraint {
+                if label.connector.constraints.count == 0 {
+                    let connectorPortUsed = inputPort.connector != nil && connectorToLabel[inputPort.connector!] != nil
+                    if !connectorPortUsed {
+                        lastConstraint.connectPort(inputPort, connector: label.connector)
+                        self.needsLayout = true
+                        self.needsSolving = true
+                    }
+                }
+                
+                self.lastDrawnConstraint = nil
             }
         }
-        self.lastDrawnConstraint = nil
     }
     func moveConnectorToTopPriority(connectorLabel: ConnectorLabel) {
         if let index = find(connectorLabels, connectorLabel) {
@@ -148,17 +153,28 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
     }
     
     var constraintViews: [ConstraintView] = []
-    func addConstraintView(constraintView: ConstraintView, firstInputPort: ConnectorPort?, secondInputPort: ConnectorPort?) {
+    func addConstraintView(constraintView: ConstraintView, firstInputPort: ConnectorPort?, secondInputPort: ConnectorPort?, outputPort: ConnectorPort?) {
         constraintViews.append(constraintView)
         self.scrollView.addSubview(constraintView)
         constraintView.layer.zPosition = constraintZPosition
         updateScrollableSize()
+        
+        if let outputPort = outputPort {
+            if let (lastConstraint, inputPort) = self.lastDrawnConstraint {
+                if connectorToLabel[inputPort.connector!] == nil {
+                    self.connectConstraintViews(constraintView, firstConnectorPort: outputPort, secondConstraintView: lastConstraint, secondConnectorPort: inputPort)
+                    
+                    self.lastDrawnConnector = nil
+                }
+            }
+        }
         
         if let secondInputPort = secondInputPort {
             self.lastDrawnConstraint = (constraintView, secondInputPort)
         } else {
             self.lastDrawnConstraint = nil
         }
+        
         if let firstInputPort = firstInputPort {
             if let lastDrawnConnector = self.lastDrawnConnector {
                 constraintView.connectPort(firstInputPort, connector: lastDrawnConnector.connector)
@@ -168,6 +184,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         }
         self.lastDrawnConnector = nil
     }
+    
     func removeConstraintView(constraintView: ConstraintView) {
         if let index = find(constraintViews, constraintView) {
             constraintViews.removeAtIndex(index)
@@ -458,41 +475,32 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 
             } else if let drawConnectionInfo = currentDrawingConnection {
                 
-                var connectorEnds: (ConnectorLabel, ConstraintView, ConnectorPort)?
+                var connectionMade = false
                 
                 switch drawConnectionInfo {
                 case let .FromConnector(connectorLabel):
                     if let (constraintView, connectorPort) = connectorPortAtLocation(point) {
-                        connectorEnds = (connectorLabel, constraintView, connectorPort)
+                        self.connect(connectorLabel, constraintView: constraintView, connectorPort: connectorPort)
+                        connectionMade = true
                     }
                 case let .FromConnectorPort(constraintView, connectorPort):
                     if let connectorLabel = connectorLabelAtPoint(point) {
-                        connectorEnds = (connectorLabel, constraintView, connectorPort)
+                        self.connect(connectorLabel, constraintView: constraintView, connectorPort: connectorPort)
+                        connectionMade = true
+                        
                     } else if let (secondConstraintView, secondConnectorPort) = connectorPortAtLocation(point) {
-                        // We are dragging from one constraint directly to another constraint. To accomodate, we create a connector in-between and make two connections
-                        let midPoint = (constraintView.center + secondConstraintView.center) / 2.0
+                        self.connectConstraintViews(constraintView, firstConnectorPort: connectorPort, secondConstraintView: secondConstraintView, secondConnectorPort: secondConnectorPort)
                         
-                        let newConnector = Connector()
-                        let newLabel = ConnectorLabel(connector: newConnector)
-                        newLabel.sizeToFit()
-                        newLabel.center = midPoint
-                        self.addConnectorLabel(newLabel, topPriority: false)
-                        
-                        // We make this connection now, and let the second connection be made by the common code further down
-                        secondConstraintView.connectPort(secondConnectorPort, connector: newConnector)
-                        
-                        connectorEnds = (newLabel, constraintView, connectorPort)
+                        connectionMade = true
                     }
                 }
                 
-                if let (connectorLabel, constraintView, connectorPort) = connectorEnds {
-                    let savedValue = self.lastValueForConnector(connectorLabel.connector)
-                    constraintView.connectPort(connectorPort, connector: connectorLabel.connector)
-                    updateDisplay(needsSolving: true, needsLayout: true)
-                    
+                if connectionMade {
                     // Clear any information about the last drawn constraint or connector
                     self.lastDrawnConstraint = nil
                     self.lastDrawnConnector = nil
+                    
+                    self.updateDisplay()
                 }
                 
                 if let dragLine = currentDrawConnectionLine {
@@ -505,6 +513,37 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         case .Possible:
             break
         }
+    }
+    
+    func connect(connectorLabel: ConnectorLabel, constraintView: ConstraintView, connectorPort: ConnectorPort) {
+        for connectorPort in constraintView.connectorPorts() {
+            if connectorPort.connector === connectorLabel.connector {
+                // This connector is already hooked up to this constraintView. The user is probably trying to change the connection, so we remove the old one
+                constraintView.removeConnectorAtPort(connectorPort)
+            }
+        }
+        
+        constraintView.connectPort(connectorPort, connector: connectorLabel.connector)
+        self.needsSolving = true
+        self.needsLayout = true
+    }
+    
+    func connectConstraintViews(firstConstraintView: ConstraintView, firstConnectorPort: ConnectorPort, secondConstraintView: ConstraintView, secondConnectorPort: ConnectorPort) -> ConnectorLabel {
+        // We are dragging from one constraint directly to another constraint. To accomodate, we create a connector in-between and make two connections
+        let midPoint = (firstConstraintView.center + secondConstraintView.center) / 2.0
+        
+        let newConnector = Connector()
+        let newLabel = ConnectorLabel(connector: newConnector)
+        newLabel.sizeToFit()
+        newLabel.center = midPoint
+        self.addConnectorLabel(newLabel, topPriority: false, automaticallyConnect: false)
+        
+        firstConstraintView.connectPort(firstConnectorPort, connector: newConnector)
+        secondConstraintView.connectPort(secondConnectorPort, connector: newConnector)
+        self.needsSolving = true
+        self.needsLayout = true
+        
+        return newLabel
     }
     
     func connectorLabelAtPoint(point: CGPoint) -> ConnectorLabel? {
@@ -606,7 +645,14 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                     // TODO: Try to actually parse out an equation, instead of just one component
                     let combinedLabels = classifiedLabels.reduce("", +)
                     var recognized = false
+                    var writtenValue: Double?
                     if let writtenNumber = combinedLabels.toInt() {
+                        writtenValue = Double(writtenNumber)
+                    } else if combinedLabels == "e" {
+                        writtenValue = Double(M_E)
+                    }
+                    
+                    if let writtenValue = writtenValue {
                         // We recognized a number!
                         let newConnector = Connector()
                         let newLabel = ConnectorLabel(connector: newConnector)
@@ -615,7 +661,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         self.addConnectorLabel(newLabel, topPriority: true)
                         
                         recognized = true
-                        self.updateDisplay(values: [newConnector: Double(writtenNumber)], needsSolving: true)
+                        self.updateDisplay(values: [newConnector: Double(writtenValue)], needsSolving: true)
                         
                     } else if combinedLabels == "x" || combinedLabels == "/" {
                         // We recognized a multiply or divide!
@@ -623,13 +669,14 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         let newView = MultiplierView(multiplier: newMultiplier)
                         newView.layoutWithConnectorPositions([:])
                         newView.center = centerPoint
+                        let inputs = newView.inputConnectorPorts()
+                        let outputs = newView.outputConnectorPorts()
                         if combinedLabels == "x" {
-                            let inputs = newView.inputConnectorPorts()
-                            self.addConstraintView(newView, firstInputPort: inputs[0], secondInputPort: inputs[1])
+                            self.addConstraintView(newView, firstInputPort: inputs[0], secondInputPort: inputs[1], outputPort: outputs[0])
                         } else if combinedLabels == "/" {
-                            self.addConstraintView(newView, firstInputPort: newView.outputConnectorPorts()[0], secondInputPort: newView.inputConnectorPorts()[0])
+                            self.addConstraintView(newView, firstInputPort: outputs[0], secondInputPort: inputs[0], outputPort: inputs[1])
                         } else {
-                            self.addConstraintView(newView, firstInputPort: nil, secondInputPort: nil)
+                            self.addConstraintView(newView, firstInputPort: nil, secondInputPort: nil, outputPort: nil)
                         }
                         recognized = true
                         
@@ -639,41 +686,27 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         let newView = AdderView(adder: newAdder)
                         newView.layoutWithConnectorPositions([:])
                         newView.center = centerPoint
+                        let inputs = newView.inputConnectorPorts()
+                        let outputs = newView.outputConnectorPorts()
                         if combinedLabels == "+" || combinedLabels == "1-" {
                             let inputs = newView.inputConnectorPorts()
-                            self.addConstraintView(newView, firstInputPort: inputs[0], secondInputPort: inputs[1])
+                            self.addConstraintView(newView, firstInputPort: inputs[0], secondInputPort: inputs[1], outputPort: outputs[0])
                         } else if combinedLabels == "-" {
-                            self.addConstraintView(newView, firstInputPort: newView.outputConnectorPorts()[0], secondInputPort: newView.inputConnectorPorts()[0])
+                            self.addConstraintView(newView, firstInputPort: outputs[0], secondInputPort: inputs[0], outputPort: inputs[1])
                         } else {
-                            self.addConstraintView(newView, firstInputPort: nil, secondInputPort: nil)
+                            self.addConstraintView(newView, firstInputPort: nil, secondInputPort: nil, outputPort: nil)
                         }
                         recognized = true
                         
-                    } else if combinedLabels == "e" || combinedLabels == "^" {
+                    } else if combinedLabels == "^" {
                         let newExponent = Exponent()
                         let newView = ExponentView(exponent: newExponent)
                         newView.layoutWithConnectorPositions([:])
                         newView.center = centerPoint
                         
-                        var eLabel: ConnectorLabel?
-                        if combinedLabels == "e" {
-                            let eConnector = Connector()
-                            let newLabel = ConnectorLabel(connector: eConnector)
-                            newLabel.sizeToFit()
-                            newLabel.center = CGPointMake(centerPoint.x - 80, centerPoint.y)
-                            // Make sure this doesn't get connected to a previously drawn constraint
-                            self.lastDrawnConstraint = nil
-                            self.addConnectorLabel(newLabel, topPriority: true)
-                            
-                            eLabel = newLabel
-                        }
-                        
-                        self.addConstraintView(newView, firstInputPort: newView.basePort, secondInputPort: newView.exponentPort)
+                        self.addConstraintView(newView, firstInputPort: newView.basePort, secondInputPort: newView.exponentPort, outputPort: newView.resultPort)
                         recognized = true
-                        if let eLabel = eLabel {
-                            self.updateDisplay(values: [eLabel.connector: Double(M_E)], needsSolving: true)
-                        }
-                    
+                        
                     } else {
                         println("Unable to parse written text: \(combinedLabels)")
                     }
