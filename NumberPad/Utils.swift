@@ -23,3 +23,17 @@ func euclidianDistanceSquared(a: CGPoint, b: CGPoint) -> CGFloat {
     let dy = a.y - b.y
     return dx*dx + dy*dy
 }
+
+extension FTTouchClassification : Printable {
+    public
+    var description : String {
+        switch self {
+        case .UnknownDisconnected: return "UnkownDisconnected"
+        case .Palm: return "Palm"
+        case .Finger: return "Finger"
+        case .Eraser: return "Eraser"
+        default: return "Unknown"
+        }
+    }
+}
+

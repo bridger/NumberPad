@@ -45,6 +45,11 @@
 		AE890D141A699A0400E604C4 /* bridger_test.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD2471A5494B7007D1500 /* bridger_test.json */; };
 		AE890D161A699E7E00E604C4 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE890D151A699E7E00E604C4 /* Utils.swift */; };
 		AE890D181A69DA0300E604C4 /* bridger_normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = AE890D171A69DA0300E604C4 /* bridger_normalized.json */; };
+		AEA7F36A1A7DBF86008A07E4 /* FiftyThreeSdk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEA7F3691A7DBF86008A07E4 /* FiftyThreeSdk.framework */; };
+		AEA7F36C1A7DBFE0008A07E4 /* libc++.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AEA7F36B1A7DBFE0008A07E4 /* libc++.dylib */; };
+		AEA7F36E1A7DBFEC008A07E4 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEA7F36D1A7DBFEC008A07E4 /* CoreBluetooth.framework */; };
+		AEA7F3701A7DBFF3008A07E4 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEA7F36F1A7DBFF3008A07E4 /* CoreGraphics.framework */; };
+		AEA7F3721A7DC065008A07E4 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA7F3711A7DC065008A07E4 /* main.swift */; };
 		AEC9EEC01A3CDC4A002C7B08 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */; };
 		AEC9EEC21A3CDC4A002C7B08 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEC11A3CDC4A002C7B08 /* ViewController.swift */; };
 		AEC9EEC71A3CDC4A002C7B08 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AEC9EEC61A3CDC4A002C7B08 /* Images.xcassets */; };
@@ -149,6 +154,11 @@
 		AE890D101A68AB5B00E604C4 /* VisualizeCollectionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VisualizeCollectionViewController.swift; sourceTree = "<group>"; };
 		AE890D151A699E7E00E604C4 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		AE890D171A69DA0300E604C4 /* bridger_normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = bridger_normalized.json; sourceTree = "<group>"; };
+		AEA7F3691A7DBF86008A07E4 /* FiftyThreeSdk.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FiftyThreeSdk.framework; sourceTree = "<group>"; };
+		AEA7F36B1A7DBFE0008A07E4 /* libc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++.dylib"; path = "usr/lib/libc++.dylib"; sourceTree = SDKROOT; };
+		AEA7F36D1A7DBFEC008A07E4 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
+		AEA7F36F1A7DBFF3008A07E4 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		AEA7F3711A7DC065008A07E4 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		AEC9EEBA1A3CDC4A002C7B08 /* NumberPad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NumberPad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC9EEBE1A3CDC4A002C7B08 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -190,7 +200,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AEA7F3701A7DBFF3008A07E4 /* CoreGraphics.framework in Frameworks */,
+				AEA7F36E1A7DBFEC008A07E4 /* CoreBluetooth.framework in Frameworks */,
+				AEA7F36C1A7DBFE0008A07E4 /* libc++.dylib in Frameworks */,
 				AE064B661A64605A00A10381 /* DigitRecognizerSDK.framework in Frameworks */,
+				AEA7F36A1A7DBF86008A07E4 /* FiftyThreeSdk.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -319,9 +333,9 @@
 				AECB34FB1A6B1F460034A2AB /* NumberSlideView.swift */,
 				AE5554FA1A5CE0A5007DCF1D /* Main.storyboard */,
 				AE890D0B1A65AFAE00E604C4 /* Launch Screen.xib */,
+				AECB34F31A6AEC540034A2AB /* NumberPad-Bridging-Header.h */,
 				AEC9EEC61A3CDC4A002C7B08 /* Images.xcassets */,
 				AEC9EEBD1A3CDC4A002C7B08 /* Supporting Files */,
-				AECB34F31A6AEC540034A2AB /* NumberPad-Bridging-Header.h */,
 			);
 			path = NumberPad;
 			sourceTree = "<group>";
@@ -335,6 +349,11 @@
 				AE3DD23B1A52785D007D1500 /* ujipenchars2_test.json */,
 				AE3DD23C1A52785D007D1500 /* ujipenchars2_train.json */,
 				AE3DD2391A52784A007D1500 /* ujipenchars2.json */,
+				AEA7F3711A7DC065008A07E4 /* main.swift */,
+				AEA7F36F1A7DBFF3008A07E4 /* CoreGraphics.framework */,
+				AEA7F36D1A7DBFEC008A07E4 /* CoreBluetooth.framework */,
+				AEA7F36B1A7DBFE0008A07E4 /* libc++.dylib */,
+				AEA7F3691A7DBF86008A07E4 /* FiftyThreeSdk.framework */,
 				AEC9EEBE1A3CDC4A002C7B08 /* Info.plist */,
 			);
 			name = "Supporting Files";
@@ -609,6 +628,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AE064B701A646FB200A10381 /* Utils.swift in Sources */,
+				AEA7F3721A7DC065008A07E4 /* main.swift in Sources */,
 				AEC9EEC21A3CDC4A002C7B08 /* ViewController.swift in Sources */,
 				AE064B6B1A64679200A10381 /* Constraints.swift in Sources */,
 				AECB34FC1A6B1F460034A2AB /* NumberSlideView.swift in Sources */,
@@ -870,9 +890,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/NumberPad",
+				);
 				GCC_OPTIMIZATION_LEVEL = s;
 				INFOPLIST_FILE = NumberPad/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "NumberPad/NumberPad-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -884,8 +909,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/NumberPad",
+				);
 				INFOPLIST_FILE = NumberPad/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "NumberPad/NumberPad-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2";
