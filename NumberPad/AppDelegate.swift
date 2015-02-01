@@ -11,7 +11,6 @@ import DigitRecognizerSDK
 
 let filePrefix = "SavedLibraries-"
 
-@UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?

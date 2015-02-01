@@ -20,35 +20,78 @@ class Stroke {
         layer.fillColor = nil
     }
     
+    var layerNeedsUpdate = false
     func addPoint(point: CGPoint)
     {
         points.append(point)
-        
-        let path = CGPathCreateMutable()
-        var x: CGFloat = 0
-        for (index, point) in enumerate(points) {
-            if index == 0 {
-                CGPathMoveToPoint(path, nil, point.x, point.y)
-            } else {
-                CGPathAddLineToPoint(path, nil, point.x, point.y)
-            }
-        }
-        layer.path = path;
+        layerNeedsUpdate = true
     }
+    
+    func updateLayer() {
+        if layerNeedsUpdate {
+            let path = CGPathCreateMutable()
+            var x: CGFloat = 0
+            for (index, point) in enumerate(points) {
+                if index == 0 {
+                    CGPathMoveToPoint(path, nil, point.x, point.y)
+                } else {
+                    CGPathAddLineToPoint(path, nil, point.x, point.y)
+                }
+            }
+            layer.path = path;
+            
+            layerNeedsUpdate = false
+        }
+    }
+    
 }
 
-class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlideViewDelegate {
+class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlideViewDelegate, FTPenManagerDelegate, FTTouchClassificationsChangedDelegate {
+    
+    required init(coder aDecoder: NSCoder) {
+        self.digitClassifier = DTWDigitClassifier()
+        super.init(coder: aDecoder)
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        self.view.multipleTouchEnabled = true
+        self.view.userInteractionEnabled = true
+        self.view.exclusiveTouch = true
+        
+        let pairingView = FTPenManager.sharedInstance().pairingButtonWithStyle(.Debug);
+        self.view.addSubview(pairingView)
+        FTPenManager.sharedInstance().delegate = self;
+        FTPenManager.sharedInstance().classifier.delegate = self;
+        
+        self.scrollView = UIScrollView(frame: self.view.bounds)
+        self.scrollView.autoresizingMask = .FlexibleWidth | .FlexibleHeight
+        self.scrollView.userInteractionEnabled = false
+        self.scrollView.panGestureRecognizer.minimumNumberOfTouches = 2
+        self.view.addGestureRecognizer(self.scrollView.panGestureRecognizer)
+        self.view.insertSubview(self.scrollView, atIndex: 0)
+        
+        let valuePickerHeight: CGFloat = 100.0
+        valuePicker = NumberSlideView(frame: CGRectMake(0, self.view.bounds.size.height - valuePickerHeight, self.view.bounds.size.width, valuePickerHeight))
+        valuePicker.delegate = self
+        valuePicker.autoresizingMask = .FlexibleWidth | .FlexibleTopMargin
+        self.view.addSubview(valuePicker)
+        self.selectedConnectorLabel = nil
+    }
+    
     var scrollView: UIScrollView!
     var valuePicker: NumberSlideView!
     
     var strokeRecognizer: StrokeGestureRecognizer!
-    var currentStroke: Stroke?
     var unprocessedStrokes: [Stroke] = []
     var digitClassifier: DTWDigitClassifier
     
     let connectorZPosition: CGFloat = -1
     let constraintZPosition: CGFloat = -2
     let connectionLayersZPosition: CGFloat = -3
+    
+    // MARK: Managing connectors and constraints
     
     var connectorLabels: [ConnectorLabel] = []
     var connectorToLabel: [Connector: ConnectorLabel] = [:]
@@ -197,6 +240,11 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         }
     }
     
+    // For automatically hooking up drawn symbols
+    var lastDrawnConnector: ConnectorLabel?
+    var lastDrawnConstraint: (ConstraintView, ConnectorPort)?
+    
+    
     var connectionLayers: [CAShapeLayer] = []
     var lastSimulationContext: SimulationContext?
     func lastValueForConnector(connector: Connector) -> Double? {
@@ -206,253 +254,326 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         return self.lastSimulationContext?.connectorValues[connector]?.WasDependent
     }
     
-    // For drawing connections
-    enum DrawConnectionInfo {
-        case FromConnector(ConnectorLabel)
-        case FromConnectorPort(ConstraintView, ConnectorPort)
-    }
-    var currentDrawingConnection: DrawConnectionInfo?
-    var currentDrawConnectionLine: CAShapeLayer?
     
-    // For automatically hooking up drawn symbols
-    var lastDrawnConnector: ConnectorLabel?
-    var lastDrawnConstraint: (ConstraintView, ConnectorPort)?
+    // MARK: Pencil integration
     
-    // For dragging views around
-    enum DragViewInfo {
-        case Connector(ConnectorLabel, CGPoint)
-        case Constraint(ConstraintView, CGPoint)
-    }
-    var currentDrag: DragViewInfo?
-    
-    
-    required init(coder aDecoder: NSCoder) {
-        self.digitClassifier = DTWDigitClassifier()
-        super.init(coder: aDecoder)
+    func penManagerStateDidChange(state: FTPenManagerState) {
+        var connected = FTPenManagerStateIsConnected(state)
+        // TODO: Switch between two-finger scroll and using finger to scroll by disabling UIScrollView's gesture recognizer
+        if (connected)
+        {
+            println("Connected")
+        }
+        else
+        {
+            println("Disconnected")
+        }
     }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        self.scrollView = UIScrollView(frame: self.view.bounds)
-        self.scrollView.autoresizingMask = .FlexibleWidth | .FlexibleHeight
-        self.scrollView.panGestureRecognizer.minimumNumberOfTouches = 2
-        self.view.insertSubview(self.scrollView, atIndex: 0)
-        
-        let strokeRecognizer = StrokeGestureRecognizer()
-        self.scrollView.addGestureRecognizer(strokeRecognizer)
-        strokeRecognizer.addTarget(self, action: "handleStroke:")
-        self.strokeRecognizer = strokeRecognizer
-        
-        let moveRecognizer = UILongPressGestureRecognizer(target: self, action: "handleMove:")
-        moveRecognizer.minimumPressDuration = 0.2
-        self.scrollView.addGestureRecognizer(moveRecognizer)
-        
-        let deleteRecognizer = UITapGestureRecognizer(target: self, action: "handleDelete:")
-        deleteRecognizer.numberOfTouchesRequired = 2
-        self.scrollView.addGestureRecognizer(deleteRecognizer)
-        
-        let selectRecognizer = UITapGestureRecognizer(target: self, action: "handleSelect:")
-        self.scrollView.addGestureRecognizer(selectRecognizer)
-        
-        let valuePickerHeight: CGFloat = 100.0
-        valuePicker = NumberSlideView(frame: CGRectMake(0, self.view.bounds.size.height - valuePickerHeight, self.view.bounds.size.width, valuePickerHeight))
-        valuePicker.delegate = self
-        valuePicker.autoresizingMask = .FlexibleWidth | .FlexibleTopMargin
-        self.view.addSubview(valuePicker)
-        self.selectedConnectorLabel = nil
+    func penClassificationForTouch(touch: UITouch) -> FTTouchClassification? {
+        var classification = FTTouchClassification.Unknown
+        if FTPenManager.sharedInstance().classifier.classification(&classification, forTouch: touch) {
+            return classification
+        } else {
+            return nil
+        }
     }
     
-    func handleMove(recognizer: UILongPressGestureRecognizer) {
-        let point = recognizer.locationInView(self.scrollView)
+    func classificationsDidChangeForTouches(touches: NSSet!) {
+        if usePenClassifications() {
+            for object in touches {
+                if let classificationInfo = object as? FTTouchClassificationInfo {
+                    if let touchInfo = self.touches[classificationInfo.touchId] {
+                        
+                        let penClassification = classificationInfo.newValue
+                        println("penClassification changed to \(penClassification) from \(classificationInfo.oldValue) for touch \(classificationInfo.touchId)")
+                        let gestureClassification = gestureClassificationForTouchAndPen(touchInfo, penClassification: penClassification)
+                        changeTouchToClassification(touchInfo, classification: gestureClassification)
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: Gestures
+    
+    enum GestureClassification {
+        case Stroke
+        case MakeConnection
+        case Drag
+        case Delete
+    }
+    
+    class TouchInfo {
+        var connectorLabel: (ConnectorLabel: ConnectorLabel, Offset: CGPoint)?
+        var constraintView: (ConstraintView: ConstraintView, Offset: CGPoint, ConnectorPort: ConnectorPort?)?
+        var drawConnectionLine: CAShapeLayer?
         
-        let pickedUpScale: CGFloat = 1.3
-        switch recognizer.state {
-        case .Began:
-            var pickedUpView: UIView?
-            for connectorLabel in self.connectorLabels {
-                if CGRectContainsPoint(connectorLabel.frame, point) {
-                    let offset = connectorLabel.center - point
-                    self.currentDrag = DragViewInfo.Connector(connectorLabel, offset)
-                    pickedUpView = connectorLabel
+        let currentStroke = Stroke()
+        
+        var phase: UITouchPhase = .Began
+        var classification: GestureClassification?
+        
+        let initialPoint: CGPoint
+        let initialTime: NSTimeInterval
+        init(initialPoint: CGPoint, initialTime: NSTimeInterval) {
+            self.initialPoint = initialPoint
+            self.initialTime = initialTime
+            
+            currentStroke.addPoint(initialPoint)
+        }
+        
+        func pickedUpView() -> (View: UIView, Offset: CGPoint)? {
+            if let connectorLabel = self.connectorLabel {
+                return (connectorLabel.ConnectorLabel, connectorLabel.Offset)
+            } else if let constraintView =  self.constraintView {
+                return (constraintView.ConstraintView, constraintView.Offset)
+            } else {
+                return nil
+            }
+        }
+    }
+    
+    typealias TouchID = NSInteger
+    var touches: [TouchID: TouchInfo] = [:]
+    var processStrokesCounter: Int = 0
+    
+    func gestureClassificationForTouchAndPen(touchInfo: TouchInfo, penClassification: FTTouchClassification) -> GestureClassification? {
+        if penClassification == .Pen {
+            // If there is a connectorPort or label, they are drawing a connection
+            if touchInfo.connectorLabel != nil || touchInfo.constraintView?.ConnectorPort != nil {
+                return .MakeConnection
+            } else if touchInfo.constraintView == nil { // If there was a constraintView but no connectorPort, it was a miss and we ignore it
+                return .Stroke
+            }
+        } else if penClassification == .Finger {
+            if touchInfo.pickedUpView() != nil {
+                return .Drag
+            }
+            // TODO: Scroll the view, if there is no view to pick up
+        }
+        return nil
+    }
+    
+    func usePenClassifications() -> Bool {
+        return FTPenManagerStateIsConnected(FTPenManager.sharedInstance().state)
+    }
+    
+    let dragDelayTime = 0.2
+    let dragMaxDistance: CGFloat = 10
+    
+    override func touchesBegan(touches: NSSet, withEvent event: UIEvent) {
+        for object in touches {
+            if let touch = object as? UITouch {
+                let point = touch.locationInView(self.scrollView)
+                
+                var touchInfo = TouchInfo(initialPoint: point, initialTime: touch.timestamp)
+                
+                if let connectorLabel = self.connectorLabelAtPoint(point) {
+                    touchInfo.connectorLabel = (connectorLabel, connectorLabel.center - point)
+                    
+                } else if let (constraintView, connectorPort) = self.connectorPortAtLocation(point) {
+                    touchInfo.constraintView = (constraintView, constraintView.center - point, connectorPort)
+                    
+                } else if let constraintView = self.constraintViewAtPoint(point) {
+                    touchInfo.constraintView = (constraintView, constraintView.center - point, nil)
+                    
+                }
+                
+                let touchID = FTPenManager.sharedInstance().classifier.idForTouch(touch)
+                self.touches[touchID] = touchInfo
+                
+                if (!usePenClassifications()) {
+                    // Test for a long press, to trigger a drag
+                    if (touchInfo.connectorLabel != nil || touchInfo.constraintView != nil) {
+                        delay(dragDelayTime) {
+                            // If this still hasn't been classified as something else (like a connection draw), then it is a move
+                            if touchInfo.classification == nil {
+                                if touchInfo.phase == .Began || touchInfo.phase == .Moved {
+                                    self.changeTouchToClassification(touchInfo, classification: .Drag)
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                let classification = penClassificationForTouch(touch)
+                if classification == nil || classification! != .Palm {
+                    if let lastStroke = self.unprocessedStrokes.last {
+                        if let lastStrokeLastPoint = lastStroke.points.last {
+                            if euclidianDistance(lastStrokeLastPoint, point) > 150 {
+                                // This was far away from the last stroke, so we process that stroke
+                                processStrokes()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // TODO: See if this was a double-tap, to delete
+    }
+    
+    override func touchesMoved(touches: NSSet, withEvent event: UIEvent) {
+        for object in touches {
+            if let touch = object as? UITouch {
+                let touchID = FTPenManager.sharedInstance().classifier.idForTouch(touch)
+                if let touchInfo = self.touches[touchID] {
+                    let point = touch.locationInView(self.scrollView)
+                    
+                    touchInfo.currentStroke.addPoint(point)
+                    touchInfo.phase = .Moved
+                    
+                    if (usePenClassifications()) {
+                        if touchInfo.classification == nil {
+                            if let penClassification = penClassificationForTouch(touch) {
+                                if let gestureClassification = gestureClassificationForTouchAndPen(touchInfo, penClassification: penClassification) {
+                                    println("Used penClassification \(penClassification) in touchesMoved for touch \(touchID)")
+                                    changeTouchToClassification(touchInfo, classification: gestureClassification)
+                                }
+                            }
+                        }
+                        
+                    } else {
+                        // Assign a classification, only if one doesn't exist
+                        if touchInfo.classification == nil {
+                            // If they weren't pointing at anything, then this is definitely a stroke
+                            if touchInfo.connectorLabel == nil && touchInfo.constraintView == nil {
+                                changeTouchToClassification(touchInfo, classification: .Stroke)
+                            } else if touchInfo.connectorLabel != nil || touchInfo.constraintView?.ConnectorPort != nil {
+                                // If we have moved significantly before the long press timer fired, then this is a connection draw
+                                if touchInfo.initialPoint.distanceTo(point) > dragMaxDistance {
+                                    changeTouchToClassification(touchInfo, classification: .MakeConnection)
+                                }
+                                // TODO: Maybe it should be a failed gesture if there was no connectorPort?
+                            }
+                        }
+                    }
+                    
+                    if touchInfo.classification != nil {
+                            updateGestureForTouch(touchInfo)
+                    }
+                    
+                } else {
+                    println("Unable to find info for touchMoved ID \(touchID)")
+                }
+            }
+        }
+    }
+    
+    override func touchesEnded(touches: NSSet, withEvent event: UIEvent) {
+        for object in touches {
+            if let touch = object as? UITouch {
+                let touchID = FTPenManager.sharedInstance().classifier.idForTouch(touch)
+                if let touchInfo = self.touches[touchID] {
+                    let point = touch.locationInView(self.scrollView)
+                    
+                    touchInfo.currentStroke.addPoint(point)
+                    touchInfo.phase = .Ended
+                    
+                    if touchInfo.classification != nil {
+                        completeGestureForTouch(touchInfo)
+                    }
+                }
+            }
+        }
+    }
+    
+    override func touchesCancelled(touches: NSSet!, withEvent event: UIEvent!) {
+        for object in touches {
+            if let touch = object as? UITouch {
+                let touchID = FTPenManager.sharedInstance().classifier.idForTouch(touch)
+                if let touchInfo = self.touches[touchID] {
+                    undoEffectsOfGestureInProgress(touchInfo)
+                    touchInfo.phase = .Cancelled
+                }
+            }
+        }
+    }
+    
+    func changeTouchToClassification(touchInfo: TouchInfo, classification: GestureClassification?) {
+        if touchInfo.classification != classification {
+            if touchInfo.classification != nil {
+                undoEffectsOfGestureInProgress(touchInfo)
+            }
+            
+            touchInfo.classification = classification
+            
+            if let classification = classification {
+                switch classification {
+                case .Stroke:
+                    self.processStrokesCounter += 1
+                    touchInfo.currentStroke.updateLayer()
+                    self.scrollView.layer.addSublayer(touchInfo.currentStroke.layer)
+                    
+                case .MakeConnection:
+                    updateDrawConnectionGesture(touchInfo)
+                    
+                case .Drag:
+                    if let (pickedUpView, offset) = touchInfo.pickedUpView() {
+                        setViewPickedUp(pickedUpView, pickedUp: true)
+                        updateDragGesture(touchInfo)
+                        
+                    } else {
+                        fatalError("A touchInfo was classified as Drag, but didn't have a connectorLabel or constraintView.")
+                    }
+                    
+                case .Delete:
+                    // TODO: Not sure what to do here....
                     break
                 }
             }
-            if pickedUpView == nil {
-                for constraintView in self.constraintViews {
-                    if CGRectContainsPoint(constraintView.frame, point) {
-                        let offset = constraintView.center - point
-                        self.currentDrag = DragViewInfo.Constraint(constraintView, offset)
-                        pickedUpView = constraintView
-                        break
-                    }
-                }
-            }
-            if let pickedUpView = pickedUpView {
-                // Cancel the stroke
-                self.strokeRecognizer.enabled = false
-                self.strokeRecognizer.enabled = true
-                
-                // Add some styles to make it look picked up
-                UIView.animateWithDuration(0.2) {
-                    pickedUpView.layer.shadowColor = UIColor.blackColor().CGColor
-                    pickedUpView.layer.shadowOpacity = 0.4
-                    pickedUpView.layer.shadowRadius = 10
-                    pickedUpView.layer.shadowOffset = CGSizeMake(5, 5)
-                }
-                updateDisplay(needsLayout: true)
-            }
-            
-        case .Changed:
-            if let currentDrag = self.currentDrag {
-                switch currentDrag {
-                case let .Connector(connectorLabel, offset):
-                    connectorLabel.center = point + offset
-                case let .Constraint(constraintView, offset):
-                    constraintView.center = point + offset
-                }
-                updateDisplay(needsLayout: true)
-            }
-            
-        case .Ended, .Cancelled, .Failed:
-            if let currentDrag = self.currentDrag {
-                var pickedUpView: UIView?
-                switch currentDrag {
-                case let .Connector(connectorLabel, offset):
-                    connectorLabel.center = point + offset
-                    pickedUpView = connectorLabel
-                case let .Constraint(constraintView, offset):
-                    constraintView.center = point + offset
-                    pickedUpView = constraintView
-                }
-                
-                if let pickedUpView = pickedUpView {
-                    UIView.animateWithDuration(0.2) {
-                        pickedUpView.layer.shadowColor = nil
-                        pickedUpView.layer.shadowOpacity = 0
-                    }
-                }
-                updateDisplay(needsLayout: true)
-                updateScrollableSize()
-                self.currentDrag = nil
-            }
-        case .Possible:
-            break
         }
     }
     
-    func handleDelete(recognizer: UITapGestureRecognizer) {
-        let point = recognizer.locationInView(self.scrollView)
-        var deletedSomething = false
-        if let connectorLabel = self.connectorLabelAtPoint(point) {
-            // Delete this connector!
-            removeConnectorLabel(connectorLabel)
-            deletedSomething = true
-        }
-        if deletedSomething == false {
-            if let constraintView = self.constraintViewAtPoint(point) {
-                // Delete this constraint!
-                removeConstraintView(constraintView)
-                deletedSomething = true
+    func undoEffectsOfGestureInProgress(touchInfo: TouchInfo) {
+        if let classification = touchInfo.classification {
+            switch classification {
+            case .Stroke:
+                touchInfo.currentStroke.layer.removeFromSuperlayer()
+            case .MakeConnection:
+                if let dragLine = touchInfo.drawConnectionLine {
+                    dragLine.removeFromSuperlayer()
+                }
+            case .Drag:
+                if let (pickedUpView, offset) = touchInfo.pickedUpView() {
+                    setViewPickedUp(pickedUpView, pickedUp: false)
+                }
+            case .Delete:
+                break
             }
-        }
-        
-        if deletedSomething {
-            updateDisplay(needsSolving: true, needsLayout: true)
         }
     }
     
-    func handleSelect(recognizer: UITapGestureRecognizer) {
-        let point = recognizer.locationInView(self.scrollView)
-        if let connectorLabel = self.connectorLabelAtPoint(point) {
-            self.selectedConnectorLabel = connectorLabel
-        } else if let (connectorLabel, constraintView, connectorPort) = self.connectionLineAtPoint(point) {
-            let lastValue = self.lastValueForConnector(connectorLabel.connector)
-            let lastValueWasDependent = self.lastValueWasDependentForConnector(connectorLabel.connector)
+    func updateGestureForTouch(touchInfo: TouchInfo) {
+        if let classification = touchInfo.classification {
             
-            if (lastValueWasDependent != nil && lastValueWasDependent!) {
-                // Try to make this connector high priority, so it is constant instead of dependent
-                moveConnectorToTopPriority(connectorLabel)
-            } else {
-                // Lower the priority of this connector, so it will be dependent
-                moveConnectorToBottomPriority(connectorLabel)
+            switch classification {
+            case .Stroke:
+                touchInfo.currentStroke.updateLayer()
+                
+            case .MakeConnection:
+                updateDrawConnectionGesture(touchInfo)
+                
+            case .Drag:
+                updateDragGesture(touchInfo)
+                
+            case .Delete:
+                // TODO: Not sure what to do here....
+                break
             }
-            updateDisplay(needsSolving: true)
             
-            println("Tapped connectorLabel \(lastValue) \(lastValueWasDependent)")
+        } else {
+            fatalError("A touchInfo must have a classification to update the gesture.")
         }
     }
     
-    var processStrokesCounter: Int = 0
-    func handleStroke(recognizer: StrokeGestureRecognizer) {
-        let point = recognizer.locationInView(self.scrollView)
-        
-        switch recognizer.state {
-        case .Began:
-            if let connectorLabel  = connectorLabelAtPoint(point) {
-                // We are dragging from a label
-                currentDrawingConnection = DrawConnectionInfo.FromConnector(connectorLabel)
-                return
-            }
-            if let (constraintView, connectorPort) = connectorPortAtLocation(point) {
-                // We are dragging from a constraint view
-                currentDrawingConnection = DrawConnectionInfo.FromConnectorPort(constraintView, connectorPort)
-                return
-            }
+    func completeGestureForTouch(touchInfo: TouchInfo) {
+        if let classification = touchInfo.classification {
             
-            self.processStrokesCounter += 1
-            self.currentStroke = Stroke()
-            self.scrollView.layer.addSublayer(self.currentStroke!.layer)
-            self.currentStroke!.addPoint(point)
-            
-            var wasFarAway = false
-            if let lastStroke = self.unprocessedStrokes.last {
-                if let lastStrokeLastPoint = lastStroke.points.last {
-                    let point = recognizer.locationInView(self.scrollView)
-                    if euclidianDistance(lastStrokeLastPoint, point) > 150 {
-                        wasFarAway = true
-                    }
-                }
-            }
-            if wasFarAway {
-                processStrokes()
-            }
-            
-        case .Changed:
-            if let currentStroke = self.currentStroke {
-                // We are drawing
-                currentStroke.addPoint(point)
-                
-            } else if let drawConnectionInfo = currentDrawingConnection {
-                // We are dragging between connectors
-                
-                if let oldDragLine = currentDrawConnectionLine {
-                    oldDragLine.removeFromSuperlayer()
-                }
-                var dragLine: CAShapeLayer!
-                switch drawConnectionInfo {
-                case let .FromConnector(connectorLabel):
-                    let targetPort = connectorPortAtLocation(point)?.ConnectorPort
-                    let labelPoint = connectorLabel.center
-                    var dependent = lastValueWasDependentForConnector(connectorLabel.connector) ?? false
-                    dragLine = createConnectionLayer(labelPoint, endPoint: point, color: targetPort?.color, isDependent: dependent)
-                case let .FromConnectorPort(constraintView, connectorPort):
-                    let startPoint = self.scrollView.convertPoint(connectorPort.center, fromView: constraintView)
-                    var endPoint = point
-                    var dependent = false
-                    if let targetConnector = connectorLabelAtPoint(point) {
-                        endPoint = targetConnector.center
-                        dependent = lastValueWasDependentForConnector(targetConnector.connector) ?? false
-                    }
-                    dragLine = createConnectionLayer(startPoint, endPoint: endPoint, color: connectorPort.color, isDependent: dependent)
-                }
-                
-                dragLine.zPosition = connectionLayersZPosition
-                self.scrollView.layer.addSublayer(dragLine)
-                self.currentDrawConnectionLine = dragLine
-            }
-            
-        case .Ended, .Cancelled, .Failed:
-            if let currentStroke = self.currentStroke {
+            switch classification {
+            case .Stroke:
+                touchInfo.currentStroke.updateLayer()
                 
                 let currentCounter = self.processStrokesCounter
                 #if arch(i386) || arch(x86_64)
@@ -470,50 +591,136 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         }
                     }
                 }
-                unprocessedStrokes.append(currentStroke)
-                self.currentStroke = nil
+                unprocessedStrokes.append(touchInfo.currentStroke)
                 
-            } else if let drawConnectionInfo = currentDrawingConnection {
+            case .MakeConnection:
+                completeDrawConnectionGesture(touchInfo)
                 
-                var connectionMade = false
-                
-                switch drawConnectionInfo {
-                case let .FromConnector(connectorLabel):
-                    if let (constraintView, connectorPort) = connectorPortAtLocation(point) {
-                        self.connect(connectorLabel, constraintView: constraintView, connectorPort: connectorPort)
-                        connectionMade = true
-                    }
-                case let .FromConnectorPort(constraintView, connectorPort):
-                    if let connectorLabel = connectorLabelAtPoint(point) {
-                        self.connect(connectorLabel, constraintView: constraintView, connectorPort: connectorPort)
-                        connectionMade = true
-                        
-                    } else if let (secondConstraintView, secondConnectorPort) = connectorPortAtLocation(point) {
-                        self.connectConstraintViews(constraintView, firstConnectorPort: connectorPort, secondConstraintView: secondConstraintView, secondConnectorPort: secondConnectorPort)
-                        
-                        connectionMade = true
-                    }
-                }
-                
-                if connectionMade {
-                    // Clear any information about the last drawn constraint or connector
-                    self.lastDrawnConstraint = nil
-                    self.lastDrawnConnector = nil
+            case .Drag:
+                if let (pickedUpView, offset) = touchInfo.pickedUpView() {
+                    updateDragGesture(touchInfo)
+                    setViewPickedUp(pickedUpView, pickedUp: false)
+                    updateScrollableSize()
                     
-                    self.updateDisplay()
+                } else {
+                    fatalError("A touchInfo was classified as Drag, but didn't have a connectorLabel or constraintView.")
                 }
                 
-                if let dragLine = currentDrawConnectionLine {
-                    dragLine.removeFromSuperlayer()
-                    self.currentDrawConnectionLine = nil
-                }
-                currentDrawingConnection = nil
+            case .Delete:
+                // TODO: Not sure what to do here....
+                break
             }
             
-        case .Possible:
-            break
+            
+        } else {
+            fatalError("A touchInfo must have a classification to complete the gesture.")
         }
     }
+    
+    
+    func updateDragGesture(touchInfo: TouchInfo) {
+        let point = touchInfo.currentStroke.points.last!
+        if let (pickedUpView, offset) = touchInfo.pickedUpView() {
+            
+            let newPoint = point + offset
+            pickedUpView.center = newPoint
+            updateDisplay(needsLayout: true)
+            
+        } else {
+            fatalError("A touchInfo was classified as Drag, but didn't have a connectorLabel or constraintView.")
+        }
+    }
+    
+    func updateDrawConnectionGesture(touchInfo: TouchInfo) {
+        let point = touchInfo.currentStroke.points.last!
+        
+        if let oldDragLine = touchInfo.drawConnectionLine {
+            oldDragLine.removeFromSuperlayer()
+        }
+        
+        var dragLine: CAShapeLayer!
+        if let (connectorLabel, offset) = touchInfo.connectorLabel {
+            let targetPort = connectorPortAtLocation(point)?.ConnectorPort
+            let labelPoint = connectorLabel.center
+            var dependent = lastValueWasDependentForConnector(connectorLabel.connector) ?? false
+            dragLine = createConnectionLayer(labelPoint, endPoint: point, color: targetPort?.color, isDependent: dependent)
+            
+        } else if let (constraintView, offset, connectorPort) = touchInfo.constraintView {
+            let startPoint = self.scrollView.convertPoint(connectorPort!.center, fromView: constraintView)
+            var endPoint = point
+            var dependent = false
+            if let targetConnector = connectorLabelAtPoint(point) {
+                endPoint = targetConnector.center
+                dependent = lastValueWasDependentForConnector(targetConnector.connector) ?? false
+            }
+            dragLine = createConnectionLayer(startPoint, endPoint: endPoint, color: connectorPort!.color, isDependent: dependent)
+            
+        } else {
+            fatalError("A touchInfo was classified as MakeConnection, but didn't have a connectorLabel or connectorPort.")
+        }
+        
+        dragLine.zPosition = connectionLayersZPosition
+        self.scrollView.layer.addSublayer(dragLine)
+        touchInfo.drawConnectionLine = dragLine
+    }
+    
+    func completeDrawConnectionGesture(touchInfo: TouchInfo) {
+        let point = touchInfo.currentStroke.points.last!
+        
+        if let oldDragLine = touchInfo.drawConnectionLine {
+            oldDragLine.removeFromSuperlayer()
+        }
+        
+        var connectionMade = false
+        
+        if let (connectorLabel, offset) = touchInfo.connectorLabel {
+            if let (constraintView, connectorPort) = connectorPortAtLocation(point) {
+                self.connect(connectorLabel, constraintView: constraintView, connectorPort: connectorPort)
+                connectionMade = true
+            }
+            
+        } else if let (constraintView, offset, connectorPort) = touchInfo.constraintView {
+            if let connectorLabel = connectorLabelAtPoint(point) {
+                self.connect(connectorLabel, constraintView: constraintView, connectorPort: connectorPort!)
+                connectionMade = true
+                
+            } else if let (secondConstraintView, secondConnectorPort) = connectorPortAtLocation(point) {
+                self.connectConstraintViews(constraintView, firstConnectorPort: connectorPort!, secondConstraintView: secondConstraintView, secondConnectorPort: secondConnectorPort)
+                
+                connectionMade = true
+            }
+            
+        } else {
+            fatalError("A touchInfo was classified as MakeConnection, but didn't have a connectorLabel or connectorPort.")
+        }
+        
+        if connectionMade {
+            // Clear any information about the last drawn constraint or connector
+            self.lastDrawnConstraint = nil
+            self.lastDrawnConnector = nil
+            
+            self.updateDisplay()
+        }
+    }
+    
+    func setViewPickedUp(view: UIView, pickedUp: Bool) {
+        if pickedUp {
+            // Add some styles to make it look picked up
+            UIView.animateWithDuration(0.2) {
+                view.layer.shadowColor = UIColor.blackColor().CGColor
+                view.layer.shadowOpacity = 0.4
+                view.layer.shadowRadius = 10
+                view.layer.shadowOffset = CGSizeMake(5, 5)
+            }
+        } else {
+            // Remove the picked up styles
+            UIView.animateWithDuration(0.2) {
+                view.layer.shadowColor = nil
+                view.layer.shadowOpacity = 0
+            }
+        }
+    }
+    
     
     func connect(connectorLabel: ConnectorLabel, constraintView: ConstraintView, connectorPort: ConnectorPort) {
         for connectorPort in constraintView.connectorPorts() {
@@ -642,7 +849,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         }
                     }
                     
-                    // TODO: Try to actually parse out an equation, instead of just one component
                     let combinedLabels = classifiedLabels.reduce("", +)
                     var recognized = false
                     var writtenValue: Double?
