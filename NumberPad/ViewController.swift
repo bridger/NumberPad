@@ -495,11 +495,47 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                             undoEffectsOfGestureInProgress(touchInfo)
                         }
                         
-                        if let (connectorLabel, offset) = touchInfo.connectorLabel {
-                            if self.selectedConnectorLabel != connectorLabel {
-                                self.selectedConnectorLabel = connectorLabel
-                            } else {
-                                self.selectedConnectorLabel = nil
+                        let isDeleteTap = usePenClassifications() ? touchInfo.classification == .Delete :  touch.tapCount == 2
+                        if !isDeleteTap {
+                            // This is a selection tap
+                            if let (connectorLabel, offset) = touchInfo.connectorLabel {
+                                if self.selectedConnectorLabel != connectorLabel {
+                                    self.selectedConnectorLabel = connectorLabel
+                                } else {
+                                    self.selectedConnectorLabel = nil
+                                }
+                            } else if let (connectorLabel, constraintView, connectorPort) = self.connectionLineAtPoint(point) {
+                                let lastValue = self.lastValueForConnector(connectorLabel.connector)
+                                let lastValueWasDependent = self.lastValueWasDependentForConnector(connectorLabel.connector)
+                                
+                                if (lastValueWasDependent != nil && lastValueWasDependent!) {
+                                    // Try to make this connector high priority, so it is constant instead of dependent
+                                    moveConnectorToTopPriority(connectorLabel)
+                                } else {
+                                    // Lower the priority of this connector, so it will be dependent
+                                    moveConnectorToBottomPriority(connectorLabel)
+                                }
+                                updateDisplay(needsSolving: true)
+                            }
+                            
+                        } else {
+                            // This is a delete tap
+                            var deletedSomething = false
+                            if let (connectorLabel, offset) = touchInfo.connectorLabel {
+                                // Delete this connector!
+                                removeConnectorLabel(connectorLabel)
+                                deletedSomething = true
+                            }
+                            if deletedSomething == false {
+                                if let (constraintView, offset, connectorPort) = touchInfo.constraintView {
+                                    // Delete this constraint!
+                                    removeConstraintView(constraintView)
+                                    deletedSomething = true
+                                }
+                            }
+                            
+                            if deletedSomething {
+                                updateDisplay(needsSolving: true, needsLayout: true)
                             }
                         }
                         
