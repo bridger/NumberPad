@@ -26,7 +26,9 @@ class SimulationContext {
             connectorResolvedCallback(connector, value, informant)
             for constraint in connector.constraints {
                 if constraint != informant {
-                    constraint.processNewValues(self)
+                    if !constraint.processNewValues(self) {
+                        self.connectorConflictCallback(connector, value, informant)
+                    }
                 }
             }
         }
@@ -40,7 +42,7 @@ class SimulationContext {
 
 
 class Constraint {
-    func processNewValues(context: SimulationContext) {}
+    func processNewValues(context: SimulationContext) -> Bool { return true }
 }
 
 extension Constraint: Hashable {
@@ -127,7 +129,7 @@ func ==(lhs: Connector, rhs: Connector) -> Bool {
 
 class Adder : MultiInputOutputConstraint {
     
-    override func processNewValues(context: SimulationContext) {
+    override func processNewValues(context: SimulationContext) -> Bool {
         var noValueInputs: [Connector] = []
         var noValueOutputs: [Connector] = []
         var inputsAdded: Double = 0
@@ -169,14 +171,16 @@ class Adder : MultiInputOutputConstraint {
             
             if outputsAdded != inputsAdded {
                 println("Something went wrong in adder. Inputs \(inputsAdded) not equal to outputs \(outputsAdded)");
+                return false
             }
         }
+        return true
     }
 }
 
 class Multiplier : MultiInputOutputConstraint {
     
-    override func processNewValues(context: SimulationContext) {
+    override func processNewValues(context: SimulationContext) -> Bool {
         var noValueInputs: [Connector] = []
         var noValueOutputs: [Connector] = []
         var inputsMultiplied: Double = 1
@@ -226,14 +230,14 @@ class Multiplier : MultiInputOutputConstraint {
         } else if noValueOutputs.count == 1 && noValueInputs.count == 0 {
             // A * B * C = D * E * F. We know all except D
             // D = (A * B * C) / (E * F)
-            if inputs.count > 0 {
+            if inputs.count > 0 && outputsMultiplied != 0 {
                 let value = (inputsMultiplied / outputsMultiplied, anyValueWasDependent)
                 context.setConnectorValue(noValueOutputs[0], value: value, informant: self)
             }
         } else if noValueOutputs.count == 0 && noValueInputs.count == 1 {
             // A * B * C = D * E * F. We know all except A
             // A = (D * E * F) / (B * C)
-            if outputs.count > 0 {
+            if outputs.count > 0 && inputsMultiplied != 0 {
                 let value = (outputsMultiplied / inputsMultiplied, anyValueWasDependent)
                 context.setConnectorValue(noValueInputs[0], value: value, informant: self)
             }
@@ -242,8 +246,10 @@ class Multiplier : MultiInputOutputConstraint {
             
             if outputsMultiplied != inputsMultiplied {
                 println("Something went wrong in multiplier. Inputs \(inputsMultiplied) not equal to outputs \(outputsMultiplied)");
+                return false
             }
         }
+        return true
     }
 }
 
@@ -278,7 +284,7 @@ class Exponent : Constraint {
     }
     
     // Before this is called, we must have all three connectors present
-    override func processNewValues(context: SimulationContext) {
+    override func processNewValues(context: SimulationContext) -> Bool {
         let resultValue = context.connectorValues[result]
         let exponentValue = context.connectorValues[exponent]
         let baseValue = context.connectorValues[base]
@@ -331,8 +337,10 @@ class Exponent : Constraint {
                 let value = resultValue!.DoubleValue
                 if predictedValue != value {
                     println("Something went wrong in exponent. Result \(value) is not equal to \(predictedValue)")
+                    return false
                 }
             }
         }
+        return true
     }
 }
