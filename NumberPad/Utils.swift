@@ -37,3 +37,18 @@ extension FTTouchClassification : Printable {
     }
 }
 
+extension UIColor {
+    
+    func colorWithSaturationComponent(newSaturation: CGFloat) -> UIColor? {
+        var hue: CGFloat = 0
+        var saturation: CGFloat = 0
+        var brightness: CGFloat = 0
+        var alpha: CGFloat = 0
+        if self.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) {
+            return UIColor(hue: hue, saturation: newSaturation, brightness: brightness, alpha: alpha)
+        }
+        return nil
+    }
+    
+}
+
