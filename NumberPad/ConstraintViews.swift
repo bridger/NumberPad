@@ -15,6 +15,7 @@ class ConnectorLabel: UILabel {
     var scale: Double = 1
     let connector: Connector
     var isDependent: Bool = false
+    var isPercent: Bool = false
 
     init(connector: Connector) {
         self.connector = connector
@@ -34,8 +35,8 @@ class ConnectorLabel: UILabel {
         self.layer.borderWidth = borderWidth
         self.layer.cornerRadius = 12
         self.textAlignment = .Center
-        self.layer.borderColor = UIColor.lightGrayColor().CGColor
         self.layer.masksToBounds = true
+        self.hasError = false
     }
     
     var isSelected: Bool = false {
@@ -50,16 +51,32 @@ class ConnectorLabel: UILabel {
         }
     }
     
+    var hasError: Bool = false {
+        didSet {
+            if self.hasError {
+                self.layer.borderColor = UIColor.redColor().CGColor
+            } else {
+                self.layer.borderColor = UIColor.lightGrayColor().CGColor
+            }
+        }
+    }
+    
     // Returns whether it changed size
     func displayValue(value: Double?) -> Bool {
         self.sizeThatFits(CGSizeZero)
         if let value = value {
-            if abs(value) < 3 {
-                self.text = String(format: "%.2f", value)
-            } else if abs(value) < 100 {
-                self.text = String(format: "%.1f", value)
-            } else {
-                self.text = String(format: "%.f", value)
+            if isPercent {
+                self.text = String(format: "%.1f%%", value * 100)
+            }
+            else
+            {
+                if abs(value) < 3 {
+                    self.text = String(format: "%.2f", value)
+                } else if abs(value) < 100 {
+                    self.text = String(format: "%.1f", value)
+                } else {
+                    self.text = String(format: "%.f", value)
+                }
             }
         } else {
             self.text = "?"

@@ -188,7 +188,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                     value = 0.0
                 }
                 var scale: Int16 = 0
-                if abs(value) < 3 {
+                if connectorLabel.isPercent {
+                    scale = -2
+                } else if abs(value) < 3 {
                     scale = -1
                 } else if abs(value) >= 100 {
                     scale = 1
@@ -200,6 +202,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 valuePicker.hidden = false
             } else {
                 valuePicker.hidden = true
+                if oldValue != nil {
+                    // Solve again, to clear dependent connections
+                    updateDisplay(needsSolving: true)
+                }
             }
         }
     }
@@ -542,6 +548,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                                     moveConnectorToBottomPriority(connectorLabel)
                                 }
                                 updateDisplay(needsSolving: true)
+                                
+                            } else {
+                                // De-select everything
+                                // TODO: What if they were just drawing a point?
+                                self.selectedConnectorLabel = nil
+                                self.selectedConnectorPort = nil
                             }
                             
                         } else {
@@ -956,13 +968,21 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         }
                     }
                     
-                    let combinedLabels = classifiedLabels.reduce("", +)
+                    var combinedLabels = classifiedLabels.reduce("", +)
+                    var isPercent = false
+                    if classifiedLabels.count > 1 && combinedLabels.hasSuffix("/") {
+                        combinedLabels = combinedLabels.substringToIndex(combinedLabels.endIndex.predecessor())
+                        isPercent = true
+                    }
                     var recognized = false
                     var writtenValue: Double?
                     if let writtenNumber = combinedLabels.toInt() {
                         writtenValue = Double(writtenNumber)
                     } else if combinedLabels == "e" {
                         writtenValue = Double(M_E)
+                    }
+                    if writtenValue != nil && isPercent {
+                        writtenValue = writtenValue! / 100.0
                     }
                     
                     if let writtenValue = writtenValue {
@@ -971,6 +991,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         let newLabel = ConnectorLabel(connector: newConnector)
                         newLabel.sizeToFit()
                         newLabel.center = centerPoint
+                        newLabel.isPercent = isPercent
                         self.addConnectorLabel(newLabel, topPriority: true)
                         self.selectConnectorLabelAndSetToValue(newLabel, value: writtenValue)
                         
@@ -1037,7 +1058,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
     
     func numberSlideView(NumberSlideView, didSelectNewValue newValue: NSDecimalNumber) {
         if let selectedConnectorLabel = self.selectedConnectorLabel {
-            self.updateDisplay(values: [selectedConnectorLabel.connector : newValue.doubleValue], needsSolving: true)
+            self.updateDisplay(values: [selectedConnectorLabel.connector : newValue.doubleValue], needsSolving: true, selectNewConnectorLabel: false)
         }
     }
     
@@ -1045,7 +1066,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
     var needsRebuildConnectionLayers = false
     var needsSolving = false
     
-    func updateDisplay(values: [Connector: Double] = [:], needsSolving: Bool = false, needsLayout: Bool = false)
+    func updateDisplay(values: [Connector: Double] = [:], needsSolving: Bool = false, needsLayout: Bool = false, selectNewConnectorLabel: Bool = true)
     {
         // See how these variables are used at the end of this function, after the internal definitions
         self.needsLayout |= needsLayout
@@ -1146,9 +1167,14 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 }
                 }, connectorConflictCallback: { (connector, resolvedValue, informant) -> Void in
                     if let label = self.connectorToLabel[connector] {
-                        label.layer.borderColor = UIColor.redColor().CGColor
+                        label.hasError = true
                     }
             })
+            
+            // Reset all error states
+            for label in self.connectorLabels {
+                label.hasError = false
+            }
             
             // First, the selected connector
             if let selectedConnector = selectedConnectorLabel?.connector {
@@ -1188,7 +1214,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             self.needsSolving = false
             
             if let connectorToSelect = connectorToSelect {
-                self.selectedConnectorLabel = connectorToSelect
+                if selectNewConnectorLabel {
+                    self.selectedConnectorLabel = connectorToSelect
+                }
             }
         }
         
