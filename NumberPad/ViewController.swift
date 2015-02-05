@@ -108,18 +108,14 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         updateScrollableSize()
         
         if automaticallyConnect {
-            self.lastDrawnConnector = label
-            if let (lastConstraint, inputPort) = self.lastDrawnConstraint {
+            if let (lastConstraint, inputPort) = self.selectedConnectorPort {
                 if label.connector.constraints.count == 0 {
-                    let connectorPortUsed = inputPort.connector != nil && connectorToLabel[inputPort.connector!] != nil
-                    if !connectorPortUsed {
-                        lastConstraint.connectPort(inputPort, connector: label.connector)
-                        self.needsLayout = true
-                        self.needsSolving = true
-                    }
+                    lastConstraint.connectPort(inputPort, connector: label.connector)
+                    self.needsLayout = true
+                    self.needsSolving = true
                 }
                 
-                self.lastDrawnConstraint = nil
+                self.selectedConnectorPort = nil
             }
         }
     }
@@ -160,14 +156,19 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                     }
                 }
             }
-            if self.lastDrawnConnector == label {
-                self.lastDrawnConnector = nil
-            }
             self.needsLayout = true
             self.needsSolving = true
         } else {
             println("Cannot remove that label!")
         }
+    }
+    
+    var selectedConnectorLabelValueOverride: Double?
+    func selectConnectorLabelAndSetToValue(connectorLabel: ConnectorLabel?, value: Double)
+    {
+        selectedConnectorLabelValueOverride = value
+        self.selectedConnectorLabel = connectorLabel
+        selectedConnectorLabelValueOverride = nil
     }
     var selectedConnectorLabel: ConnectorLabel? {
         didSet {
@@ -177,7 +178,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             
             if let connectorLabel = selectedConnectorLabel {
                 connectorLabel.isSelected = true
-                var value = self.lastValueForConnector(connectorLabel.connector) ?? 0.0
+                if self.selectedConnectorPort != nil {
+                    self.selectedConnectorPort = nil
+                }
+                
+                var value = selectedConnectorLabelValueOverride ?? self.lastValueForConnector(connectorLabel.connector) ?? 0.0
+                selectedConnectorLabelValueOverride = nil
                 if !isfinite(value) {
                     value = 0.0
                 }
@@ -189,7 +195,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 }
                 valuePicker.resetToValue( NSDecimalNumber(double: Double(value)) , scale: scale)
                 
-                updateDisplay(needsSolving: true)
+                updateDisplay(values: [connectorLabel.connector : value], needsSolving: true)
                 
                 valuePicker.hidden = false
             } else {
@@ -206,29 +212,40 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         updateScrollableSize()
         
         if let outputPort = outputPort {
-            if let (lastConstraint, inputPort) = self.lastDrawnConstraint {
+            if let (lastConstraint, inputPort) = self.selectedConnectorPort {
                 if connectorToLabel[inputPort.connector!] == nil {
                     self.connectConstraintViews(constraintView, firstConnectorPort: outputPort, secondConstraintView: lastConstraint, secondConnectorPort: inputPort)
-                    
-                    self.lastDrawnConnector = nil
                 }
             }
         }
         
-        if let secondInputPort = secondInputPort {
-            self.lastDrawnConstraint = (constraintView, secondInputPort)
-        } else {
-            self.lastDrawnConstraint = nil
-        }
-        
         if let firstInputPort = firstInputPort {
-            if let lastDrawnConnector = self.lastDrawnConnector {
-                constraintView.connectPort(firstInputPort, connector: lastDrawnConnector.connector)
+            if let selectedConnector = self.selectedConnectorLabel {
+                constraintView.connectPort(firstInputPort, connector: selectedConnector.connector)
                 self.needsLayout = true
                 self.needsSolving = true
             }
         }
-        self.lastDrawnConnector = nil
+        if let secondInputPort = secondInputPort {
+            self.selectedConnectorPort = (constraintView, secondInputPort)
+        } else {
+            self.selectedConnectorPort = nil
+        }
+    }
+    var selectedConnectorPort: (ConstraintView: ConstraintView, ConnectorPort: ConnectorPort)? {
+        didSet {
+            if let (oldConstraintView, oldConnectorPort) = oldValue {
+                oldConnectorPort.isSelected = false
+            }
+            
+            if let (newConstraintView, newConnectorPort) = self.selectedConnectorPort {
+                newConnectorPort.isSelected = true
+                
+                if self.selectedConnectorLabel != nil {
+                    self.selectedConnectorLabel = nil
+                }
+            }
+        }
     }
     
     func removeConstraintView(constraintView: ConstraintView) {
@@ -238,16 +255,16 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             for port in constraintView.connectorPorts() {
                 constraintView.removeConnectorAtPort(port)
             }
+            if self.selectedConnectorPort?.ConstraintView == constraintView {
+                self.selectedConnectorPort = nil
+            }
+            
             self.needsLayout = true
             self.needsSolving = true
         } else {
             println("Cannot remove that constraint!")
         }
     }
-    
-    // For automatically hooking up drawn symbols
-    var lastDrawnConnector: ConnectorLabel?
-    var lastDrawnConstraint: (ConstraintView, ConnectorPort)?
     
     
     var connectionLayers: [CAShapeLayer] = []
@@ -504,6 +521,15 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                                 } else {
                                     self.selectedConnectorLabel = nil
                                 }
+                                
+                            } else if let connectorPort = touchInfo.constraintView?.ConnectorPort {
+                                if self.selectedConnectorPort?.ConnectorPort !== connectorPort {
+                                    let constraintView = touchInfo.constraintView!.ConstraintView
+                                    self.selectedConnectorPort = (constraintView, connectorPort)
+                                } else {
+                                    self.selectedConnectorPort = nil
+                                }
+                                
                             } else if let (connectorLabel, constraintView, connectorPort) = self.connectionLineAtPoint(point) {
                                 let lastValue = self.lastValueForConnector(connectorLabel.connector)
                                 let lastValueWasDependent = self.lastValueWasDependentForConnector(connectorLabel.connector)
@@ -701,8 +727,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 self.needsLayout = true
             }
         }
-        self.lastDrawnConnector = nil
-        self.lastDrawnConstraint = nil
         self.updateDisplay()
     }
     
@@ -783,10 +807,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         }
         
         if connectionMade {
-            // Clear any information about the last drawn constraint or connector
-            self.lastDrawnConstraint = nil
-            self.lastDrawnConnector = nil
-            
             self.updateDisplay()
         }
     }
@@ -952,9 +972,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         newLabel.sizeToFit()
                         newLabel.center = centerPoint
                         self.addConnectorLabel(newLabel, topPriority: true)
+                        self.selectConnectorLabelAndSetToValue(newLabel, value: writtenValue)
                         
                         recognized = true
-                        self.updateDisplay(values: [newConnector: Double(writtenValue)], needsSolving: true)
                         
                     } else if combinedLabels == "x" || combinedLabels == "/" {
                         // We recognized a multiply or divide!
@@ -1072,6 +1092,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         func runSolver(values: [Connector: Double]) {
             let lastSimulationContext = self.lastSimulationContext
             
+            var connectorToSelect: ConnectorLabel?
             let simulationContext = SimulationContext(connectorResolvedCallback: { (connector, resolvedValue, informant) -> Void in
                 if self.connectorToLabel[connector] == nil {
                     if let constraint = informant {
@@ -1106,7 +1127,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         
                         let newPoint = self.scrollView.convertPoint(newDisplacement + constraintMiddle, fromView: connectTo.constraintView)
                         newLabel.center = newPoint
-                        self.addConnectorLabel(newLabel, topPriority: false)
+                        newLabel.alpha = 0
+                        self.addConnectorLabel(newLabel, topPriority: false, automaticallyConnect: false)
+                        UIView.animateWithDuration(0.5) {
+                            newLabel.alpha = 1.0
+                        }
+                        connectorToSelect = newLabel
                         self.needsLayout = true
                     }
                 }
@@ -1160,6 +1186,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             
             self.lastSimulationContext = simulationContext
             self.needsSolving = false
+            
+            if let connectorToSelect = connectorToSelect {
+                self.selectedConnectorLabel = connectorToSelect
+            }
         }
         
         

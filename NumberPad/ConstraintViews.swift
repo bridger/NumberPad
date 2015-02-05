@@ -28,11 +28,11 @@ class ConnectorLabel: UILabel {
         connectorLabelInitialize()
     }
     
-    let borderWidth: CGFloat = 12
+    let borderWidth: CGFloat = 3
     private func connectorLabelInitialize() {
         self.font = UIFont.boldSystemFontOfSize(22)
         self.layer.borderWidth = borderWidth
-        self.layer.cornerRadius = borderWidth + 8
+        self.layer.cornerRadius = 12
         self.textAlignment = .Center
         self.layer.borderColor = UIColor.lightGrayColor().CGColor
         self.layer.masksToBounds = true
@@ -41,7 +41,7 @@ class ConnectorLabel: UILabel {
     var isSelected: Bool = false {
         didSet {
             if self.isSelected {
-                self.backgroundColor = UIColor.darkGrayColor()
+                self.backgroundColor = UIColor(white: 0.45, alpha: 1.0)
                 self.textColor = UIColor.whiteColor()
             } else {
                 self.backgroundColor = UIColor.whiteColor()
@@ -77,8 +77,8 @@ class ConnectorLabel: UILabel {
     
     override func sizeThatFits(size: CGSize) -> CGSize {
         var newSize = super.sizeThatFits(size)
-        newSize.width += 30.0 + borderWidth
-        newSize.height += 25.0 + borderWidth
+        newSize.width += 20.0 + borderWidth
+        newSize.height += 15.0 + borderWidth
         return newSize
     }
 }
@@ -92,6 +92,10 @@ protocol ConnectorPort: NSObjectProtocol {
     }
     var center: CGPoint {
         get
+    }
+    var isSelected: Bool {
+        get
+        set
     }
 }
 
@@ -113,6 +117,25 @@ class InternalConnectorPort: NSObject, ConnectorPort {
         let connectorSize: CGFloat = 16
         self.layer.frame = CGRectMake(0, 0, connectorSize, connectorSize)
         self.layer.cornerRadius = connectorSize / 2.0
+    }
+    var isSelectedInternal: Bool = false
+    var isSelected: Bool {
+        get {
+            return isSelectedInternal
+        }
+        set {
+            isSelectedInternal = newValue
+            if isSelectedInternal {
+                if let saturated = self.color.colorWithSaturationComponent(0.2) {
+                    self.layer.backgroundColor = saturated.CGColor
+                    self.layer.borderColor = self.color.CGColor
+                    self.layer.borderWidth = 2.0
+                }
+            } else {
+                self.layer.backgroundColor = self.color.CGColor
+                self.layer.borderWidth = 0.0
+            }
+        }
     }
 }
 
@@ -370,7 +393,8 @@ class ExponentView: ConstraintView {
     
     override func connectorPortForDragAtLocation(location: CGPoint) -> ConnectorPort? {
         for internalPort in internalConnectorPorts() {
-            if euclidianDistanceSquared(internalPort.layer.position, location) < 400 {
+            let cutoffSquared: CGFloat = (internalPort === basePort) ? 900 : 400
+            if euclidianDistanceSquared(internalPort.layer.position, location) < cutoffSquared {
                 return internalPort
             }
         }
@@ -437,7 +461,7 @@ class ExponentView: ConstraintView {
         self.exponentInput.layer.cornerRadius = exponentSize / 2
         
         let baseSize: CGFloat = 35
-        let offsetFromExponent = baseSize / 2.0 * CGFloat(M_SQRT1_2)
+        let offsetFromExponent = baseSize / 2.0 * CGFloat(M_SQRT1_2) + 2
         let exponentCenter = self.exponentInput.layer.position
         self.baseInput.layer.frame = CGRectMake(0, 0, baseSize, baseSize)
         self.baseInput.layer.position = CGPointMake(exponentCenter.x - offsetFromExponent, exponentCenter.y + offsetFromExponent)
