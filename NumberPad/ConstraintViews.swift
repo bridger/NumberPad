@@ -8,14 +8,18 @@
 
 import UIKit
 import DigitRecognizerSDK
+import WebKit
 
 // Views that contain and draw Connector, Adder, or Multiplier. Their center stays the same, but otherwise they can rotate and resize to fit
 
-class ConnectorLabel: UILabel {
+class ConnectorLabel: UIView, WKScriptMessageHandler {
+    let valueLabel: UILabel = UILabel()
     var scale: Double = 1
     let connector: Connector
     var isDependent: Bool = false
     var isPercent: Bool = false
+    var equationView: WKWebView?
+    var equationViewSize: CGSize?
 
     init(connector: Connector) {
         self.connector = connector
@@ -31,22 +35,73 @@ class ConnectorLabel: UILabel {
     
     let borderWidth: CGFloat = 3
     private func connectorLabelInitialize() {
-        self.font = UIFont.boldSystemFontOfSize(22)
+        self.addSubview(self.valueLabel)
+        self.valueLabel.font = UIFont.boldSystemFontOfSize(22)
         self.layer.borderWidth = borderWidth
         self.layer.cornerRadius = 12
-        self.textAlignment = .Center
+        self.valueLabel.textAlignment = .Center
         self.layer.masksToBounds = true
         self.hasError = false
+        
+        //self.displayEquation("<msup><mi>e</mi><mrow><mi>x</mi><mo>+</mo><mn>2</mn><mo>-</mo><mn>3</mn></mrow></msup>")
+    }
+    
+    func displayEquation(mathML: String) {
+        if self.equationView == nil {
+            let userContentController = WKUserContentController()
+            userContentController.addScriptMessageHandler(self, name: "equationRendered")
+            
+            let source = "var rect = document.getElementById('math-element').getBoundingClientRect(); window.webkit.messageHandlers.equationRendered.postMessage([rect.right, rect.bottom]);"
+            userContentController.addUserScript(WKUserScript(source: source, injectionTime: .AtDocumentEnd, forMainFrameOnly: true))
+            
+            let configuration = WKWebViewConfiguration()
+            configuration.userContentController = userContentController
+            let equationView = WKWebView(frame: CGRectMake(10, 20, 65, 25), configuration: configuration)
+            
+            self.addSubview(equationView)
+            equationView.backgroundColor = UIColor.clearColor()
+            equationView.opaque = false
+            equationView.userInteractionEnabled = false
+            self.equationView = equationView
+        }
+        
+        if let equationView = self.equationView { // Should always succeed
+            var htmlString = "<!DOCTYPE html><html lang='en'><head><meta name='viewport' content='initial-scale=1.0'/></head><body style='margin:0px'><math id='math-element'><mathstyle fontsize='12pt'>\(mathML)</mathstyle></math></body></html>"
+            equationView.loadHTMLString(htmlString, baseURL: nil)
+        }
+    }
+    
+    func hideEquation() {
+        if let equationView = self.equationView {
+            equationView.removeFromSuperview()
+            self.equationView = nil
+            self.equationViewSize = nil
+            
+            self.sizeToFit()
+        }
+    }
+    
+    func userContentController(userContentController: WKUserContentController, didReceiveScriptMessage message: WKScriptMessage) {
+        if let rectValues = message.body as? [CGFloat] {
+            if rectValues.count == 2 {
+                self.equationViewSize = CGSizeMake(rectValues[0], rectValues[1])
+                println("Got equation size \(self.equationViewSize!)")
+                
+                resizeAndLayout()
+                return
+            }
+        }
+        println("Something went wrong! We couldn't get the size of the equation")
     }
     
     var isSelected: Bool = false {
         didSet {
             if self.isSelected {
                 self.backgroundColor = UIColor(white: 0.45, alpha: 1.0)
-                self.textColor = UIColor.whiteColor()
+                self.valueLabel.textColor = UIColor.whiteColor()
             } else {
                 self.backgroundColor = UIColor.whiteColor()
-                self.textColor = UIColor.grayColor()
+                self.valueLabel.textColor = UIColor.grayColor()
             }
         }
     }
@@ -63,28 +118,31 @@ class ConnectorLabel: UILabel {
     
     // Returns whether it changed size
     func displayValue(value: Double?) -> Bool {
-        self.sizeThatFits(CGSizeZero)
         if let value = value {
             if isPercent {
-                self.text = String(format: "%.1f%%", value * 100)
+                self.valueLabel.text = String(format: "%.1f%%", value * 100)
             }
             else
             {
                 if abs(value) < 3 {
-                    self.text = String(format: "%.2f", value)
+                    self.valueLabel.text = String(format: "%.2f", value)
                 } else if abs(value) < 100 {
-                    self.text = String(format: "%.1f", value)
+                    self.valueLabel.text = String(format: "%.1f", value)
                 } else {
-                    self.text = String(format: "%.f", value)
+                    self.valueLabel.text = String(format: "%.f", value)
                 }
             }
         } else {
-            self.text = "?"
+            self.valueLabel.text = "?"
         }
         
+        return resizeAndLayout()
+    }
+    
+    func resizeAndLayout() -> Bool {
         let center = self.center
         let size = self.bounds.size
-        self.sizeToFit()
+        sizeToFit()
         if !CGSizeEqualToSize(size, self.bounds.size) {
             self.center = center
             return true
@@ -92,11 +150,34 @@ class ConnectorLabel: UILabel {
         return false
     }
     
-    override func sizeThatFits(size: CGSize) -> CGSize {
-        var newSize = super.sizeThatFits(size)
-        newSize.width += 20.0 + borderWidth
-        newSize.height += 15.0 + borderWidth
-        return newSize
+    override func sizeToFit() {
+        self.valueLabel.sizeToFit()
+        let valueLabelSize = self.valueLabel.frame.size
+        var newSize = valueLabelSize
+        
+        let verticalMargin: CGFloat = 7.0 + borderWidth
+        let horizontalMargin: CGFloat = 7.0 + borderWidth
+        let equationSpace: CGFloat = 2.0
+        
+        if let equationView = self.equationView {
+            if let equationSize = self.equationViewSize {
+                equationView.frame.size = equationSize
+                
+                newSize.width = max(newSize.width, equationSize.width)
+                newSize.height += equationSpace + equationSize.height
+            }
+        }
+
+        newSize.width += horizontalMargin * 2
+        newSize.height += verticalMargin * 2
+        
+        self.valueLabel.center = CGPointMake(newSize.width / 2, verticalMargin + valueLabelSize.height / 2)
+        if let equationView = self.equationView {
+            equationView.center = CGPointMake(newSize.width / 2,
+                verticalMargin + valueLabelSize.height + equationSpace + equationView.frame.size.height / 2)
+        }
+        
+        self.frame.size = newSize
     }
 }
 
