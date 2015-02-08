@@ -84,8 +84,34 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
     func userContentController(userContentController: WKUserContentController, didReceiveScriptMessage message: WKScriptMessage) {
         if let rectValues = message.body as? [CGFloat] {
             if rectValues.count == 2 {
-                self.equationViewSize = CGSizeMake(rectValues[0], rectValues[1])
                 
+                let widthDelta: CGFloat = 8.0
+                let heightDelta: CGFloat = 5.0
+                // Here we "smooth" out the equationViewSize. We choose a size delta points bigger, and we only change the size if it goes above that size or below size - delta
+                let latestWidth = rectValues[0]
+                let latestHeight = rectValues[1]
+                
+                let newSize = CGSizeMake(latestWidth + widthDelta, latestHeight + heightDelta)
+                if let oldSize = self.equationViewSize {
+                    // It was at 5, so we chose 8. Now we only pick a new size if the latest width is > 8 or < 2
+                    let maxDelta = max(abs(latestWidth - oldSize.width), abs(latestHeight - oldSize.height))
+                    let minWidth = oldSize.width - widthDelta * 2
+                    let minHeight = oldSize.height - heightDelta * 2
+                    if latestWidth > oldSize.width || latestWidth < minWidth || latestHeight > oldSize.height || latestHeight < minHeight {
+                        
+                        self.equationViewSize = newSize
+                        println("Going from \(oldSize) to \(newSize)")
+                    } else {
+                        println("Keeping \(oldSize) because it is similar enough to \(newSize)")
+                        // No change. Keep the oldSize
+                    }
+                } else {
+                    self.equationViewSize = newSize
+                }
+                
+                if let equationView = self.equationView {
+                    equationView.frame.size = CGSizeMake(latestWidth, latestHeight)
+                }
                 resizeAndLayout()
                 return
             }
@@ -160,8 +186,6 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
         
         if let equationView = self.equationView {
             if let equationSize = self.equationViewSize {
-                equationView.frame.size = equationSize
-                
                 newSize.width = max(newSize.width, equationSize.width)
                 newSize.height += equationSpace + equationSize.height
             }

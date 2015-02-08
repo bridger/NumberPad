@@ -41,7 +41,13 @@ class SimulationContext {
 }
 
 func functionExpression(functionName: String, arguments: [DDExpression]) -> DDExpression {
-    return DDExpression.functionExpressionWithFunction(functionName, arguments: arguments, error: nil)!
+    var error: NSError? = nil
+    let result = DDExpression.functionExpressionWithFunction(functionName, arguments: arguments, error: &error)
+    if result == nil {
+        fatalError("Unable to make function expression \(functionName). Error \(error)");
+    } else {
+        return result!
+    }
 }
 
 func constantExpression(number: Double) -> DDExpression {
@@ -372,16 +378,14 @@ class Exponent : Constraint {
                 // base = result ^ (1/exponent)
                 let doubleValue = pow(resultValue!.DoubleValue, 1.0 / exponentValue!.DoubleValue)
                 let isDependent = resultValue!.WasDependent || exponentValue!.WasDependent
-                let expression = functionExpression("nthroot", [baseValue!.Expression, exponentValue!.Expression])
+                let expression = functionExpression("nthroot", [resultValue!.Expression, exponentValue!.Expression])
                 context.setConnectorValue(base, value: (doubleValue, expression, isDependent), informant: self)
                 
             } else if baseValue != nil && exponentValue == nil {
                 // exponent = log_base(result) = ln(result) / ln(base)
                 let doubleValue = log(resultValue!.DoubleValue) / log(baseValue!.DoubleValue)
                 let isDependent = resultValue!.WasDependent || baseValue!.WasDependent
-                let resultLnExpression = functionExpression("ln", [resultValue!.Expression])
-                let baseLnExpression = functionExpression("ln", [baseValue!.Expression])
-                let expression = functionExpression("/", [resultLnExpression, baseLnExpression])
+                let expression = functionExpression(DDMathOperatorLogBase, [baseValue!.Expression, resultValue!.Expression])
                 context.setConnectorValue(exponent, value: (doubleValue, expression, isDependent), informant: self)
                 
             } else if baseValue != nil && exponentValue != nil {
