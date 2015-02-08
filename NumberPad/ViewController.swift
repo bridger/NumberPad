@@ -1235,12 +1235,25 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             rebuildAllConnectionLayers()
         }
         
+
+        
         if let simulationContext = self.lastSimulationContext {
+            
+            // We first make a map from value DDExpressions to the formatted value
+            var formattedValues: [DDExpression : String] = [:]
+            for label in self.connectorLabels {
+                if let value = simulationContext.connectorValues[label.connector] {
+                    if value.Expression.expressionType() == .Number {
+                        formattedValues[value.Expression] = label.valueLabel.text
+                    }
+                }
+            }
+            
             for label in self.connectorLabels {
                 var displayedEquation = false
                 if let value = simulationContext.connectorValues[label.connector] {
                     if value.Expression.expressionType() == .Function {
-                        if let mathML = mathMLForExpression(value.Expression) {
+                        if let mathML = mathMLForExpression(value.Expression, formattedValues) {
                             label.displayEquation(mathML)
                             displayedEquation = true
                         }
