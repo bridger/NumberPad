@@ -66,7 +66,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
         }
         
         if let equationView = self.equationView { // Should always succeed
-            var htmlString = "<!DOCTYPE html><html lang='en'><head><meta name='viewport' content='initial-scale=1.0'/></head><body style='margin:0px'><math id='math-element'><mathstyle fontsize='12pt'>\(mathML)</mathstyle></math></body></html>"
+            var htmlString = "<!DOCTYPE html><html lang='en'><head><meta name='viewport' content='initial-scale=1.0'/></head><body style='margin:0px'><math id='math-element'><mathstyle fontsize='12pt'><mrow>\(mathML)</mrow></mathstyle></math></body></html>"
             equationView.loadHTMLString(htmlString, baseURL: nil)
         }
     }
@@ -77,7 +77,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
             self.equationView = nil
             self.equationViewSize = nil
             
-            self.sizeToFit()
+            resizeAndLayout()
         }
     }
     
@@ -85,7 +85,6 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
         if let rectValues = message.body as? [CGFloat] {
             if rectValues.count == 2 {
                 self.equationViewSize = CGSizeMake(rectValues[0], rectValues[1])
-                println("Got equation size \(self.equationViewSize!)")
                 
                 resizeAndLayout()
                 return

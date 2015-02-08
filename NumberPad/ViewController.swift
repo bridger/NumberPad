@@ -1179,13 +1179,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             // First, the selected connector
             if let selectedConnector = selectedConnectorLabel?.connector {
                 if let value = (values[selectedConnector] ?? lastSimulationContext?.connectorValues[selectedConnector]?.DoubleValue) {
-                    simulationContext.setConnectorValue(selectedConnector, value: (DoubleValue: value, WasDependent: true), informant: nil)
+                    simulationContext.setConnectorValue(selectedConnector, value: (DoubleValue: value, Expression: constantExpression(value), WasDependent: true), informant: nil)
                 }
             }
             
             // These are the first priority
             for (connector, value) in values {
-                simulationContext.setConnectorValue(connector, value: (DoubleValue: value, WasDependent: false), informant: nil)
+                simulationContext.setConnectorValue(connector, value: (DoubleValue: value, Expression: constantExpression(value), WasDependent: false), informant: nil)
             }
             
             // We loop through connectorLabels like this, because it can mutate during the simulation, if a constraint "resolves a port"
@@ -1196,7 +1196,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 // If we haven't already resolved this connector, then set it as a non-dependent variable to the value from the last simulation
                 if simulationContext.connectorValues[connector] == nil {
                     if let lastValue = lastSimulationContext?.connectorValues[connector]?.DoubleValue {
-                        simulationContext.setConnectorValue(connector, value: (DoubleValue: lastValue, WasDependent: false), informant: nil)
+                        simulationContext.setConnectorValue(connector, value: (DoubleValue: lastValue, Expression: constantExpression(lastValue), WasDependent: false), informant: nil)
                     }
                 }
                 index += 1
@@ -1206,7 +1206,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             for label in self.connectorLabels {
                 if simulationContext.connectorValues[label.connector] == nil {
                     label.displayValue(nil)
-                    label.layer.backgroundColor = UIColor.blackColor().CGColor
                 }
             }
             
@@ -1234,6 +1233,23 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         
         if (self.needsRebuildConnectionLayers) {
             rebuildAllConnectionLayers()
+        }
+        
+        if let simulationContext = self.lastSimulationContext {
+            for label in self.connectorLabels {
+                var displayedEquation = false
+                if let value = simulationContext.connectorValues[label.connector] {
+                    if value.Expression.expressionType() == .Function {
+                        if let mathML = mathMLForExpression(value.Expression) {
+                            label.displayEquation(mathML)
+                            displayedEquation = true
+                        }
+                    }
+                }
+                if !displayedEquation {
+                    label.hideEquation()
+                }
+            }
         }
     }
     
