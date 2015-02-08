@@ -15,6 +15,8 @@ class SimulationContext {
     let connectorResolvedCallback: (Connector, ResolvedValue, Constraint?) -> Void
     let connectorConflictCallback: (Connector, ResolvedValue, Constraint?) -> Void
     
+    let mathEvaluator = DDMathEvaluator()
+    
     func setConnectorValue(connector: Connector, value: ResolvedValue, informant: Constraint?) {
         if let existingValue = connectorValues[connector] {
             if existingValue.DoubleValue != value.DoubleValue {
@@ -22,12 +24,18 @@ class SimulationContext {
                 self.connectorConflictCallback(connector, value, informant)
             }
         } else {
-            connectorValues[connector] = value
-            connectorResolvedCallback(connector, value, informant)
+            var rewrittenValue = value
+            if let rewrittenExpression = DDExpressionRewriter.defaultRewriter().expressionByRewritingExpression(value.Expression, withEvaluator: mathEvaluator) {
+                rewrittenValue = (value.DoubleValue, rewrittenExpression, value.WasDependent)
+            } else {
+                println("Error rewriting expression \(value.Expression)")
+            }
+            connectorValues[connector] = rewrittenValue
+            connectorResolvedCallback(connector, rewrittenValue, informant)
             for constraint in connector.constraints {
                 if constraint != informant {
                     if !constraint.processNewValues(self) {
-                        self.connectorConflictCallback(connector, value, informant)
+                        self.connectorConflictCallback(connector, rewrittenValue, informant)
                     }
                 }
             }
