@@ -37,6 +37,7 @@ func mathMLForExpression(expression: DDExpression, formattedValues: [DDExpressio
                             return "\(firstSubMathML)<mo>-</mo>\(secondSubMathML)"
                             
                         } else if functionName == DDMathOperatorMultiply {
+                            // TODO: Insert parenthesis if either sub expression is an addition or subtraction
                             return "\(firstSubMathML)<mo>⋅</mo>\(secondSubMathML)"
                             
                         } else if functionName == DDMathOperatorDivide {

@@ -1219,7 +1219,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             }
         }
         
-        
+        var ranSolver = false
         while (self.needsLayout || self.needsSolving) {
             // First, we layout. This way, if solving generates a new connector then it will be pointed in a sane direction
             // But, solving means we might need to layout, and so on...
@@ -1228,43 +1228,45 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             }
             if (self.needsSolving) {
                 runSolver(values)
+                ranSolver = true
             }
         }
         
         if (self.needsRebuildConnectionLayers) {
             rebuildAllConnectionLayers()
         }
-        
 
-        
-        if let simulationContext = self.lastSimulationContext {
-            
-            // We first make a map from value DDExpressions to the formatted value
-            var formattedValues: [DDExpression : String] = [:]
-            for label in self.connectorLabels {
-                if let value = simulationContext.connectorValues[label.connector] {
-                    if value.Expression.expressionType() == .Number {
-                        formattedValues[value.Expression] = label.valueLabel.text
-                    }
-                }
-            }
-            
-            for label in self.connectorLabels {
-                var displayedEquation = false
-                if let value = simulationContext.connectorValues[label.connector] {
-                    if value.Expression.expressionType() == .Function {
-                        if let mathML = mathMLForExpression(value.Expression, formattedValues) {
-                            label.displayEquation(mathML)
-                            displayedEquation = true
+        if ranSolver {
+            if let simulationContext = self.lastSimulationContext {
+                
+                // We first make a map from value DDExpressions to the formatted value
+                var formattedValues: [DDExpression : String] = [:]
+                for label in self.connectorLabels {
+                    if let value = simulationContext.connectorValues[label.connector] {
+                        if value.Expression.expressionType() == .Number {
+                            formattedValues[value.Expression] = label.valueLabel.text
                         }
                     }
                 }
-                if !displayedEquation {
-                    label.hideEquation()
+                
+                for label in self.connectorLabels {
+                    var displayedEquation = false
+                    if let value = simulationContext.connectorValues[label.connector] {
+                        if value.Expression.expressionType() == .Function {
+                            if let mathML = mathMLForExpression(value.Expression, formattedValues) {
+                                label.displayEquation(mathML)
+                                displayedEquation = true
+                            }
+                        }
+                    }
+                    if !displayedEquation {
+                        label.hideEquation()
+                    }
                 }
             }
         }
     }
+        
     
     func createConnectionLayer(startPoint: CGPoint, endPoint: CGPoint, color: UIColor?, isDependent: Bool) -> CAShapeLayer {
         let dragLine = CAShapeLayer()

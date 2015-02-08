@@ -66,7 +66,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
         }
         
         if let equationView = self.equationView { // Should always succeed
-            var htmlString = "<!DOCTYPE html><html lang='en'><head><meta name='viewport' content='initial-scale=1.0'/></head><body style='margin:0px'><math id='math-element'><mathstyle fontsize='12pt'><mrow>\(mathML)</mrow></mathstyle></math></body></html>"
+            var htmlString = "<!DOCTYPE html><html lang='en'><head><meta name='viewport' content='initial-scale=1.0'/></head><body style='margin:0px'><math id='math-element'><mathstyle fontsize='12pt' mathcolor='rgb(127,127,127)'><mrow>\(mathML)</mrow></mathstyle></math></body></html>"
             equationView.loadHTMLString(htmlString, baseURL: nil)
         }
     }
@@ -86,7 +86,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
             if rectValues.count == 2 {
                 
                 let widthDelta: CGFloat = 8.0
-                let heightDelta: CGFloat = 5.0
+                let heightDelta: CGFloat = 3.0
                 // Here we "smooth" out the equationViewSize. We choose a size delta points bigger, and we only change the size if it goes above that size or below size - delta
                 let latestWidth = rectValues[0]
                 let latestHeight = rectValues[1]
@@ -100,9 +100,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
                     if latestWidth > oldSize.width || latestWidth < minWidth || latestHeight > oldSize.height || latestHeight < minHeight {
                         
                         self.equationViewSize = newSize
-                        println("Going from \(oldSize) to \(newSize)")
                     } else {
-                        println("Keeping \(oldSize) because it is similar enough to \(newSize)")
                         // No change. Keep the oldSize
                     }
                 } else {
