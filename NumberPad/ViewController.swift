@@ -314,7 +314,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                     if let touchInfo = self.touches[classificationInfo.touchId] {
                         
                         let penClassification = classificationInfo.newValue
-                        println("penClassification changed to \(penClassification) from \(classificationInfo.oldValue) for touch \(classificationInfo.touchId)")
                         let gestureClassification = gestureClassificationForTouchAndPen(touchInfo, penClassification: penClassification)
                         changeTouchToClassification(touchInfo, classification: gestureClassification)
                     }

@@ -93,7 +93,7 @@
     
     do {
         NSError *simplificationError = nil;
-        tmp = [tmp simplifiedExpressionWithEvaluator:evaluator error:&simplificationError];
+        tmp = tmp; // [tmp simplifiedExpressionWithEvaluator:evaluator error:&simplificationError];
         expression = tmp;
         BOOL changed = NO;
         

@@ -420,14 +420,14 @@
 		AEA8E8411A86C5630050344B /* Precedence Parser */ = {
 			isa = PBXGroup;
 			children = (
-				AEA8E8421A86C5A30050344B /* _DDMathTermResolver.h */,
-				AEA8E8431A86C5A30050344B /* _DDMathTermResolver.m */,
-				AEA8E8441A86C5A30050344B /* _DDParserTerm.h */,
-				AEA8E8451A86C5A30050344B /* _DDParserTerm.m */,
 				AEA8E8461A86C5A30050344B /* DDEnumerator.h */,
 				AEA8E8471A86C5A30050344B /* DDEnumerator.m */,
 				AEA8E8481A86C5A30050344B /* DDParser.h */,
 				AEA8E8491A86C5A30050344B /* DDParser.m */,
+				AEA8E8421A86C5A30050344B /* _DDMathTermResolver.h */,
+				AEA8E8431A86C5A30050344B /* _DDMathTermResolver.m */,
+				AEA8E8441A86C5A30050344B /* _DDParserTerm.h */,
+				AEA8E8451A86C5A30050344B /* _DDParserTerm.m */,
 			);
 			name = "Precedence Parser";
 			sourceTree = "<group>";

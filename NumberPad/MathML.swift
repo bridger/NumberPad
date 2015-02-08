@@ -16,9 +16,11 @@ func mathMLForExpression(expression: DDExpression, formattedValues: [DDExpressio
     case .Function:
         if let functionName = expression.function {
             if let values = expression.arguments as? [DDExpression] {
-                func subExpressionInParenthesisIfNecessary(subExpression: DDExpression, subExpressionMathML: String) -> String {
+                func subExpressionInParenthesisIfNecessary(subExpression: DDExpression, subExpressionMathML: String, onlyForAddition: Bool = false) -> String {
                     if subExpression.expressionType() == .Function {
-                        return "<mo>(</mo>\(subExpressionMathML)<mo>)</mo>"
+                        if !onlyForAddition || (subExpression.function! == DDMathOperatorAdd || subExpression.function! == DDMathOperatorMinus) {
+                            return "<mo>(</mo>\(subExpressionMathML)<mo>)</mo>"
+                        }
                     }
                     return subExpressionMathML
                 }
@@ -28,6 +30,7 @@ func mathMLForExpression(expression: DDExpression, formattedValues: [DDExpressio
                 }
                 
                 if let firstSubMathML = mathMLForExpression(values[0], formattedValues) {
+                    // TODO: Add parenthesis as appropriate on negative numbers. 5 + (-6), or 5•(-6)
                     if let secondSubMathML = mathMLForExpression(values[1], formattedValues) {
                         
                         if functionName == DDMathOperatorAdd {
@@ -37,8 +40,9 @@ func mathMLForExpression(expression: DDExpression, formattedValues: [DDExpressio
                             return "\(firstSubMathML)<mo>-</mo>\(secondSubMathML)"
                             
                         } else if functionName == DDMathOperatorMultiply {
-                            // TODO: Insert parenthesis if either sub expression is an addition or subtraction
-                            return "\(firstSubMathML)<mo>⋅</mo>\(secondSubMathML)"
+                            let leftExpression = subExpressionInParenthesisIfNecessary(values[0], firstSubMathML, onlyForAddition: true)
+                            let rightExpression = subExpressionInParenthesisIfNecessary(values[1], secondSubMathML, onlyForAddition: true)
+                            return "\(leftExpression)<mo>⋅</mo>\(rightExpression)"
                             
                         } else if functionName == DDMathOperatorDivide {
                             return "<mfrac><mrow>\(firstSubMathML)</mrow><mrow>\(secondSubMathML)</mrow></mfrac>"
