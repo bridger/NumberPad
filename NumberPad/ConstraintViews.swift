@@ -66,7 +66,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
         }
         
         if let equationView = self.equationView { // Should always succeed
-            var htmlString = "<!DOCTYPE html><html lang='en'><head><meta name='viewport' content='initial-scale=1.0'/></head><body style='margin:0px'><math id='math-element'><mathstyle fontsize='12pt' mathcolor='rgb(127,127,127)'><mrow>\(mathML)</mrow></mathstyle></math></body></html>"
+            let htmlString = "<!DOCTYPE html><html lang='en'><head><meta name='viewport' content='initial-scale=1.0'/></head><body style='margin:0px'><math id='math-element'><mathstyle fontsize='12pt' mathcolor='rgb(127,127,127)'><mrow>\(mathML)</mrow></mathstyle></math></body></html>"
             equationView.loadHTMLString(htmlString, baseURL: nil)
         }
     }
@@ -387,13 +387,11 @@ class MultiInputOutputConstraintView: ConstraintView {
         var angles: [(ChangeableAngle: CGFloat, TargetAngle: CGFloat)] = []
         var flippedPortAngles: [CGFloat] = []
         for internalConnector in self.internalConnectorPorts() {
-            if let connector = internalConnector.connector {
-                if let position = positions[connector] {
-                    let portAngle = (internalConnector.center - self.bounds.center()).angle
-                    let connectorAngle = (position - self.center).angle
-                    
-                    angles.append((ChangeableAngle: portAngle, TargetAngle: connectorAngle))
-                }
+            if let connector = internalConnector.connector, let position = positions[connector] {
+                let portAngle = (internalConnector.center - self.bounds.center()).angle
+                let connectorAngle = (position - self.center).angle
+                
+                angles.append((ChangeableAngle: portAngle, TargetAngle: connectorAngle))
             }
         }
         

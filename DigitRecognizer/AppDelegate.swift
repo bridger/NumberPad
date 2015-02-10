@@ -18,7 +18,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var digitClassifier: DTWDigitClassifier = DTWDigitClassifier()
     
     class func sharedAppDelegate() -> AppDelegate {
-        return UIApplication.sharedApplication().delegate as AppDelegate
+        return UIApplication.sharedApplication().delegate as! AppDelegate
     }
     
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
@@ -35,17 +35,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func documentsDirectory() -> String {
-        return NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)[0] as String
+        return NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)[0] as! String
     }
     
     func saveData() {
         var dataToSave = self.digitClassifier.dataToSave(true, saveNormalizedData: true)
         
-        var saveNumber = 1
-        if let lastSave = newestSavedData() {
-            if let lastNumber = lastSave.substringFromIndex(filePrefix.endIndex).toInt() {
-                saveNumber = lastNumber + 1
-            }
+        let saveNumber: Int
+        if let lastSave = newestSavedData(), let lastNumber = lastSave.substringFromIndex(filePrefix.endIndex).toInt()  {
+            saveNumber = lastNumber + 1
+        }
+        else
+        {
+            saveNumber = 1
         }
         
         let documentName = self.documentsDirectory().stringByAppendingPathComponent( filePrefix + String(saveNumber))

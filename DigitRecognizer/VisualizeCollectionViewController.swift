@@ -85,7 +85,7 @@ class VisualizeCollectionViewController: UICollectionViewController {
     }
     
     override func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCellWithReuseIdentifier(reuseIdentifier, forIndexPath: indexPath) as ImageCell
+        let cell = collectionView.dequeueReusableCellWithReuseIdentifier(reuseIdentifier, forIndexPath: indexPath) as! ImageCell
         
         let label = self.digitLabels[indexPath.section]
         if let prototype = digitClassifier.normalizedPrototypeLibrary[label]?[indexPath.row] {
