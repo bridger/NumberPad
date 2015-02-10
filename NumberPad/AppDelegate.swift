@@ -18,7 +18,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
-        self.rootViewController = window?.rootViewController as ViewController
+        self.rootViewController = window?.rootViewController as! ViewController
         
         if let path = NSBundle.mainBundle().pathForResource("bridger_normalized", ofType: "json") {
             loadData(path)
@@ -49,7 +49,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func documentsDirectory() -> String {
-        return NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)[0] as String
+        return NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)[0] as! String
     }
     
     func loadData(path: String) {

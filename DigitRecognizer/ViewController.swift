@@ -145,7 +145,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
     // If any one stroke can't be classified, this will return nil
     func readStringFromStrokes(strokes: [[CGPoint]]) -> String? {
         if let classifiedLabels = self.digitClassifier.classifyMultipleDigits(strokes) {
-            return classifiedLabels.reduce("", +)
+            return classifiedLabels.reduce("", combine: +)
         } else {
             return nil
         }

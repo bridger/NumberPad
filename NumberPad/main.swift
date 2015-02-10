@@ -9,4 +9,4 @@
 import Foundation
 import UIKit
 
-UIApplicationMain(C_ARGC, C_ARGV, NSStringFromClass(FTApplication), NSStringFromClass(AppDelegate))
+UIApplicationMain(Process.argc, Process.unsafeArgv, NSStringFromClass(FTApplication), NSStringFromClass(AppDelegate))

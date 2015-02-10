@@ -217,20 +217,16 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         constraintView.layer.zPosition = constraintZPosition
         updateScrollableSize()
         
-        if let outputPort = outputPort {
-            if let (lastConstraint, inputPort) = self.selectedConnectorPort {
+        if let outputPort = outputPort, (lastConstraint, inputPort) = self.selectedConnectorPort {
                 if connectorToLabel[inputPort.connector!] == nil {
                     self.connectConstraintViews(constraintView, firstConnectorPort: outputPort, secondConstraintView: lastConstraint, secondConnectorPort: inputPort)
                 }
-            }
         }
         
-        if let firstInputPort = firstInputPort {
-            if let selectedConnector = self.selectedConnectorLabel {
-                constraintView.connectPort(firstInputPort, connector: selectedConnector.connector)
-                self.needsLayout = true
-                self.needsSolving = true
-            }
+        if let firstInputPort = firstInputPort, selectedConnector = self.selectedConnectorLabel {
+            constraintView.connectPort(firstInputPort, connector: selectedConnector.connector)
+            self.needsLayout = true
+            self.needsSolving = true
         }
         if let secondInputPort = secondInputPort {
             self.selectedConnectorPort = (constraintView, secondInputPort)
@@ -307,7 +303,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         }
     }
     
-    func classificationsDidChangeForTouches(touches: NSSet!) {
+    func classificationsDidChangeForTouches(touches: Set<NSObject>) {
         if usePenClassifications() {
             for object in touches {
                 if let classificationInfo = object as? FTTouchClassificationInfo {
@@ -391,7 +387,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
     let dragDelayTime = 0.2
     let dragMaxDistance: CGFloat = 10
     
-    override func touchesBegan(touches: NSSet, withEvent event: UIEvent) {
+    override func touchesBegan(touches: Set<NSObject>, withEvent event: UIEvent) {
         for object in touches {
             if let touch = object as? UITouch {
                 let point = touch.locationInView(self.scrollView)
@@ -428,12 +424,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 
                 let classification = penClassificationForTouch(touch)
                 if classification == nil || classification! != .Palm {
-                    if let lastStroke = self.unprocessedStrokes.last {
-                        if let lastStrokeLastPoint = lastStroke.points.last {
-                            if euclidianDistance(lastStrokeLastPoint, point) > 150 {
-                                // This was far away from the last stroke, so we process that stroke
-                                processStrokes()
-                            }
+                    if let lastStroke = self.unprocessedStrokes.last, lastStrokeLastPoint = lastStroke.points.last {
+                        if euclidianDistance(lastStrokeLastPoint, point) > 150 {
+                            // This was far away from the last stroke, so we process that stroke
+                            processStrokes()
                         }
                     }
                 }
@@ -443,7 +437,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         // TODO: See if this was a double-tap, to delete
     }
     
-    override func touchesMoved(touches: NSSet, withEvent event: UIEvent) {
+    override func touchesMoved(touches: Set<NSObject>, withEvent event: UIEvent) {
         for object in touches {
             if let touch = object as? UITouch {
                 let touchID = FTPenManager.sharedInstance().classifier.idForTouch(touch)
@@ -490,7 +484,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         }
     }
     
-    override func touchesEnded(touches: NSSet, withEvent event: UIEvent) {
+    override func touchesEnded(touches: Set<NSObject>, withEvent event: UIEvent) {
         for object in touches {
             if let touch = object as? UITouch {
                 let touchID = FTPenManager.sharedInstance().classifier.idForTouch(touch)
@@ -586,7 +580,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         }
     }
     
-    override func touchesCancelled(touches: NSSet!, withEvent event: UIEvent!) {
+    override func touchesCancelled(touches: Set<NSObject>, withEvent event: UIEvent!) {
         for object in touches {
             if let touch = object as? UITouch {
                 let touchID = FTPenManager.sharedInstance().classifier.idForTouch(touch)
@@ -967,7 +961,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         }
                     }
                     
-                    var combinedLabels = classifiedLabels.reduce("", +)
+                    var combinedLabels = classifiedLabels.reduce("", combine: +)
                     var isPercent = false
                     if classifiedLabels.count > 1 && combinedLabels.hasSuffix("/") {
                         combinedLabels = combinedLabels.substringToIndex(combinedLabels.endIndex.predecessor())
@@ -1068,8 +1062,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
     func updateDisplay(values: [Connector: Double] = [:], needsSolving: Bool = false, needsLayout: Bool = false, selectNewConnectorLabel: Bool = true)
     {
         // See how these variables are used at the end of this function, after the internal definitions
-        self.needsLayout |= needsLayout
-        self.needsSolving |= needsSolving || values.count > 0
+        self.needsLayout = self.needsLayout || needsLayout
+        self.needsSolving = self.needsSolving || needsSolving || values.count > 0
         
         func rebuildAllConnectionLayers() {
             for oldLayer in self.connectionLayers {

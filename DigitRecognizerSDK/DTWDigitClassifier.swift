@@ -73,22 +73,20 @@ public class DTWDigitClassifier {
             
             if index + 1 < strokes.count {
                 // Check to see if this stroke and the next stroke touched each other x-wise
-                if let strokeRange = strokeRanges[index] {
-                    if let nextStrokeRange = strokeRanges[index + 1] {
-                        if isWithin(nextStrokeRange.min, strokeRange) || isWithin(nextStrokeRange.max, strokeRange) || isWithin(strokeRange.min, nextStrokeRange) {
+                if let strokeRange = strokeRanges[index], let nextStrokeRange = strokeRanges[index + 1] {
+                    if isWithin(nextStrokeRange.min, strokeRange) || isWithin(nextStrokeRange.max, strokeRange) || isWithin(strokeRange.min, nextStrokeRange) {
+                        
+                        // These two strokes intersected x-wise, so we try to classify them as one digit
+                        if let twoStrokeClassification = self.classifyDigit([strokes[index], strokes[index + 1]]) {
+                            let nextStrokeClassification = singleStrokeClassifications[index + 1]
                             
-                            // These two strokes intersected x-wise, so we try to classify them as one digit
-                            if let twoStrokeClassification = self.classifyDigit([strokes[index], strokes[index + 1]]) {
-                                let nextStrokeClassification = singleStrokeClassifications[index + 1]
+                            var mustMatch = thisStrokeClassification == nil || nextStrokeClassification == nil;
+                            if (mustMatch || twoStrokeClassification.Confidence < (thisStrokeClassification!.Confidence + nextStrokeClassification!.Confidence)) {
                                 
-                                var mustMatch = thisStrokeClassification == nil || nextStrokeClassification == nil;
-                                if (mustMatch || twoStrokeClassification.Confidence < (thisStrokeClassification!.Confidence + nextStrokeClassification!.Confidence)) {
-                                    
-                                    // Sweet, the double stroke classification is the best one
-                                    labels.append(twoStrokeClassification.Label)
-                                    index += 2
-                                    continue
-                                }
+                                // Sweet, the double stroke classification is the best one
+                                labels.append(twoStrokeClassification.Label)
+                                index += 2
+                                continue
                             }
                         }
                     }
