@@ -182,22 +182,28 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                     self.selectedConnectorPort = nil
                 }
                 
-                var value = selectedConnectorLabelValueOverride ?? self.lastValueForConnector(connectorLabel.connector) ?? 0.0
+                // Here we are careful that if there isn't a value already selected (it was a ?), we don't assign a value. We just put 0 in the picker
+                var selectedValue = selectedConnectorLabelValueOverride ?? self.lastValueForConnector(connectorLabel.connector)
+                var valueToDisplay = selectedValue ?? 0.0
                 selectedConnectorLabelValueOverride = nil
-                if !isfinite(value) {
-                    value = 0.0
+                if !isfinite(valueToDisplay) {
+                    valueToDisplay = 0.0
                 }
                 var scale: Int16 = 0
                 if connectorLabel.isPercent {
                     scale = -2
-                } else if abs(value) < 3 {
+                } else if abs(valueToDisplay) < 3 {
                     scale = -1
-                } else if abs(value) >= 100 {
+                } else if abs(valueToDisplay) >= 100 {
                     scale = 1
                 }
-                valuePicker.resetToValue( NSDecimalNumber(double: Double(value)) , scale: scale)
+                valuePicker.resetToValue( NSDecimalNumber(double: Double(valueToDisplay)) , scale: scale)
                 
-                updateDisplay(values: [connectorLabel.connector : value], needsSolving: true)
+                if let selectedValue = selectedValue {
+                    updateDisplay(values: [connectorLabel.connector : selectedValue], needsSolving: true)
+                } else {
+                    updateDisplay(needsSolving: true)
+                }
                 
                 valuePicker.hidden = false
             } else {
@@ -515,10 +521,24 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         if !isDeleteTap {
                             // This is a selection tap
                             if let (connectorLabel, offset) = touchInfo.connectorLabel {
-                                if self.selectedConnectorLabel != connectorLabel {
-                                    self.selectedConnectorLabel = connectorLabel
+
+                                if usePenClassifications() {
+                                    if self.selectedConnectorLabel != connectorLabel {
+                                        self.selectedConnectorLabel = connectorLabel
+                                    } else {
+                                        self.selectedConnectorLabel = nil
+                                    }
                                 } else {
-                                    self.selectedConnectorLabel = nil
+                                    // We delay this by a bit, so that the selection doesn't happen if a double-tap completes and the connector is deleted
+                                    delay(dragDelayTime) {
+                                        if let _ = find(self.connectorLabels, connectorLabel) { // It will be found unless it has been deleted
+                                            if self.selectedConnectorLabel != connectorLabel {
+                                                self.selectedConnectorLabel = connectorLabel
+                                            } else {
+                                                self.selectedConnectorLabel = nil
+                                            }
+                                        }
+                                    }
                                 }
                                 
                             } else if let connectorPort = touchInfo.constraintView?.ConnectorPort {
@@ -1139,7 +1159,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         let displacement = connectTo.connectorPort.center - connectTo.constraintView.bounds.center()
                         let newDisplacement = displacement * (distance / displacement.length())
                         
-                        let newPoint = self.scrollView.convertPoint(newDisplacement + constraintMiddle, fromView: connectTo.constraintView)
+                        // Make sure the new point is somewhat on the screen
+                        var newPoint = self.scrollView.convertPoint(newDisplacement + constraintMiddle, fromView: connectTo.constraintView)
+                        let minMargin: CGFloat = 10
+                        newPoint.x = max(newPoint.x, minMargin)
+                        newPoint.x = min(newPoint.x, self.scrollView.contentSize.width - minMargin)
+                        newPoint.y = max(newPoint.y, minMargin)
+                        
                         newLabel.center = newPoint
                         newLabel.alpha = 0
                         self.addConnectorLabel(newLabel, topPriority: false, automaticallyConnect: false)
