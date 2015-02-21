@@ -189,15 +189,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 if !isfinite(valueToDisplay) {
                     valueToDisplay = 0.0
                 }
-                var scale: Int16 = 0
-                if connectorLabel.isPercent {
-                    scale = -2
-                } else if abs(valueToDisplay) < 3 {
-                    scale = -1
-                } else if abs(valueToDisplay) >= 100 {
-                    scale = 1
-                }
-                valuePicker.resetToValue( NSDecimalNumber(double: Double(valueToDisplay)) , scale: scale)
+                valuePicker.resetToValue( NSDecimalNumber(double: Double(valueToDisplay)), scale: connectorLabel.scale)
                 
                 if let selectedValue = selectedValue {
                     updateDisplay(values: [connectorLabel.connector : selectedValue], needsSolving: true)
@@ -1005,6 +997,17 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         newLabel.sizeToFit()
                         newLabel.center = centerPoint
                         newLabel.isPercent = isPercent
+                        
+                        let scale: Int16
+                        if isPercent {
+                            scale = -3
+                        } else if combinedLabels == "e" {
+                            scale = -4
+                        } else {
+                            scale = self.defaultScaleForNewValue(writtenValue)
+                        }
+                        newLabel.scale = scale
+                        
                         self.addConnectorLabel(newLabel, topPriority: true)
                         self.selectConnectorLabelAndSetToValue(newLabel, value: writtenValue)
                         
@@ -1069,9 +1072,29 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         }
     }
     
-    func numberSlideView(NumberSlideView, didSelectNewValue newValue: NSDecimalNumber) {
+    func defaultScaleForNewValue(value: Double) -> Int16 {
+        if abs(value) < 3 {
+            return -2
+        } else if abs(value) >= 1000 {
+            return 2
+        } else if abs(value) >= 100 {
+            return 1
+        } else {
+            return -1
+        }
+    }
+    
+    func numberSlideView(NumberSlideView, didSelectNewValue newValue: NSDecimalNumber, scale: Int16) {
         if let selectedConnectorLabel = self.selectedConnectorLabel {
+            selectedConnectorLabel.scale = scale
             self.updateDisplay(values: [selectedConnectorLabel.connector : newValue.doubleValue], needsSolving: true, selectNewConnectorLabel: false)
+        }
+    }
+    
+    func numberSlideView(NumberSlideView, didSelectNewScale scale: Int16) {
+        if let selectedConnectorLabel = self.selectedConnectorLabel {
+            selectedConnectorLabel.scale = scale
+            selectedConnectorLabel.displayValue(lastValueForConnector(selectedConnectorLabel.connector))
         }
     }
     
@@ -1151,6 +1174,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         }
                         
                         let newLabel = ConnectorLabel(connector: connector)
+                        newLabel.scale = self.defaultScaleForNewValue(resolvedValue.DoubleValue)
                         newLabel.sizeToFit()
                         
                         let distance: CGFloat = 80 + max(connectTo.constraintView.bounds.width, connectTo.constraintView.bounds.height)

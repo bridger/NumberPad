@@ -12,6 +12,8 @@
 		AE064B6E1A646A6300A10381 /* ConstraintViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE064B6D1A646A6300A10381 /* ConstraintViews.swift */; };
 		AE064B701A646FB200A10381 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE064B6F1A646FB200A10381 /* Utils.swift */; };
 		AE064B721A64C1D000A10381 /* DigitRecognizerSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = AE5554C11A5CBBF7007DCF1D /* DigitRecognizerSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		AE1CA0741A8C651B00CC1FDA /* SwiftAutoLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE1CA0731A8C651B00CC1FDA /* SwiftAutoLayout.swift */; };
+		AE1CA0761A8C652A00CC1FDA /* VisualFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE1CA0751A8C652A00CC1FDA /* VisualFormat.swift */; };
 		AE5554661A5CB9D3007DCF1D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE5554651A5CB9D3007DCF1D /* AppDelegate.swift */; };
 		AE5554681A5CB9D3007DCF1D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE5554671A5CB9D3007DCF1D /* ViewController.swift */; };
 		AE55546D1A5CB9D3007DCF1D /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AE55546C1A5CB9D3007DCF1D /* Images.xcassets */; };
@@ -148,6 +150,8 @@
 		AE064B6A1A64679200A10381 /* Constraints.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constraints.swift; sourceTree = "<group>"; };
 		AE064B6D1A646A6300A10381 /* ConstraintViews.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConstraintViews.swift; sourceTree = "<group>"; };
 		AE064B6F1A646FB200A10381 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		AE1CA0731A8C651B00CC1FDA /* SwiftAutoLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftAutoLayout.swift; sourceTree = "<group>"; };
+		AE1CA0751A8C652A00CC1FDA /* VisualFormat.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VisualFormat.swift; sourceTree = "<group>"; };
 		AE3DD2331A52100E007D1500 /* DTWDigitClassifierTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DTWDigitClassifierTests.swift; sourceTree = "<group>"; };
 		AE3DD2391A52784A007D1500 /* ujipenchars2.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = ujipenchars2.json; path = Data/ujipenchars2.json; sourceTree = SOURCE_ROOT; };
 		AE3DD23B1A52785D007D1500 /* ujipenchars2_test.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = ujipenchars2_test.json; path = Data/ujipenchars2_test.json; sourceTree = SOURCE_ROOT; };
@@ -520,6 +524,8 @@
 				AE064B6D1A646A6300A10381 /* ConstraintViews.swift */,
 				AE064B6F1A646FB200A10381 /* Utils.swift */,
 				AECB34FB1A6B1F460034A2AB /* NumberSlideView.swift */,
+				AE1CA0751A8C652A00CC1FDA /* VisualFormat.swift */,
+				AE1CA0731A8C651B00CC1FDA /* SwiftAutoLayout.swift */,
 				AEA8E8291A86C4DB0050344B /* DDMathParser */,
 				AE5554FA1A5CE0A5007DCF1D /* Main.storyboard */,
 				AE890D0B1A65AFAE00E604C4 /* Launch Screen.xib */,
@@ -827,6 +833,7 @@
 				AEA8E84C1A86C5A30050344B /* DDEnumerator.m in Sources */,
 				AEA8E86F1A86C6B60050344B /* _DDNumberExpression.m in Sources */,
 				AEC9EEC21A3CDC4A002C7B08 /* ViewController.swift in Sources */,
+				AE1CA0761A8C652A00CC1FDA /* VisualFormat.swift in Sources */,
 				AEA8E8401A86C55E0050344B /* DDMathTokenizer.m in Sources */,
 				AEA8E86E1A86C6B60050344B /* _DDFunctionExpression.m in Sources */,
 				AEA8E8751A86C6C60050344B /* _DDRewriteRule.m in Sources */,
@@ -836,6 +843,7 @@
 				AEA8E84D1A86C5A30050344B /* DDParser.m in Sources */,
 				AEA8E8641A86C63C0050344B /* _DDPrecisionFunctionEvaluator.m in Sources */,
 				AEA8E8621A86C63C0050344B /* _DDDecimalFunctions.m in Sources */,
+				AE1CA0741A8C651B00CC1FDA /* SwiftAutoLayout.swift in Sources */,
 				AE064B6B1A64679200A10381 /* Constraints.swift in Sources */,
 				AEA8E84A1A86C5A30050344B /* _DDMathTermResolver.m in Sources */,
 				AEA8E84B1A86C5A30050344B /* _DDParserTerm.m in Sources */,

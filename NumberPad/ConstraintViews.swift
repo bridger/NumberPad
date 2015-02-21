@@ -14,7 +14,7 @@ import WebKit
 
 class ConnectorLabel: UIView, WKScriptMessageHandler {
     let valueLabel: UILabel = UILabel()
-    var scale: Double = 1
+    var scale: Int16 = -1
     let connector: Connector
     var isDependent: Bool = false
     var isPercent: Bool = false
@@ -141,20 +141,32 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
     
     // Returns whether it changed size
     func displayValue(value: Double?) -> Bool {
-        if let value = value {
+        if var value = value {
+            var scale = self.scale
             if isPercent {
-                self.valueLabel.text = String(format: "%.1f%%", value * 100)
+                value *= 100
+                scale += 2
             }
-            else
-            {
-                if abs(value) < 3 {
-                    self.valueLabel.text = String(format: "%.2f", value)
-                } else if abs(value) < 100 {
-                    self.valueLabel.text = String(format: "%.1f", value)
-                } else {
-                    self.valueLabel.text = String(format: "%.f", value)
-                }
+            
+            let formatString: String
+            switch scale {
+            case let minScale where minScale <= -4: // 0.0001
+                formatString = "%.4f"
+            case -3: // 0.001
+                formatString = "%.3f"
+            case -2: // 0.01
+                formatString = "%.2f"
+            case -1: // 0.1
+                formatString = "%.1f"
+            case 1: // 10
+                formatString = "%.f"
+            case let maxScale where maxScale >= 2: // 100
+                formatString = "%.f"
+            default: // Also, case 0
+                formatString = "%.f"
             }
+            
+            self.valueLabel.text = String(format: formatString, value) + (isPercent ? "%" : "")
         } else {
             self.valueLabel.text = "?"
         }
