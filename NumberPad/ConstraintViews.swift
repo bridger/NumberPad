@@ -599,10 +599,10 @@ class ExponentView: ConstraintView {
         let pathBase: CGFloat = 95
         let scale = myHeight / (pathBase - 1.0)
         func pointOnExponentAtX(x: CGFloat) -> CGPoint {
-            let percentage = x / myWidth
+            let percentage = x / self.myWidth
             let y = pow(pathBase, percentage)
             
-            let point = CGPointMake(x, myHeight - (y - 1.0) * scale)
+            let point = CGPointMake(x, self.myHeight - (y - 1.0) * scale)
             return point
         }
         

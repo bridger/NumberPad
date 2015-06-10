@@ -88,10 +88,7 @@ class DTWDigitClassifierTests: XCTestCase {
             let accuracy = Double(aggregateCorrect) / Double(aggregateTotal)
             let elapsedTime = NSDate().timeIntervalSinceDate(startTime)
             println("Accuracy score for (\(votesCounted), \(scoreCutoff)) is \(accuracy)% (\(aggregateCorrect)/\(aggregateTotal)). All tests took \(elapsedTime) seconds.")
-            
         }
-        
-        
     }
     
     func testPerformanceAndAccuracy() {
