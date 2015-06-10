@@ -1114,18 +1114,18 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             }
             self.connectionLayers.removeAll(keepCapacity: true)
             
-            for constraintView in constraintViews {
+            for constraintView in self.constraintViews {
                 for connectorPort in constraintView.connectorPorts() {
                     if let connector = connectorPort.connector {
-                        if let connectorLabel = connectorToLabel[connector] {
+                        if let connectorLabel = self.connectorToLabel[connector] {
                             let connectorPoint = self.scrollView.convertPoint(connectorPort.center, fromView: constraintView)
                             let labelPoint = connectorLabel.center
                             
-                            let dependent = lastValueWasDependentForConnector(connectorLabel.connector) ?? false
-                            let connectionLayer = createConnectionLayer(labelPoint, endPoint: connectorPoint, color: connectorPort.color, isDependent: dependent)
+                            let dependent = self.lastValueWasDependentForConnector(connectorLabel.connector) ?? false
+                            let connectionLayer = self.createConnectionLayer(labelPoint, endPoint: connectorPoint, color: connectorPort.color, isDependent: dependent)
                             
                             self.connectionLayers.append(connectionLayer)
-                            connectionLayer.zPosition = connectionLayersZPosition
+                            connectionLayer.zPosition = self.connectionLayersZPosition
                             self.scrollView.layer.addSublayer(connectionLayer)
                         }
                     }
@@ -1136,10 +1136,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         
         func layoutConstraintViews() {
             var connectorPositions: [Connector: CGPoint] = [:]
-            for connectorLabel in connectorLabels {
+            for connectorLabel in self.connectorLabels {
                 connectorPositions[connectorLabel.connector] = connectorLabel.center
             }
-            for constraintView in constraintViews {
+            for constraintView in self.constraintViews {
                 constraintView.layoutWithConnectorPositions(connectorPositions)
             }
             self.needsLayout = false
@@ -1220,7 +1220,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             }
             
             // First, the selected connector
-            if let selectedConnector = selectedConnectorLabel?.connector {
+            if let selectedConnector = self.selectedConnectorLabel?.connector {
                 if let value = (values[selectedConnector] ?? lastSimulationContext?.connectorValues[selectedConnector]?.DoubleValue) {
                     simulationContext.setConnectorValue(selectedConnector, value: (DoubleValue: value, Expression: constantExpression(value), WasDependent: true), informant: nil)
                 }
