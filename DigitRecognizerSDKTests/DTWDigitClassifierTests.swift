@@ -10,7 +10,7 @@ import UIKit
 import XCTest
 import DigitRecognizerSDK
 
-struct MisclassifiedRecord: Printable {
+struct MisclassifiedRecord: CustomStringConvertible {
     var testLabel: String
     var trainLabel: String
     var testIndex: Int
@@ -27,7 +27,7 @@ class DTWDigitClassifierTests: XCTestCase {
         let digitClassifier = DTWDigitClassifier()
         let bundle = NSBundle(forClass: self.dynamicType)
         
-        var trainingJsonData = DTWDigitClassifier.jsonLibraryFromFile(bundle.pathForResource("bridger_train", ofType: "json")!)
+        let trainingJsonData = DTWDigitClassifier.jsonLibraryFromFile(bundle.pathForResource("bridger_train", ofType: "json")!)
         digitClassifier.loadData(trainingJsonData!, loadNormalizedData: false)
 //        trainingJsonData = DTWDigitClassifier.jsonLibraryFromFile(bundle.pathForResource("ujipenchars2", ofType: "json")!)
 //        digitClassifier.loadData(trainingJsonData!, loadNormalizedData: false)
@@ -36,8 +36,8 @@ class DTWDigitClassifierTests: XCTestCase {
         let testData = DTWDigitClassifier.jsonToLibrary(testJsonData!["rawData"]!)
         
         
-        for (votesCounted: Int, scoreCutoff: CGFloat) in [(5, 0.8)] {
-            println("\n\n\nTesting votesCounted=\(votesCounted) scoreCutoff=\(scoreCutoff)")
+        for (votesCounted, scoreCutoff): (Int, CGFloat) in [(5, 0.8)] {
+            print("\n\n\nTesting votesCounted=\(votesCounted) scoreCutoff=\(scoreCutoff)")
             
             let startTime = NSDate()
             var aggregateCorrect = 0
@@ -63,7 +63,7 @@ class DTWDigitClassifierTests: XCTestCase {
                         labelUnclassified += 1
                     } else {
                         misclassifieds.append(MisclassifiedRecord(testLabel: label, trainLabel: classification!.Label, testIndex: index, trainIndex: classification!.BestPrototypeIndex) )
-                        println("! Misclassified \(label) as \(classification!.Label). Strokes \(testDigit.count) Indexes \(index) \(classification!.BestPrototypeIndex)")
+                        print("! Misclassified \(label) as \(classification!.Label). Strokes \(testDigit.count) Indexes \(index) \(classification!.BestPrototypeIndex)")
                         labelWrong += 1
                     }
                     index++
@@ -71,7 +71,7 @@ class DTWDigitClassifierTests: XCTestCase {
                 
                 let accuracy = Double(labelCorrect) / Double(labelTotal)
                 let elapsedTime = NSDate().timeIntervalSinceDate(startDigitTime)
-                println(String(format: "Accuracy score for %@ is %.3f%% (%d/%d). %d wrong. %d unknown. Took %d seconds", label, accuracy, labelCorrect, labelTotal, labelWrong, labelUnclassified, Int(elapsedTime)))
+                print(String(format: "Accuracy score for %@ is %.3f%% (%d/%d). %d wrong. %d unknown. Took %d seconds", label, accuracy, labelCorrect, labelTotal, labelWrong, labelUnclassified, Int(elapsedTime)))
                 
                 
                 aggregateCorrect += labelCorrect
@@ -79,15 +79,15 @@ class DTWDigitClassifierTests: XCTestCase {
             }
             
             
-            print("All misclassified: ")
+            print("All misclassified: ", appendNewline: false)
             for misclassified in misclassifieds {
-                print(misclassified.description + ", ")
+                print(misclassified.description + ", ", appendNewline: false)
             }
-            println("")
+            print("")
             
             let accuracy = Double(aggregateCorrect) / Double(aggregateTotal)
             let elapsedTime = NSDate().timeIntervalSinceDate(startTime)
-            println("Accuracy score for (\(votesCounted), \(scoreCutoff)) is \(accuracy)% (\(aggregateCorrect)/\(aggregateTotal)). All tests took \(elapsedTime) seconds.")
+            print("Accuracy score for (\(votesCounted), \(scoreCutoff)) is \(accuracy)% (\(aggregateCorrect)/\(aggregateTotal)). All tests took \(elapsedTime) seconds.")
         }
     }
     
@@ -128,7 +128,7 @@ class DTWDigitClassifierTests: XCTestCase {
                 }
                 
                 let accuracy = Double(labelCorrect) / Double(labelTotal)
-                println(String(format: "Accuracy score for %@ is %.3f%% (%d/%d). Wrong=%d Uknown=%d", label, accuracy, labelCorrect, labelTotal, labelWrong, labelUnclassified))
+                print(String(format: "Accuracy score for %@ is %.3f%% (%d/%d). Wrong=%d Uknown=%d", label, accuracy, labelCorrect, labelTotal, labelWrong, labelUnclassified))
                 
                 aggregateCorrect += labelCorrect
                 aggregateTotal += labelTotal
@@ -136,7 +136,7 @@ class DTWDigitClassifierTests: XCTestCase {
             
             let accuracy = Double(aggregateCorrect) / Double(aggregateTotal)
             let elapsedTime = NSDate().timeIntervalSinceDate(startTime)
-            println("Accuracy score for all training data is \(accuracy)% (\(aggregateCorrect)/\(aggregateTotal)). All tests took \(elapsedTime) seconds.")
+            print("Accuracy score for all training data is \(accuracy)% (\(aggregateCorrect)/\(aggregateTotal)). All tests took \(elapsedTime) seconds.")
         }
     }
 }

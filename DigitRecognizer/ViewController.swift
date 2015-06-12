@@ -25,8 +25,7 @@ class Stroke {
         points.append(point)
         
         let path = CGPathCreateMutable()
-        var x: CGFloat = 0
-        for (index, point) in enumerate(points) {
+        for (index, point) in points.enumerate() {
             if index == 0 {
                 CGPathMoveToPoint(path, nil, point.x, point.y)
             } else {
@@ -90,7 +89,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
                 if let lastStroke = self.previousStrokes.last {
                     if let lastStrokeLastPoint = lastStroke.points.last {
                         let point = recognizer.locationInView(self.scrollView)
-                        if euclidianDistance(lastStrokeLastPoint, point) > 150 {
+                        if euclidianDistance(lastStrokeLastPoint, b: point) > 150 {
                             wasFarAway = true
                         }
                     }

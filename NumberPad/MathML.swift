@@ -29,9 +29,9 @@ func mathMLForExpression(expression: DDExpression, formattedValues: [DDExpressio
                     return nil
                 }
                 
-                if let firstSubMathML = mathMLForExpression(values[0], formattedValues) {
+                if let firstSubMathML = mathMLForExpression(values[0], formattedValues: formattedValues) {
                     // TODO: Add parenthesis as appropriate on negative numbers. 5 + (-6), or 5•(-6)
-                    if let secondSubMathML = mathMLForExpression(values[1], formattedValues) {
+                    if let secondSubMathML = mathMLForExpression(values[1], formattedValues: formattedValues) {
                         
                         if functionName == DDMathOperatorAdd {
                             return "\(firstSubMathML)<mo>+</mo>\(secondSubMathML)"
@@ -40,22 +40,22 @@ func mathMLForExpression(expression: DDExpression, formattedValues: [DDExpressio
                             return "\(firstSubMathML)<mo>-</mo>\(secondSubMathML)"
                             
                         } else if functionName == DDMathOperatorMultiply {
-                            let leftExpression = subExpressionInParenthesisIfNecessary(values[0], firstSubMathML, onlyForAddition: true)
-                            let rightExpression = subExpressionInParenthesisIfNecessary(values[1], secondSubMathML, onlyForAddition: true)
+                            let leftExpression = subExpressionInParenthesisIfNecessary(values[0], subExpressionMathML: firstSubMathML, onlyForAddition: true)
+                            let rightExpression = subExpressionInParenthesisIfNecessary(values[1], subExpressionMathML: secondSubMathML, onlyForAddition: true)
                             return "\(leftExpression)<mo>⋅</mo>\(rightExpression)"
                             
                         } else if functionName == DDMathOperatorDivide {
                             return "<mfrac><mrow>\(firstSubMathML)</mrow><mrow>\(secondSubMathML)</mrow></mfrac>"
                             
                         } else if functionName == DDMathOperatorPower {
-                            let baseExpression = subExpressionInParenthesisIfNecessary(values[0], firstSubMathML)
+                            let baseExpression = subExpressionInParenthesisIfNecessary(values[0], subExpressionMathML: firstSubMathML)
                             return "<msup><mrow>\(baseExpression)</mrow><mrow>\(secondSubMathML)</mrow></msup>"
                             
                         } else if functionName == DDMathOperatorNthRoot {
                             return "<mroot><mrow>\(firstSubMathML)</mrow><mrow>\(secondSubMathML)</mrow></mroot>"
                             
                         } else if functionName == DDMathOperatorLogBase {
-                            let subExpression = subExpressionInParenthesisIfNecessary(values[1], secondSubMathML)
+                            let subExpression = subExpressionInParenthesisIfNecessary(values[1], subExpressionMathML: secondSubMathML)
                             return "<mrow><msub><mi>log</mi><mrow>\(firstSubMathML)</mrow></msub>\(subExpression)</mrow>"
                         }
                     } else {

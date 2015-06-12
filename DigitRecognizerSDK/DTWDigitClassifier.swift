@@ -10,7 +10,7 @@ import CoreGraphics
 import Foundation
 
 public func euclidianDistance(a: CGPoint, b: CGPoint) -> CGFloat {
-    return sqrt( euclidianDistanceSquared(a, b) )
+    return sqrt( euclidianDistanceSquared(a, b: b) )
 }
 
 public func euclidianDistanceSquared(a: CGPoint, b: CGPoint) -> CGFloat {
@@ -74,13 +74,13 @@ public class DTWDigitClassifier {
             if index + 1 < strokes.count {
                 // Check to see if this stroke and the next stroke touched each other x-wise
                 if let strokeRange = strokeRanges[index], let nextStrokeRange = strokeRanges[index + 1] {
-                    if isWithin(nextStrokeRange.min, strokeRange) || isWithin(nextStrokeRange.max, strokeRange) || isWithin(strokeRange.min, nextStrokeRange) {
+                    if isWithin(nextStrokeRange.min, range: strokeRange) || isWithin(nextStrokeRange.max, range: strokeRange) || isWithin(strokeRange.min, range: nextStrokeRange) {
                         
                         // These two strokes intersected x-wise, so we try to classify them as one digit
                         if let twoStrokeClassification = self.classifyDigit([strokes[index], strokes[index + 1]]) {
                             let nextStrokeClassification = singleStrokeClassifications[index + 1]
                             
-                            var mustMatch = thisStrokeClassification == nil || nextStrokeClassification == nil;
+                            let mustMatch = thisStrokeClassification == nil || nextStrokeClassification == nil;
                             if (mustMatch || twoStrokeClassification.Confidence < (thisStrokeClassification!.Confidence + nextStrokeClassification!.Confidence)) {
                                 
                                 // Sweet, the double stroke classification is the best one
@@ -97,7 +97,7 @@ public class DTWDigitClassifier {
             if let thisStrokeClassification = thisStrokeClassification {
                 labels.append(thisStrokeClassification.Label)
             } else {
-                println("Could not classify stroke \(index)")
+                print("Could not classify stroke \(index)")
                 return nil
             }
             index += 1
@@ -143,7 +143,7 @@ public class DTWDigitClassifier {
             dispatch_group_wait(serviceGroup, DISPATCH_TIME_FOREVER);
             
             var votes: [DigitLabel: Int] = [:]
-            for (score, (label, index)) in bestMatches {
+            for (_, (label, _)) in bestMatches {
                 votes[label] = (votes[label] ?? 0) + 1
             }
             
@@ -164,7 +164,7 @@ public class DTWDigitClassifier {
             }
 
         } else {
-            println("Unable to normalize digit")
+            print("Unable to normalize digit")
         }
         
         
@@ -205,17 +205,18 @@ public class DTWDigitClassifier {
     public class func jsonLibraryFromFile(path: String) -> [String: JSONCompatibleLibrary]? {
         let filename = path.lastPathComponent
         if let data = NSData(contentsOfFile: path) {
-            if let json: AnyObject = NSJSONSerialization.JSONObjectWithData(data, options: nil, error: nil) {
+            do {
+                let json: AnyObject = try NSJSONSerialization.JSONObjectWithData(data, options: [])
                 if let jsonLibrary = json as? [String: JSONCompatibleLibrary] {
                     return jsonLibrary
                 } else {
-                    println("Unable to read file \(filename) as compatible json")
+                    print("Unable to read file \(filename) as compatible json")
                 }
-            } else {
-                println("Unable to read file \(filename) as json")
+            } catch _ {
+                print("Unable to read file \(filename) as json")
             }
         } else {
-            println("Unable to read file \(filename)")
+            print("Unable to read file \(filename)")
         }
         
         return nil
@@ -261,12 +262,12 @@ public class DTWDigitClassifier {
         
         if !loadedNormalizedData {
             for (label, prototypes) in self.rawPrototypeLibrary {
-                for (index, prototype) in enumerate(prototypes) {
+                for (_, prototype) in prototypes.enumerate() {
                     if let normalizedDigit = normalizeDigit(prototype) {
-                        let totalPoints = normalizedDigit.reduce(0) {(total, stroke) -> Int in
-                            return total + stroke.count
-                        }
-                        //println("Normalized digit \(label) to \(totalPoints) points")
+//                        let totalPoints = normalizedDigit.reduce(0) {(total, stroke) -> Int in
+//                            return total + stroke.count
+//                        }
+//                        println("Normalized digit \(label) to \(totalPoints) points")
                         addToLibrary(&self.normalizedPrototypeLibrary, label: label, digit: normalizedDigit)
                     }
                 }
@@ -279,7 +280,6 @@ public class DTWDigitClassifier {
         if library[label] != nil {
             library[label]!.append(digit)
         } else {
-            var newArray: [DigitStrokes] = [digit]
             library[label] = []
         }
     }
@@ -288,7 +288,7 @@ public class DTWDigitClassifier {
     func classificationScore(sample: DigitStrokes, prototype: DigitStrokes) -> CGFloat {
         assert(sample.count == prototype.count, "To compare two digits, they must have the same number of strokes")
         var result: CGFloat = 0
-        for (index, stroke) in enumerate(sample) {
+        for (index, stroke) in sample.enumerate() {
             result += self.greedyDynamicTimeWarp(stroke, prototype: prototype[index])
         }
         return result / CGFloat(sample.count)
@@ -336,7 +336,7 @@ public class DTWDigitClassifier {
         while sampleIndex + 1 < sample.count - minNeighborSize && prototypeIndex + 1 < prototype.count - minNeighborSize {
             
             // We want to use the same window size to compare all options, so it must be safe for all cases
-            let safeNeighborSize = calculateSafeNeighborSize(sampleIndex, prototypeIndex)
+            let safeNeighborSize = calculateSafeNeighborSize(sampleIndex, prototypeIndex: prototypeIndex)
             
             // For a pairing (sampleIndex, prototypeIndex) to be made, it must meet the boundary condition:
             // sampleIndex < (slope * CGFloat(prototypeIndex) + windowWidth
@@ -344,16 +344,16 @@ public class DTWDigitClassifier {
             // You can think of slope * CGFloat(prototypeIndex) as being the perfectly diagonal pairing
             var up = CGFloat.max
             if CGFloat(sampleIndex + 1) < slope * CGFloat(prototypeIndex) + windowWidth {
-                up = hHalfMetricForPoints(sampleIndex + 1, prototypeIndex, safeNeighborSize)
+                up = hHalfMetricForPoints(sampleIndex + 1, prototypeIndex: prototypeIndex, neighborsRange: safeNeighborSize)
             }
             var right = CGFloat.max
             if CGFloat(sampleIndex) < slope * CGFloat(prototypeIndex + 1) + windowWidth {
-                right = hHalfMetricForPoints(sampleIndex, prototypeIndex + 1, safeNeighborSize)
+                right = hHalfMetricForPoints(sampleIndex, prototypeIndex: prototypeIndex + 1, neighborsRange: safeNeighborSize)
             }
             var diagonal = CGFloat.max
             if (CGFloat(sampleIndex + 1) < slope * CGFloat(prototypeIndex + 1) + windowWidth &&
                 CGFloat(sampleIndex + 1) > slope * CGFloat(prototypeIndex + 1) - windowWidth) {
-                    diagonal = hHalfMetricForPoints(sampleIndex + 1, prototypeIndex + 1, safeNeighborSize)
+                    diagonal = hHalfMetricForPoints(sampleIndex + 1, prototypeIndex: prototypeIndex + 1, neighborsRange: safeNeighborSize)
             }
             
             // TODO: The right is the least case is repeated twice. Any way to fix that?
@@ -389,15 +389,15 @@ public class DTWDigitClassifier {
             sampleIndex++
             pathLength++;
             
-            let safeNeighborSize = calculateSafeNeighborSize(sampleIndex, prototypeIndex)
-            result += hHalfMetricForPoints(sampleIndex, prototypeIndex, safeNeighborSize)
+            let safeNeighborSize = calculateSafeNeighborSize(sampleIndex, prototypeIndex: prototypeIndex)
+            result += hHalfMetricForPoints(sampleIndex, prototypeIndex: prototypeIndex, neighborsRange: safeNeighborSize)
         }
         while prototypeIndex + 1 < prototype.count - minNeighborSize {
             prototypeIndex++
             pathLength++;
             
-            let safeNeighborSize = calculateSafeNeighborSize(sampleIndex, prototypeIndex)
-            result += hHalfMetricForPoints(sampleIndex, prototypeIndex, safeNeighborSize)
+            let safeNeighborSize = calculateSafeNeighborSize(sampleIndex, prototypeIndex: prototypeIndex)
+            result += hHalfMetricForPoints(sampleIndex, prototypeIndex: prototypeIndex, neighborsRange: safeNeighborSize)
         }
         
         return result / CGFloat(pathLength)
@@ -413,7 +413,7 @@ public class DTWDigitClassifier {
             var totalDistance: CGFloat = 0
             for point in stroke {
                 if let lastPoint = lastPoint {
-                    totalDistance += euclidianDistance(lastPoint, point)
+                    totalDistance += euclidianDistance(lastPoint, b: point)
                 }
                 lastPoint = point
             }
@@ -430,13 +430,13 @@ public class DTWDigitClassifier {
             totalDistance = 0
             for point in stroke {
                 if let lastPoint = lastPoint {
-                    let nextDistance = euclidianDistance(lastPoint, point)
+                    let nextDistance = euclidianDistance(lastPoint, b: point)
                     let newTotalDistance = totalDistance + nextDistance
                     while distanceCovered + distancePerPoint < newTotalDistance {
                         distanceCovered += distancePerPoint
                         let ratio: CGFloat = (distanceCovered - totalDistance) / nextDistance
                         if ratio < 0.0 || ratio > 1.0 {
-                            println("Uh oh! Something went wrong!")
+                            print("Uh oh! Something went wrong!")
                         }
                         let newPointX: CGFloat = point.x * ratio + lastPoint.x * (1.0 - ratio)
                         let newPointY: CGFloat = point.y * ratio + lastPoint.y * (1.0 - ratio)
@@ -449,7 +449,7 @@ public class DTWDigitClassifier {
             if newPoints.count > 0 && newPoints.count > 29 {
                 newInputDigit.append(newPoints)
             } else {
-                println("What happened here????")
+                print("What happened here????")
             }
         }
         let inputDigit = newInputDigit
@@ -485,8 +485,6 @@ public class DTWDigitClassifier {
         }
         let scale = min(xScale, yScale)
         
-        var pointIndex = 0
-        var droppedDistance: Double = 0
         return inputDigit.map { subPath in
             return subPath.map({ point in
                 let x = (point.x - xTranslate) * scale

@@ -20,7 +20,7 @@ public func optimizeAngles(angles: [(ChangeableAngle: CGFloat, TargetAngle: CGFl
         let angleStep: CGFloat = CGFloat(2 * M_PI) / 270.0
         
         // We don't flip if there is only one angle to optimize
-        var possibleFlips = angles.count > 1 ? [false, true] : [false]
+        let possibleFlips = angles.count > 1 ? [false, true] : [false]
         
         for flip in possibleFlips {
             for var testAngle: CGFloat = 0; testAngle < CGFloat(2 * M_PI); testAngle += angleStep {
@@ -92,7 +92,7 @@ public func visualizeNormalizedStrokes(strokes: DTWDigitClassifier.DigitStrokes,
         CGContextSetLineWidth(ctx, 2)
         CGContextStrokePath(ctx)
         
-        for (index, point) in enumerate(stroke) {
+        for (index, point) in stroke.enumerate() {
             let transformedPoint = transformPointLambda(point)
             let indexRatio = CGFloat(index) / 32.0
             let color = UIColor(red: indexRatio, green: 0, blue: (1.0 - indexRatio), alpha: 1)

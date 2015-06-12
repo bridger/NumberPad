@@ -38,7 +38,7 @@ class SortedMinArrayTests: XCTestCase {
         
         minArray.add(2.5, element: 2)
         
-        var results = getElementsAndValues(minArray)
+        let results = getElementsAndValues(minArray)
         XCTAssert(results.elements == [-3, 1, 2], "Elements are wrong")
         XCTAssert(results.values == [-3.5, 1.4, 2.5], "Values are wrong")
     }
@@ -48,12 +48,12 @@ class SortedMinArrayTests: XCTestCase {
         noCapacity.add(3.14, element: 3)
         XCTAssert(noCapacity.count == 0, "No element should be added")
         
-        for (value, element) in noCapacity {
+        for (_, _) in noCapacity {
             XCTFail("No element should be here")
         }
         
-        var hasCapacity = SortedMinArray<Double, Int>(capacity: 1)
-        for (value, element) in noCapacity {
+        let hasCapacity = SortedMinArray<Double, Int>(capacity: 1)
+        for (_, _) in hasCapacity {
             XCTFail("No element should be here")
         }
     }

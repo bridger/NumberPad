@@ -20,7 +20,7 @@ class SimulationContext {
     func setConnectorValue(connector: Connector, value: ResolvedValue, informant: Constraint?) {
         if let existingValue = connectorValues[connector] {
             if existingValue.DoubleValue != value.DoubleValue {
-                println("Something went wrong. Value changed from \(existingValue.DoubleValue) not equal to outputs \(value.DoubleValue)")
+                print("Something went wrong. Value changed from \(existingValue.DoubleValue) not equal to outputs \(value.DoubleValue)")
                 self.connectorConflictCallback(connector, value, informant)
             }
         } else {
@@ -28,7 +28,7 @@ class SimulationContext {
             if let rewrittenExpression = DDExpressionRewriter.defaultRewriter().expressionByRewritingExpression(value.Expression, withEvaluator: mathEvaluator) {
                 rewrittenValue = (value.DoubleValue, rewrittenExpression, value.WasDependent)
             } else {
-                println("Error rewriting expression \(value.Expression)")
+                print("Error rewriting expression \(value.Expression)")
             }
             connectorValues[connector] = rewrittenValue
             connectorResolvedCallback(connector, rewrittenValue, informant)
@@ -49,12 +49,10 @@ class SimulationContext {
 }
 
 func functionExpression(functionName: String, arguments: [DDExpression]) -> DDExpression {
-    var error: NSError? = nil
-    let result = DDExpression.functionExpressionWithFunction(functionName, arguments: arguments, error: &error)
-    if result == nil {
+    do {
+        return try DDExpression.functionExpressionWithFunction(functionName, arguments: arguments)
+    } catch let error as NSError {
         fatalError("Unable to make function expression \(functionName). Error \(error)");
-    } else {
-        return result!
     }
 }
 
@@ -100,11 +98,11 @@ class MultiInputOutputConstraint : Constraint {
         connector.connect(self)
     }
     func removeInput(connector: Connector) {
-        if let index = find(inputs, connector) {
+        if let index = inputs.indexOf(connector) {
             inputs.removeAtIndex(index)
             connector.disconnect(self)
         } else {
-            println("Unable to remove connector!")
+            print("Unable to remove connector!")
         }
     }
     func addOutput(connector: Connector) {
@@ -112,11 +110,11 @@ class MultiInputOutputConstraint : Constraint {
         connector.connect(self)
     }
     func removeOutput(connector: Connector) {
-        if let index = find(outputs, connector) {
+        if let index = outputs.indexOf(connector) {
             outputs.removeAtIndex(index)
             connector.disconnect(self)
         } else {
-            println("Unable to remove connector!")
+            print("Unable to remove connector!")
         }
     }
 }
@@ -129,10 +127,10 @@ class Connector {
         constraints.append(constraint)
     }
     func disconnect(constraint: Constraint) {
-        if let index = find(constraints, constraint) {
+        if let index = constraints.indexOf(constraint) {
             constraints.removeAtIndex(index)
         } else {
-            println("Unable to remove constraint")
+            print("Unable to remove constraint")
         }
     }
 }
@@ -166,7 +164,7 @@ class Adder : MultiInputOutputConstraint {
                 anyValueWasDependent = anyValueWasDependent || value.WasDependent
                 
                 if inputsExpression != nil {
-                    inputsExpression = functionExpression(DDMathOperatorAdd, [inputsExpression!, value.Expression])
+                    inputsExpression = functionExpression(DDMathOperatorAdd, arguments: [inputsExpression!, value.Expression])
                 } else {
                     inputsExpression = value.Expression
                 }
@@ -180,7 +178,7 @@ class Adder : MultiInputOutputConstraint {
                 anyValueWasDependent = anyValueWasDependent || value.WasDependent
                 
                 if outputsExpression != nil {
-                    outputsExpression = functionExpression(DDMathOperatorAdd, [outputsExpression!, value.Expression])
+                    outputsExpression = functionExpression(DDMathOperatorAdd, arguments: [outputsExpression!, value.Expression])
                 } else {
                     outputsExpression = value.Expression
                 }
@@ -194,7 +192,7 @@ class Adder : MultiInputOutputConstraint {
             // D = (A + B + C) - (E + F)
             if inputs.count > 0 {
                 let expression = (outputsExpression != nil
-                    ? functionExpression(DDMathOperatorMinus, [inputsExpression!, outputsExpression!])
+                    ? functionExpression(DDMathOperatorMinus, arguments: [inputsExpression!, outputsExpression!])
                     : inputsExpression!)
                 let value = (inputsAdded - outputsAdded, expression, anyValueWasDependent)
                 context.setConnectorValue(noValueOutputs[0], value: value, informant: self)
@@ -204,7 +202,7 @@ class Adder : MultiInputOutputConstraint {
             // A = (D + E + F) - (B + C)
             if outputs.count > 0 {
                 let expression = (inputsExpression != nil
-                    ? functionExpression(DDMathOperatorMinus, [outputsExpression!, inputsExpression!])
+                    ? functionExpression(DDMathOperatorMinus, arguments: [outputsExpression!, inputsExpression!])
                     : outputsExpression!)
                 let value = (outputsAdded - inputsAdded, expression, anyValueWasDependent)
                 context.setConnectorValue(noValueInputs[0], value: value, informant: self)
@@ -212,7 +210,7 @@ class Adder : MultiInputOutputConstraint {
         } else if noValueInputs.count == 0 && noValueOutputs.count == 0 {
             
             if outputsAdded != inputsAdded {
-                println("Something went wrong in adder. Inputs \(inputsAdded) not equal to outputs \(outputsAdded)");
+                print("Something went wrong in adder. Inputs \(inputsAdded) not equal to outputs \(outputsAdded)");
                 return false
             }
         }
@@ -246,7 +244,7 @@ class Multiplier : MultiInputOutputConstraint {
                 anyValueWasDependent = anyValueWasDependent || value.WasDependent
                 
                 if inputsExpression != nil {
-                    inputsExpression = functionExpression(DDMathOperatorMultiply, [inputsExpression!, value.Expression])
+                    inputsExpression = functionExpression(DDMathOperatorMultiply, arguments: [inputsExpression!, value.Expression])
                 } else {
                     inputsExpression = value.Expression
                 }
@@ -263,7 +261,7 @@ class Multiplier : MultiInputOutputConstraint {
                 anyValueWasDependent = anyValueWasDependent || value.WasDependent
                 
                 if outputsExpression != nil {
-                    outputsExpression = functionExpression(DDMathOperatorMultiply, [outputsExpression!, value.Expression])
+                    outputsExpression = functionExpression(DDMathOperatorMultiply, arguments: [outputsExpression!, value.Expression])
                 } else {
                     outputsExpression = value.Expression
                 }
@@ -289,7 +287,7 @@ class Multiplier : MultiInputOutputConstraint {
             // D = (A * B * C) / (E * F)
             if inputs.count > 0 && outputsMultiplied != 0 {
                 let expression = (outputsExpression != nil
-                    ? functionExpression(DDMathOperatorDivide, [inputsExpression!, outputsExpression!])
+                    ? functionExpression(DDMathOperatorDivide, arguments: [inputsExpression!, outputsExpression!])
                     : inputsExpression!)
                 let value = (inputsMultiplied / outputsMultiplied, expression, anyValueWasDependent)
                 context.setConnectorValue(noValueOutputs[0], value: value, informant: self)
@@ -299,7 +297,7 @@ class Multiplier : MultiInputOutputConstraint {
             // A = (D * E * F) / (B * C)
             if outputs.count > 0 && inputsMultiplied != 0 {
                 let expression = (inputsExpression != nil
-                    ? functionExpression(DDMathOperatorDivide, [outputsExpression!, inputsExpression!])
+                    ? functionExpression(DDMathOperatorDivide, arguments: [outputsExpression!, inputsExpression!])
                     : outputsExpression!)
                 let value = (outputsMultiplied / inputsMultiplied, expression, anyValueWasDependent)
                 context.setConnectorValue(noValueInputs[0], value: value, informant: self)
@@ -308,7 +306,7 @@ class Multiplier : MultiInputOutputConstraint {
         } else if noValueInputs.count == 0 && noValueOutputs.count == 0 {
             
             if outputsMultiplied != inputsMultiplied {
-                println("Something went wrong in multiplier. Inputs \(inputsMultiplied) not equal to outputs \(outputsMultiplied)");
+                print("Something went wrong in multiplier. Inputs \(inputsMultiplied) not equal to outputs \(outputsMultiplied)");
                 return false
             }
         }
@@ -359,7 +357,7 @@ class Exponent : Constraint {
             if exponentValue != nil && exponentValue!.DoubleValue == 0 {
                 // If exponent is 0, then result is 1 (unless base is also zero)
                 if baseValue != nil && baseValue!.DoubleValue == 0 {
-                    print("Unable to determine result if exponent and base are 0")
+                    print("Unable to determine result if exponent and base are 0", appendNewline: false)
                 } else {
                     let value = (1.0, constantExpression(1.0), exponentValue!.WasDependent)
                     context.setConnectorValue(result, value: value, informant: self)
@@ -374,7 +372,7 @@ class Exponent : Constraint {
                 //result = base ^ exponent
                 let doubleValue = pow(baseValue!.DoubleValue, exponentValue!.DoubleValue)
                 let isDependent = baseValue!.WasDependent || exponentValue!.WasDependent
-                let expression = functionExpression(DDMathOperatorPower, [baseValue!.Expression, exponentValue!.Expression])
+                let expression = functionExpression(DDMathOperatorPower, arguments: [baseValue!.Expression, exponentValue!.Expression])
                 context.setConnectorValue(result, value: (doubleValue, expression, isDependent), informant: self)
             }
             
@@ -386,14 +384,14 @@ class Exponent : Constraint {
                 // base = result ^ (1/exponent)
                 let doubleValue = pow(resultValue!.DoubleValue, 1.0 / exponentValue!.DoubleValue)
                 let isDependent = resultValue!.WasDependent || exponentValue!.WasDependent
-                let expression = functionExpression("nthroot", [resultValue!.Expression, exponentValue!.Expression])
+                let expression = functionExpression("nthroot", arguments: [resultValue!.Expression, exponentValue!.Expression])
                 context.setConnectorValue(base, value: (doubleValue, expression, isDependent), informant: self)
                 
             } else if baseValue != nil && exponentValue == nil {
                 // exponent = log_base(result) = ln(result) / ln(base)
                 let doubleValue = log(resultValue!.DoubleValue) / log(baseValue!.DoubleValue)
                 let isDependent = resultValue!.WasDependent || baseValue!.WasDependent
-                let expression = functionExpression(DDMathOperatorLogBase, [baseValue!.Expression, resultValue!.Expression])
+                let expression = functionExpression(DDMathOperatorLogBase, arguments: [baseValue!.Expression, resultValue!.Expression])
                 context.setConnectorValue(exponent, value: (doubleValue, expression, isDependent), informant: self)
                 
             } else if baseValue != nil && exponentValue != nil {
@@ -402,7 +400,7 @@ class Exponent : Constraint {
                 let predictedValue = pow(baseValue!.DoubleValue, exponentValue!.DoubleValue)
                 let value = resultValue!.DoubleValue
                 if predictedValue != value {
-                    println("Something went wrong in exponent. Result \(value) is not equal to \(predictedValue)")
+                    print("Something went wrong in exponent. Result \(value) is not equal to \(predictedValue)")
                     return false
                 }
             }

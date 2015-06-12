@@ -28,7 +28,7 @@ class ImageCell: UICollectionViewCell {
     func imageCellSetup() {
         imageView.frame = self.contentView.bounds
         self.contentView.addSubview(imageView)
-        imageView.autoresizingMask = .FlexibleWidth | .FlexibleHeight
+        imageView.autoresizingMask = [.FlexibleWidth, .FlexibleHeight]
         
         indexLabel.text = "Mj"
         indexLabel.sizeToFit()
@@ -89,7 +89,7 @@ class VisualizeCollectionViewController: UICollectionViewController {
         
         let label = self.digitLabels[indexPath.section]
         if let prototype = digitClassifier.normalizedPrototypeLibrary[label]?[indexPath.row] {
-            let image = visualizeNormalizedStrokes(prototype, self.prototypeSize)
+            let image = visualizeNormalizedStrokes(prototype, imageSize: self.prototypeSize)
             cell.imageView.image = image
             cell.imageView.layer.borderWidth = 1
             

@@ -30,8 +30,7 @@ class Stroke {
     func updateLayer() {
         if layerNeedsUpdate {
             let path = CGPathCreateMutable()
-            var x: CGFloat = 0
-            for (index, point) in enumerate(points) {
+            for (index, point) in points.enumerate() {
                 if index == 0 {
                     CGPathMoveToPoint(path, nil, point.x, point.y)
                 } else {
@@ -66,7 +65,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         FTPenManager.sharedInstance().classifier.delegate = self;
         
         self.scrollView = UIScrollView(frame: self.view.bounds)
-        self.scrollView.autoresizingMask = .FlexibleWidth | .FlexibleHeight
+        self.scrollView.autoresizingMask = [.FlexibleWidth, .FlexibleHeight]
         self.scrollView.userInteractionEnabled = false
         self.scrollView.panGestureRecognizer.minimumNumberOfTouches = 2
         self.view.addGestureRecognizer(self.scrollView.panGestureRecognizer)
@@ -75,7 +74,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         let valuePickerHeight: CGFloat = 100.0
         valuePicker = NumberSlideView(frame: CGRectMake(0, self.view.bounds.size.height - valuePickerHeight, self.view.bounds.size.width, valuePickerHeight))
         valuePicker.delegate = self
-        valuePicker.autoresizingMask = .FlexibleWidth | .FlexibleTopMargin
+        valuePicker.autoresizingMask = [.FlexibleWidth, .FlexibleTopMargin]
         self.view.addSubview(valuePicker)
         self.selectedConnectorLabel = nil
     }
@@ -120,27 +119,27 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         }
     }
     func moveConnectorToTopPriority(connectorLabel: ConnectorLabel) {
-        if let index = find(connectorLabels, connectorLabel) {
+        if let index = connectorLabels.indexOf(connectorLabel) {
             if index != 0 {
                 connectorLabels.removeAtIndex(index)
                 connectorLabels.insert(connectorLabel, atIndex: 0)
             }
         } else {
-            println("Tried to move connector to top priority, but couldn't find it!")
+            print("Tried to move connector to top priority, but couldn't find it!")
         }
     }
     func moveConnectorToBottomPriority(connectorLabel: ConnectorLabel) {
-        if let index = find(connectorLabels, connectorLabel) {
+        if let index = connectorLabels.indexOf(connectorLabel) {
             if index != connectorLabels.count - 1 {
                 connectorLabels.removeAtIndex(index)
                 connectorLabels.append(connectorLabel)
             }
         } else {
-            println("Tried to move connector to bottom priority, but couldn't find it!")
+            print("Tried to move connector to bottom priority, but couldn't find it!")
         }
     }
     func removeConnectorLabel(label: ConnectorLabel) {
-        if let index = find(connectorLabels, label) {
+        if let index = connectorLabels.indexOf(label) {
             if label == selectedConnectorLabel {
                 selectedConnectorLabel = nil
             }
@@ -159,7 +158,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             self.needsLayout = true
             self.needsSolving = true
         } else {
-            println("Cannot remove that label!")
+            print("Cannot remove that label!")
         }
     }
     
@@ -192,7 +191,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 valuePicker.resetToValue( NSDecimalNumber(double: Double(valueToDisplay)), scale: connectorLabel.scale)
                 
                 if let selectedValue = selectedValue {
-                    updateDisplay(values: [connectorLabel.connector : selectedValue], needsSolving: true)
+                    updateDisplay([connectorLabel.connector : selectedValue], needsSolving: true)
                 } else {
                     updateDisplay(needsSolving: true)
                 }
@@ -249,7 +248,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
     }
     
     func removeConstraintView(constraintView: ConstraintView) {
-        if let index = find(constraintViews, constraintView) {
+        if let index = constraintViews.indexOf(constraintView) {
             constraintViews.removeAtIndex(index)
             constraintView.removeFromSuperview()
             for port in constraintView.connectorPorts() {
@@ -262,7 +261,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             self.needsLayout = true
             self.needsSolving = true
         } else {
-            println("Cannot remove that constraint!")
+            print("Cannot remove that constraint!")
         }
     }
     
@@ -280,15 +279,15 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
     // MARK: Pencil integration
     
     func penManagerStateDidChange(state: FTPenManagerState) {
-        var connected = FTPenManagerStateIsConnected(state)
+        let connected = FTPenManagerStateIsConnected(state)
         // TODO: Switch between two-finger scroll and using finger to scroll by disabling UIScrollView's gesture recognizer
         if (connected)
         {
-            println("Connected")
+            print("Connected")
         }
         else
         {
-            println("Disconnected")
+            print("Disconnected")
         }
     }
     
@@ -385,7 +384,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
     let dragDelayTime = 0.2
     let dragMaxDistance: CGFloat = 10
     
-    override func touchesBegan(touches: Set<NSObject>, withEvent event: UIEvent) {
+    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
         for object in touches {
             if let touch = object as? UITouch {
                 let point = touch.locationInView(self.scrollView)
@@ -423,7 +422,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 let classification = penClassificationForTouch(touch)
                 if classification == nil || classification! != .Palm {
                     if let lastStroke = self.unprocessedStrokes.last, lastStrokeLastPoint = lastStroke.points.last {
-                        if euclidianDistance(lastStrokeLastPoint, point) > 150 {
+                        if euclidianDistance(lastStrokeLastPoint, b: point) > 150 {
                             // This was far away from the last stroke, so we process that stroke
                             processStrokes()
                         }
@@ -435,54 +434,52 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         // TODO: See if this was a double-tap, to delete
     }
     
-    override func touchesMoved(touches: Set<NSObject>, withEvent event: UIEvent) {
-        for object in touches {
-            if let touch = object as? UITouch {
-                let touchID = FTPenManager.sharedInstance().classifier.idForTouch(touch)
-                if let touchInfo = self.touches[touchID] {
-                    let point = touch.locationInView(self.scrollView)
-                    
-                    touchInfo.currentStroke.addPoint(point)
-                    touchInfo.phase = .Moved
-                    
-                    if (usePenClassifications()) {
-                        if touchInfo.classification == nil {
-                            if let penClassification = penClassificationForTouch(touch) {
-                                if let gestureClassification = gestureClassificationForTouchAndPen(touchInfo, penClassification: penClassification) {
-                                    println("Used penClassification \(penClassification) in touchesMoved for touch \(touchID)")
-                                    changeTouchToClassification(touchInfo, classification: gestureClassification)
-                                }
+    override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        for touch in touches {
+            let touchID = FTPenManager.sharedInstance().classifier.idForTouch(touch)
+            if let touchInfo = self.touches[touchID] {
+                let point = touch.locationInView(self.scrollView)
+                
+                touchInfo.currentStroke.addPoint(point)
+                touchInfo.phase = .Moved
+                
+                if (usePenClassifications()) {
+                    if touchInfo.classification == nil {
+                        if let penClassification = penClassificationForTouch(touch) {
+                            if let gestureClassification = gestureClassificationForTouchAndPen(touchInfo, penClassification: penClassification) {
+                                print("Used penClassification \(penClassification) in touchesMoved for touch \(touchID)")
+                                changeTouchToClassification(touchInfo, classification: gestureClassification)
                             }
                         }
-                        
-                    } else {
-                        // Assign a classification, only if one doesn't exist
-                        if touchInfo.classification == nil {
-                            // If they weren't pointing at anything, then this is definitely a stroke
-                            if touchInfo.connectorLabel == nil && touchInfo.constraintView == nil {
-                                changeTouchToClassification(touchInfo, classification: .Stroke)
-                            } else if touchInfo.connectorLabel != nil || touchInfo.constraintView?.ConnectorPort != nil {
-                                // If we have moved significantly before the long press timer fired, then this is a connection draw
-                                if touchInfo.initialPoint.distanceTo(point) > dragMaxDistance {
-                                    changeTouchToClassification(touchInfo, classification: .MakeConnection)
-                                }
-                                // TODO: Maybe it should be a failed gesture if there was no connectorPort?
-                            }
-                        }
-                    }
-                    
-                    if touchInfo.classification != nil {
-                            updateGestureForTouch(touchInfo)
                     }
                     
                 } else {
-                    println("Unable to find info for touchMoved ID \(touchID)")
+                    // Assign a classification, only if one doesn't exist
+                    if touchInfo.classification == nil {
+                        // If they weren't pointing at anything, then this is definitely a stroke
+                        if touchInfo.connectorLabel == nil && touchInfo.constraintView == nil {
+                            changeTouchToClassification(touchInfo, classification: .Stroke)
+                        } else if touchInfo.connectorLabel != nil || touchInfo.constraintView?.ConnectorPort != nil {
+                            // If we have moved significantly before the long press timer fired, then this is a connection draw
+                            if touchInfo.initialPoint.distanceTo(point) > dragMaxDistance {
+                                changeTouchToClassification(touchInfo, classification: .MakeConnection)
+                            }
+                            // TODO: Maybe it should be a failed gesture if there was no connectorPort?
+                        }
+                    }
                 }
+                
+                if touchInfo.classification != nil {
+                        updateGestureForTouch(touchInfo)
+                }
+                
+            } else {
+                print("Unable to find info for touchMoved ID \(touchID)")
             }
         }
     }
     
-    override func touchesEnded(touches: Set<NSObject>, withEvent event: UIEvent) {
+    override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
         for object in touches {
             if let touch = object as? UITouch {
                 let touchID = FTPenManager.sharedInstance().classifier.idForTouch(touch)
@@ -523,7 +520,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                                 } else {
                                     // We delay this by a bit, so that the selection doesn't happen if a double-tap completes and the connector is deleted
                                     delay(dragDelayTime) {
-                                        if let _ = find(self.connectorLabels, connectorLabel) { // It will be found unless it has been deleted
+                                        if let _ = self.connectorLabels.indexOf(connectorLabel) { // It will be found unless it has been deleted
                                             if self.selectedConnectorLabel != connectorLabel {
                                                 self.selectedConnectorLabel = connectorLabel
                                             } else {
@@ -592,16 +589,15 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         }
     }
     
-    override func touchesCancelled(touches: Set<NSObject>, withEvent event: UIEvent!) {
-        for object in touches {
-            if let touch = object as? UITouch {
-                let touchID = FTPenManager.sharedInstance().classifier.idForTouch(touch)
-                if let touchInfo = self.touches[touchID] {
-                    undoEffectsOfGestureInProgress(touchInfo)
-                    touchInfo.phase = .Cancelled
-                    
-                    self.touches[touchID] = nil
-                }
+    override func touchesCancelled(touches: Set<UITouch>?, withEvent event: UIEvent?) {
+        guard let touches = touches else { return }
+        for touch in touches {
+            let touchID = FTPenManager.sharedInstance().classifier.idForTouch(touch)
+            if let touchInfo = self.touches[touchID] {
+                undoEffectsOfGestureInProgress(touchInfo)
+                touchInfo.phase = .Cancelled
+                
+                self.touches[touchID] = nil
             }
         }
     }
@@ -771,7 +767,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         if let (connectorLabel, offset) = touchInfo.connectorLabel {
             let targetPort = connectorPortAtLocation(point)?.ConnectorPort
             let labelPoint = connectorLabel.center
-            var dependent = lastValueWasDependentForConnector(connectorLabel.connector) ?? false
+            let dependent = lastValueWasDependentForConnector(connectorLabel.connector) ?? false
             dragLine = createConnectionLayer(labelPoint, endPoint: point, color: targetPort?.color, isDependent: dependent)
             
         } else if let (constraintView, offset, connectorPort) = touchInfo.constraintView {
@@ -919,10 +915,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         let connectorPoint = self.scrollView.convertPoint(connectorPort.center, fromView: constraintView)
                         let labelPoint = connectorLabel.center
                         
-                        let squaredDistance = shortestDistanceSquaredToLineSegmentFromPoint(connectorPoint, labelPoint, point)
+                        let squaredDistance = shortestDistanceSquaredToLineSegmentFromPoint(connectorPoint, segmentEnd: labelPoint, testPoint: point)
                         if squaredDistance < squaredDistanceCutoff {
                             if minSquaredDistance == nil || squaredDistance < minSquaredDistance! {
-                                println("Found elligible distance of \(sqrt(squaredDistance))")
+                                print("Found elligible distance of \(sqrt(squaredDistance))")
                                 minMatch = (connectorLabel, constraintView, connectorPort)
                                 minSquaredDistance = squaredDistance
                             }
@@ -981,7 +977,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                     }
                     var recognized = false
                     var writtenValue: Double?
-                    if let writtenNumber = combinedLabels.toInt() {
+                    if let writtenNumber = Int(combinedLabels) {
                         writtenValue = Double(writtenNumber)
                     } else if combinedLabels == "e" {
                         writtenValue = Double(M_E)
@@ -1058,11 +1054,11 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         recognized = true
                         
                     } else {
-                        println("Unable to parse written text: \(combinedLabels)")
+                        print("Unable to parse written text: \(combinedLabels)")
                     }
                     self.updateDisplay();
                 } else {
-                    println("Unable to recognize all \(allStrokes.count) strokes")
+                    print("Unable to recognize all \(allStrokes.count) strokes")
                 }
                 
                 for stroke in unprocessedStrokesCopy {
@@ -1087,7 +1083,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
     func numberSlideView(NumberSlideView, didSelectNewValue newValue: NSDecimalNumber, scale: Int16) {
         if let selectedConnectorLabel = self.selectedConnectorLabel {
             selectedConnectorLabel.scale = scale
-            self.updateDisplay(values: [selectedConnectorLabel.connector : newValue.doubleValue], needsSolving: true, selectNewConnectorLabel: false)
+            self.updateDisplay([selectedConnectorLabel.connector : newValue.doubleValue], needsSolving: true, selectNewConnectorLabel: false)
         }
     }
     
@@ -1169,7 +1165,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                             }
                         }
                         if connectTo == nil {
-                            println("Unable to find constraint view for newly resolved connector! \(connector), \(resolvedValue), \(constraint)")
+                            print("Unable to find constraint view for newly resolved connector! \(connector), \(resolvedValue), \(constraint)")
                             return
                         }
                         
@@ -1296,7 +1292,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                     var displayedEquation = false
                     if let value = simulationContext.connectorValues[label.connector] {
                         if value.Expression.expressionType() == .Function {
-                            if let mathML = mathMLForExpression(value.Expression, formattedValues) {
+                            if let mathML = mathMLForExpression(value.Expression, formattedValues: formattedValues) {
                                 label.displayEquation(mathML)
                                 displayedEquation = true
                             }
