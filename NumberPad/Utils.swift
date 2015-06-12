@@ -24,7 +24,7 @@ func euclidianDistanceSquared(a: CGPoint, b: CGPoint) -> CGFloat {
     return dx*dx + dy*dy
 }
 
-extension FTTouchClassification : Printable {
+extension FTTouchClassification : CustomStringConvertible {
     public
     var description : String {
         switch self {

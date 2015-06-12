@@ -35,14 +35,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func documentsDirectory() -> String {
-        return NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)[0] as! String
+        return NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)[0] as String
     }
     
     func saveData() {
-        var dataToSave = self.digitClassifier.dataToSave(true, saveNormalizedData: true)
+        let dataToSave = self.digitClassifier.dataToSave(true, saveNormalizedData: true)
         
         let saveNumber: Int
-        if let lastSave = newestSavedData(), let lastNumber = lastSave.substringFromIndex(filePrefix.endIndex).toInt()  {
+        if let lastSave = newestSavedData(), let lastNumber = Int(lastSave.substringFromIndex(filePrefix.endIndex))  {
             saveNumber = lastNumber + 1
         }
         else
@@ -52,7 +52,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         let documentName = self.documentsDirectory().stringByAppendingPathComponent( filePrefix + String(saveNumber))
         
-        NSJSONSerialization.dataWithJSONObject(dataToSave, options: nil, error: nil)!.writeToFile(documentName, atomically: false)
+        do {
+            let jsonObject = try NSJSONSerialization.dataWithJSONObject(dataToSave, options: [])
+            jsonObject.writeToFile(documentName, atomically: false)
+        } catch let error as NSError {
+            print("Couldn't save data \(error)")
+        }
     }
     
     func loadData(path: String) {
@@ -63,12 +68,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     
     func newestSavedData() -> String? {
-        let contents = NSFileManager.defaultManager().contentsOfDirectoryAtPath(self.documentsDirectory(), error: nil)
+        let contents: [AnyObject]?
+        do {
+            contents = try NSFileManager.defaultManager().contentsOfDirectoryAtPath(self.documentsDirectory())
+        } catch _ {
+            contents = nil
+        }
         if contents != nil {
             if let contents = contents as? [String] {
                 let contents = contents.filter({ string in
                     return string.hasPrefix(filePrefix)
-                }).sorted({ (string1, string2) in
+                }).sort({ (string1, string2) in
                     return string1.compare(string2) == NSComparisonResult.OrderedAscending
                 })
                 
@@ -87,7 +97,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let testData = DTWDigitClassifier.jsonToLibrary(testDataJson)
         let randomNumber = arc4random() % 500
         let documentDirectory = documentsDirectory().stringByAppendingPathComponent("\(randomNumber)")
-        NSFileManager.defaultManager().createDirectoryAtPath(documentDirectory, withIntermediateDirectories: true, attributes: nil, error: nil)
+        do {
+            try NSFileManager.defaultManager().createDirectoryAtPath(documentDirectory, withIntermediateDirectories: true, attributes: nil)
+        } catch _ {
+        }
 
         let imageSize = CGSizeMake(200, 200)
         
@@ -97,8 +110,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let normalizedTestStroke = self.digitClassifier.normalizeDigit(testStroke)
             let trainStroke = self.digitClassifier.normalizedPrototypeLibrary[trainLabel]![trainIndex]
             
-            let testStrokeImage = visualizeNormalizedStrokes(normalizedTestStroke!, imageSize)
-            let trainStrokeImage = visualizeNormalizedStrokes(trainStroke, imageSize)
+            let testStrokeImage = visualizeNormalizedStrokes(normalizedTestStroke!, imageSize: imageSize)
+            let trainStrokeImage = visualizeNormalizedStrokes(trainStroke, imageSize: imageSize)
     
             func safeName(name: String) -> String {
                 if name == "+" {
@@ -114,17 +127,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let testFileName = fileName + " - Test.png"
             let trainFileName = fileName + " - Train.png"
             
-            var error: NSError? = nil
-            if !UIImagePNGRepresentation(testStrokeImage).writeToFile(testFileName, options: nil, error: &error) {
-                println("Unable to write file \(testFileName) + \(error)")
+            do {
+                try UIImagePNGRepresentation(testStrokeImage)!.writeToFile(testFileName, options: [])
+            } catch let error as NSError {
+                print("Unable to write file \(testFileName) + \(error)")
             }
-            if !UIImagePNGRepresentation(trainStrokeImage).writeToFile(trainFileName, options: nil, error: &error) {
-                println("Unable to write file \(trainFileName) + \(error)")
+            do {
+                try UIImagePNGRepresentation(trainStrokeImage)!.writeToFile(trainFileName, options: [])
+            } catch let error as NSError {
+                print("Unable to write file \(trainFileName) + \(error)")
             }
         }
         
-        
-        println("Finished writing to \(documentDirectory)")
+        print("Finished writing to \(documentDirectory)")
     }
     
 }

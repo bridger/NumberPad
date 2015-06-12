@@ -14,8 +14,6 @@
     public typealias ALVFView = UIView
 #endif
 
-// layoutHorizontal(|[imageView.al >= 20.al]-(>=0.al!20.al)-[imageView.al]-50.al-|)
-
 extension ALVFView {
     public func addVerticalConstraints(constraintAble: [ConstraintAble]) {
         self.addConstraints(verticalConstraints(constraintAble))
@@ -26,7 +24,7 @@ extension ALVFView {
     }
 }
 
-@objc public protocol ConstraintAble {
+public protocol ConstraintAble {
     func toConstraints(axis: UILayoutConstraintAxis) -> [NSLayoutConstraint];
 }
 
@@ -35,15 +33,15 @@ public func constraints(axis: UILayoutConstraintAxis, constraintAble: [Constrain
 }
 
 public func horizontalConstraints(constraintAble: [ConstraintAble]) -> [NSLayoutConstraint] {
-    return constraints(.Horizontal, constraintAble)
+    return constraints(.Horizontal, constraintAble: constraintAble)
 }
 
 public func verticalConstraints(constraintAble: [ConstraintAble]) -> [NSLayoutConstraint] {
-    return constraints(.Vertical, constraintAble)
+    return constraints(.Vertical, constraintAble: constraintAble)
 }
 
 
-@objc public protocol ViewContainingToken {
+public protocol ViewContainingToken : ConstraintAble {
     var firstView: ALVFView? { get }
     var lastView: ALVFView? { get }
 }
@@ -82,7 +80,7 @@ class TrailingSuperviewAndSpaceToken {
 }
 
 // [view]-5-[view2]
-@objc class SpacedViewsConstraintToken: ConstraintAble, ViewContainingToken {
+class SpacedViewsConstraintToken: ConstraintAble, ViewContainingToken {
     let leadingView: ViewContainingToken
     let trailingView: ViewContainingToken
     let space: ConstantToken
@@ -105,7 +103,7 @@ class TrailingSuperviewAndSpaceToken {
     }
     
     
-    @objc func toConstraints(axis: UILayoutConstraintAxis) -> [NSLayoutConstraint] {
+    func toConstraints(axis: UILayoutConstraintAxis) -> [NSLayoutConstraint] {
         if let leadingView = self.leadingView.lastView {
             if let trailingView = self.trailingView.firstView {
                 let space = self.space.ALConstant
@@ -126,12 +124,8 @@ class TrailingSuperviewAndSpaceToken {
                     toItem: leadingView, attribute: trailingAttribute,
                     multiplier: 1.0, constant: space)]
                 
-                if let leadingConstraint = self.leadingView as? ConstraintAble {
-                    constraints += leadingConstraint.toConstraints(axis)
-                }
-                if let trailingConstraint = self.trailingView as? ConstraintAble {
-                    constraints += trailingConstraint.toConstraints(axis)
-                }
+                constraints += self.leadingView.toConstraints(axis)
+                constraints += self.trailingView.toConstraints(axis)
                 
                 return constraints
             }
@@ -143,7 +137,7 @@ class TrailingSuperviewAndSpaceToken {
 }
 
 // [view == 50]
-@objc class SizeConstantConstraintToken: ConstraintAble, ViewContainingToken {
+class SizeConstantConstraintToken: ConstraintAble, ViewContainingToken {
     let view: ALVFView
     let size: ConstantToken
     let relation: NSLayoutRelation
@@ -185,7 +179,7 @@ class TrailingSuperviewAndSpaceToken {
 }
 
 // [view == view2]
-@objc class SizeRelationConstraintToken: ConstraintAble, ViewContainingToken {
+class SizeRelationConstraintToken: ConstraintAble, ViewContainingToken {
     let view: ALVFView
     let relatedView: ALVFView
     let relation: NSLayoutRelation
@@ -222,7 +216,7 @@ class TrailingSuperviewAndSpaceToken {
 }
 
 // |-5-[view]
-@objc public class LeadingSuperviewConstraintToken: ConstraintAble, ViewContainingToken {
+public class LeadingSuperviewConstraintToken: ConstraintAble, ViewContainingToken {
     let viewContainer: ViewContainingToken
     let space: ConstantToken
     init(viewContainer: ViewContainingToken, space: ConstantToken) {
@@ -261,23 +255,17 @@ class TrailingSuperviewAndSpaceToken {
                         multiplier: 1.0, constant: constant)
                 }
                 
-                if let otherConstraint = viewContainer as?  ConstraintAble {
-                    return otherConstraint.toConstraints(axis) + [constraint]
-                } else {
-                    return [constraint]
-                }
+                return viewContainer.toConstraints(axis) + [constraint]
             }
             NSException(name: NSInvalidArgumentException, reason: "You tried to create a constraint to \(view)'s superview, but it has no superview yet!", userInfo: nil).raise()
         }
         NSException(name: NSInvalidArgumentException, reason: "This superview bar | was before something that doesn't have a view. Weird?", userInfo: nil).raise()
         return [] // To appease the compiler, which doesn't realize this branch dies
     }
-    
-    
 }
 
 // [view]-5-|
-@objc public class TrailingSuperviewConstraintToken: ConstraintAble, ViewContainingToken {
+public class TrailingSuperviewConstraintToken: ConstraintAble, ViewContainingToken {
     let viewContainer: ViewContainingToken
     let space: ConstantToken
     init(viewContainer: ViewContainingToken, space: ConstantToken) {
@@ -316,11 +304,7 @@ class TrailingSuperviewAndSpaceToken {
                         multiplier: 1.0, constant: constant)
                 }
                 
-                if let otherConstraint = viewContainer as?  ConstraintAble {
-                    return otherConstraint.toConstraints(axis) + [constraint]
-                } else {
-                    return [constraint]
-                }
+                return viewContainer.toConstraints(axis) + [constraint]
             }
             NSException(name: NSInvalidArgumentException, reason: "You tried to create a constraint to \(view)'s superview, but it has no superview yet!", userInfo: nil).raise()
         }
@@ -415,6 +399,10 @@ extension ALVFView: ViewContainingToken {
         get {
             return self
         }
+    }
+    
+    public func toConstraints(axis: UILayoutConstraintAxis) -> [NSLayoutConstraint] {
+        return []
     }
 }
 

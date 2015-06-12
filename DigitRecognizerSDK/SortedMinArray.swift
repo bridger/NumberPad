@@ -58,12 +58,10 @@ public struct SortedMinArray<Value: Comparable, Element> {
             if !hasRoom {
                 contents.removeAtIndex(contents.count - 1)
             }
-            
-            let generater = contents.generate()
-            
+                        
             // Insert the element
             let insertedTuple = (value, element)
-            let index = insertionIndexOf(contents, insertedTuple) { tuple1, tuple2 in
+            let index = insertionIndexOf(contents, elem: insertedTuple) { tuple1, tuple2 in
                 return tuple1.value < tuple2.value
             }
             contents.insert((value, element), atIndex: index)

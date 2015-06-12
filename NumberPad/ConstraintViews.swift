@@ -94,7 +94,6 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
                 let newSize = CGSizeMake(latestWidth + widthDelta, latestHeight + heightDelta)
                 if let oldSize = self.equationViewSize {
                     // It was at 5, so we chose 8. Now we only pick a new size if the latest width is > 8 or < 2
-                    let maxDelta = max(abs(latestWidth - oldSize.width), abs(latestHeight - oldSize.height))
                     let minWidth = oldSize.width - widthDelta * 2
                     let minHeight = oldSize.height - heightDelta * 2
                     if latestWidth > oldSize.width || latestWidth < minWidth || latestHeight > oldSize.height || latestHeight < minHeight {
@@ -114,7 +113,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
                 return
             }
         }
-        println("Something went wrong! We couldn't get the size of the equation")
+        print("Something went wrong! We couldn't get the size of the equation")
     }
     
     var isSelected: Bool = false {
@@ -194,11 +193,9 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
         let horizontalMargin: CGFloat = 7.0 + borderWidth
         let equationSpace: CGFloat = 2.0
         
-        if let equationView = self.equationView {
-            if let equationSize = self.equationViewSize {
-                newSize.width = max(newSize.width, equationSize.width)
-                newSize.height += equationSpace + equationSize.height
-            }
+        if let equationSize = self.equationViewSize where equationView != nil {
+            newSize.width = max(newSize.width, equationSize.width)
+            newSize.height += equationSpace + equationSize.height
         }
 
         newSize.width += horizontalMargin * 2
@@ -330,7 +327,7 @@ class MultiInputOutputConstraintView: ConstraintView {
     
     override func connectorPortForDragAtLocation(location: CGPoint) -> ConnectorPort? {
         for internalPort in internalConnectorPorts() {
-            if euclidianDistanceSquared(internalPort.layer.position, location) < 400 {
+            if euclidianDistanceSquared(internalPort.layer.position, b: location) < 400 {
                 return internalPort
             }
         }
@@ -387,7 +384,7 @@ class MultiInputOutputConstraintView: ConstraintView {
         }
     }
     
-    override init(coder aDecoder: NSCoder) {
+    required init(coder aDecoder: NSCoder) {
         fatalError("Initializer not supported")
     }
     
@@ -397,7 +394,6 @@ class MultiInputOutputConstraintView: ConstraintView {
         // Subclasses should have overriden this method, layed out the connectors, then called super
         
         var angles: [(ChangeableAngle: CGFloat, TargetAngle: CGFloat)] = []
-        var flippedPortAngles: [CGFloat] = []
         for internalConnector in self.internalConnectorPorts() {
             if let connector = internalConnector.connector, let position = positions[connector] {
                 let portAngle = (internalConnector.center - self.bounds.center()).angle
@@ -419,6 +415,10 @@ class MultiplierView: MultiInputOutputConstraintView {
     init(multiplier: Multiplier) {
         self.multiplier = multiplier
         super.init(constraint: multiplier)
+    }
+    
+    required init(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     let mySize: CGFloat = 50.0
@@ -454,6 +454,10 @@ class AdderView: MultiInputOutputConstraintView {
     init(adder: Adder) {
         self.adder = adder
         super.init(constraint: adder)
+    }
+
+    required init(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     let myWidth: CGFloat = 60.0
@@ -523,7 +527,7 @@ class ExponentView: ConstraintView {
     override func connectorPortForDragAtLocation(location: CGPoint) -> ConnectorPort? {
         for internalPort in internalConnectorPorts() {
             let cutoffSquared: CGFloat = (internalPort === basePort) ? 900 : 400
-            if euclidianDistanceSquared(internalPort.layer.position, location) < cutoffSquared {
+            if euclidianDistanceSquared(internalPort.layer.position, b: location) < cutoffSquared {
                 return internalPort
             }
         }
@@ -568,7 +572,7 @@ class ExponentView: ConstraintView {
         }
     }
     
-    override init(coder aDecoder: NSCoder) {
+    required init(coder aDecoder: NSCoder) {
         fatalError("Initializer not supported")
     }
     

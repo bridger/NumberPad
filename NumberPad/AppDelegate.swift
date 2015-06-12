@@ -49,7 +49,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func documentsDirectory() -> String {
-        return NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)[0] as! String
+        return NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)[0] as String
     }
     
     func loadData(path: String) {
@@ -60,12 +60,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     
     func newestSavedData() -> String? {
-        let contents = NSFileManager.defaultManager().contentsOfDirectoryAtPath(self.documentsDirectory(), error: nil)
+        let contents: [AnyObject]?
+        do {
+            contents = try NSFileManager.defaultManager().contentsOfDirectoryAtPath(self.documentsDirectory())
+        } catch _ {
+            contents = nil
+        }
         if contents != nil {
             if let contents = contents as? [String] {
                 let contents = contents.filter({ string in
                     return string.hasPrefix(filePrefix)
-                }).sorted({ (string1, string2) in
+                }).sort({ (string1, string2) in
                     return string1.compare(string2) == NSComparisonResult.OrderedAscending
                 })
                 
