@@ -182,7 +182,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 }
                 
                 // Here we are careful that if there isn't a value already selected (it was a ?), we don't assign a value. We just put 0 in the picker
-                var selectedValue = selectedConnectorLabelValueOverride ?? self.lastValueForConnector(connectorLabel.connector)
+                let selectedValue = selectedConnectorLabelValueOverride ?? self.lastValueForConnector(connectorLabel.connector)
                 var valueToDisplay = selectedValue ?? 0.0
                 selectedConnectorLabelValueOverride = nil
                 if !isfinite(valueToDisplay) {
@@ -233,11 +233,11 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
     }
     var selectedConnectorPort: (ConstraintView: ConstraintView, ConnectorPort: ConnectorPort)? {
         didSet {
-            if let (oldConstraintView, oldConnectorPort) = oldValue {
+            if let (_, oldConnectorPort) = oldValue {
                 oldConnectorPort.isSelected = false
             }
             
-            if let (newConstraintView, newConnectorPort) = self.selectedConnectorPort {
+            if let (_, newConnectorPort) = self.selectedConnectorPort {
                 newConnectorPort.isSelected = true
                 
                 if self.selectedConnectorLabel != nil {
@@ -385,47 +385,45 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
     let dragMaxDistance: CGFloat = 10
     
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        for object in touches {
-            if let touch = object as? UITouch {
-                let point = touch.locationInView(self.scrollView)
+        for touch in touches {
+            let point = touch.locationInView(self.scrollView)
+            
+            let touchInfo = TouchInfo(initialPoint: point, initialTime: touch.timestamp)
+            
+            if let connectorLabel = self.connectorLabelAtPoint(point) {
+                touchInfo.connectorLabel = (connectorLabel, connectorLabel.center - point)
                 
-                var touchInfo = TouchInfo(initialPoint: point, initialTime: touch.timestamp)
+            } else if let (constraintView, connectorPort) = self.connectorPortAtLocation(point) {
+                touchInfo.constraintView = (constraintView, constraintView.center - point, connectorPort)
                 
-                if let connectorLabel = self.connectorLabelAtPoint(point) {
-                    touchInfo.connectorLabel = (connectorLabel, connectorLabel.center - point)
-                    
-                } else if let (constraintView, connectorPort) = self.connectorPortAtLocation(point) {
-                    touchInfo.constraintView = (constraintView, constraintView.center - point, connectorPort)
-                    
-                } else if let constraintView = self.constraintViewAtPoint(point) {
-                    touchInfo.constraintView = (constraintView, constraintView.center - point, nil)
-                    
-                }
+            } else if let constraintView = self.constraintViewAtPoint(point) {
+                touchInfo.constraintView = (constraintView, constraintView.center - point, nil)
                 
-                let touchID = FTPenManager.sharedInstance().classifier.idForTouch(touch)
-                self.touches[touchID] = touchInfo
-                
-                if (!usePenClassifications()) {
-                    // Test for a long press, to trigger a drag
-                    if (touchInfo.connectorLabel != nil || touchInfo.constraintView != nil) {
-                        delay(dragDelayTime) {
-                            // If this still hasn't been classified as something else (like a connection draw), then it is a move
-                            if touchInfo.classification == nil {
-                                if touchInfo.phase == .Began || touchInfo.phase == .Moved {
-                                    self.changeTouchToClassification(touchInfo, classification: .Drag)
-                                }
+            }
+            
+            let touchID = FTPenManager.sharedInstance().classifier.idForTouch(touch)
+            self.touches[touchID] = touchInfo
+            
+            if (!usePenClassifications()) {
+                // Test for a long press, to trigger a drag
+                if (touchInfo.connectorLabel != nil || touchInfo.constraintView != nil) {
+                    delay(dragDelayTime) {
+                        // If this still hasn't been classified as something else (like a connection draw), then it is a move
+                        if touchInfo.classification == nil {
+                            if touchInfo.phase == .Began || touchInfo.phase == .Moved {
+                                self.changeTouchToClassification(touchInfo, classification: .Drag)
                             }
                         }
                     }
                 }
-                
-                let classification = penClassificationForTouch(touch)
-                if classification == nil || classification! != .Palm {
-                    if let lastStroke = self.unprocessedStrokes.last, lastStrokeLastPoint = lastStroke.points.last {
-                        if euclidianDistance(lastStrokeLastPoint, b: point) > 150 {
-                            // This was far away from the last stroke, so we process that stroke
-                            processStrokes()
-                        }
+            }
+            
+            let classification = penClassificationForTouch(touch)
+            if classification == nil || classification! != .Palm {
+                if let lastStroke = self.unprocessedStrokes.last, lastStrokeLastPoint = lastStroke.points.last {
+                    if euclidianDistance(lastStrokeLastPoint, b: point) > 150 {
+                        // This was far away from the last stroke, so we process that stroke
+                        processStrokes()
                     }
                 }
             }
@@ -480,111 +478,108 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
     }
     
     override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        for object in touches {
-            if let touch = object as? UITouch {
-                let touchID = FTPenManager.sharedInstance().classifier.idForTouch(touch)
-                if let touchInfo = self.touches[touchID] {
-                    let point = touch.locationInView(self.scrollView)
-                    
-                    touchInfo.currentStroke.addPoint(point)
-                    touchInfo.phase = .Ended
-                    
-                    // See if this was a tap
-                    var wasTap = false
-                    if touch.timestamp - touchInfo.initialTime < dragDelayTime && touchInfo.initialPoint.distanceTo(point) <= dragMaxDistance {
-                        wasTap = true
-                        for point in touchInfo.currentStroke.points {
-                            // Only if all points were within the threshold was it a tap
-                            if touchInfo.initialPoint.distanceTo(point) > dragMaxDistance {
-                                wasTap = false
-                                break
-                            }
+        for touch in touches {
+            let touchID = FTPenManager.sharedInstance().classifier.idForTouch(touch)
+            if let touchInfo = self.touches[touchID] {
+                let point = touch.locationInView(self.scrollView)
+                
+                touchInfo.currentStroke.addPoint(point)
+                touchInfo.phase = .Ended
+                
+                // See if this was a tap
+                var wasTap = false
+                if touch.timestamp - touchInfo.initialTime < dragDelayTime && touchInfo.initialPoint.distanceTo(point) <= dragMaxDistance {
+                    wasTap = true
+                    for point in touchInfo.currentStroke.points {
+                        // Only if all points were within the threshold was it a tap
+                        if touchInfo.initialPoint.distanceTo(point) > dragMaxDistance {
+                            wasTap = false
+                            break
                         }
                     }
-                    if wasTap {
-                        if touchInfo.classification != nil {
-                            undoEffectsOfGestureInProgress(touchInfo)
-                        }
-                        
-                        let isDeleteTap = usePenClassifications() ? touchInfo.classification == .Delete :  touch.tapCount == 2
-                        if !isDeleteTap {
-                            // This is a selection tap
-                            if let (connectorLabel, offset) = touchInfo.connectorLabel {
-
-                                if usePenClassifications() {
-                                    if self.selectedConnectorLabel != connectorLabel {
-                                        self.selectedConnectorLabel = connectorLabel
-                                    } else {
-                                        self.selectedConnectorLabel = nil
-                                    }
+                }
+                if wasTap {
+                    if touchInfo.classification != nil {
+                        undoEffectsOfGestureInProgress(touchInfo)
+                    }
+                    
+                    let isDeleteTap = usePenClassifications() ? touchInfo.classification == .Delete :  touch.tapCount == 2
+                    if !isDeleteTap {
+                        // This is a selection tap
+                        if let (connectorLabel, _) = touchInfo.connectorLabel {
+                            
+                            if usePenClassifications() {
+                                if self.selectedConnectorLabel != connectorLabel {
+                                    self.selectedConnectorLabel = connectorLabel
                                 } else {
-                                    // We delay this by a bit, so that the selection doesn't happen if a double-tap completes and the connector is deleted
-                                    delay(dragDelayTime) {
-                                        if let _ = self.connectorLabels.indexOf(connectorLabel) { // It will be found unless it has been deleted
-                                            if self.selectedConnectorLabel != connectorLabel {
-                                                self.selectedConnectorLabel = connectorLabel
-                                            } else {
-                                                self.selectedConnectorLabel = nil
-                                            }
+                                    self.selectedConnectorLabel = nil
+                                }
+                            } else {
+                                // We delay this by a bit, so that the selection doesn't happen if a double-tap completes and the connector is deleted
+                                delay(dragDelayTime) {
+                                    if let _ = self.connectorLabels.indexOf(connectorLabel) { // It will be found unless it has been deleted
+                                        if self.selectedConnectorLabel != connectorLabel {
+                                            self.selectedConnectorLabel = connectorLabel
+                                        } else {
+                                            self.selectedConnectorLabel = nil
                                         }
                                     }
                                 }
-                                
-                            } else if let connectorPort = touchInfo.constraintView?.ConnectorPort {
-                                if self.selectedConnectorPort?.ConnectorPort !== connectorPort {
-                                    let constraintView = touchInfo.constraintView!.ConstraintView
-                                    self.selectedConnectorPort = (constraintView, connectorPort)
-                                } else {
-                                    self.selectedConnectorPort = nil
-                                }
-                                
-                            } else if let (connectorLabel, constraintView, connectorPort) = self.connectionLineAtPoint(point) {
-                                let lastValue = self.lastValueForConnector(connectorLabel.connector)
-                                let lastValueWasDependent = self.lastValueWasDependentForConnector(connectorLabel.connector)
-                                
-                                if (lastValueWasDependent != nil && lastValueWasDependent!) {
-                                    // Try to make this connector high priority, so it is constant instead of dependent
-                                    moveConnectorToTopPriority(connectorLabel)
-                                } else {
-                                    // Lower the priority of this connector, so it will be dependent
-                                    moveConnectorToBottomPriority(connectorLabel)
-                                }
-                                updateDisplay(needsSolving: true)
-                                
+                            }
+                            
+                        } else if let connectorPort = touchInfo.constraintView?.ConnectorPort {
+                            if self.selectedConnectorPort?.ConnectorPort !== connectorPort {
+                                let constraintView = touchInfo.constraintView!.ConstraintView
+                                self.selectedConnectorPort = (constraintView, connectorPort)
                             } else {
-                                // De-select everything
-                                // TODO: What if they were just drawing a point?
-                                self.selectedConnectorLabel = nil
                                 self.selectedConnectorPort = nil
                             }
                             
-                        } else {
-                            // This is a delete tap
-                            var deletedSomething = false
-                            if let (connectorLabel, offset) = touchInfo.connectorLabel {
-                                // Delete this connector!
-                                removeConnectorLabel(connectorLabel)
-                                deletedSomething = true
-                            }
-                            if deletedSomething == false {
-                                if let (constraintView, offset, connectorPort) = touchInfo.constraintView {
-                                    // Delete this constraint!
-                                    removeConstraintView(constraintView)
-                                    deletedSomething = true
-                                }
-                            }
+                        } else if let (connectorLabel, _, _) = self.connectionLineAtPoint(point) {
+                            let lastValueWasDependent = self.lastValueWasDependentForConnector(connectorLabel.connector)
                             
-                            if deletedSomething {
-                                updateDisplay(needsSolving: true, needsLayout: true)
+                            if (lastValueWasDependent != nil && lastValueWasDependent!) {
+                                // Try to make this connector high priority, so it is constant instead of dependent
+                                moveConnectorToTopPriority(connectorLabel)
+                            } else {
+                                // Lower the priority of this connector, so it will be dependent
+                                moveConnectorToBottomPriority(connectorLabel)
+                            }
+                            updateDisplay(needsSolving: true)
+                            
+                        } else {
+                            // De-select everything
+                            // TODO: What if they were just drawing a point?
+                            self.selectedConnectorLabel = nil
+                            self.selectedConnectorPort = nil
+                        }
+                        
+                    } else {
+                        // This is a delete tap
+                        var deletedSomething = false
+                        if let (connectorLabel, _) = touchInfo.connectorLabel {
+                            // Delete this connector!
+                            removeConnectorLabel(connectorLabel)
+                            deletedSomething = true
+                        }
+                        if deletedSomething == false {
+                            if let (constraintView, _, _) = touchInfo.constraintView {
+                                // Delete this constraint!
+                                removeConstraintView(constraintView)
+                                deletedSomething = true
                             }
                         }
                         
-                    } else if touchInfo.classification != nil {
-                        completeGestureForTouch(touchInfo)
+                        if deletedSomething {
+                            updateDisplay(needsSolving: true, needsLayout: true)
+                        }
                     }
                     
-                    self.touches[touchID] = nil
+                } else if touchInfo.classification != nil {
+                    completeGestureForTouch(touchInfo)
                 }
+                
+                self.touches[touchID] = nil
             }
         }
     }
@@ -622,7 +617,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                     updateDrawConnectionGesture(touchInfo)
                     
                 case .Drag:
-                    if let (pickedUpView, offset) = touchInfo.pickedUpView() {
+                    if let (pickedUpView, _) = touchInfo.pickedUpView() {
                         setViewPickedUp(pickedUpView, pickedUp: true)
                         updateDragGesture(touchInfo)
                         
@@ -649,7 +644,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                     dragLine.removeFromSuperlayer()
                 }
             case .Drag:
-                if let (pickedUpView, offset) = touchInfo.pickedUpView() {
+                if let (pickedUpView, _) = touchInfo.pickedUpView() {
                     setViewPickedUp(pickedUpView, pickedUp: false)
                 }
             case .Delete:
@@ -709,7 +704,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 completeDrawConnectionGesture(touchInfo)
                 
             case .Drag:
-                if let (pickedUpView, offset) = touchInfo.pickedUpView() {
+                if let (pickedUpView, _) = touchInfo.pickedUpView() {
                     updateDragGesture(touchInfo)
                     setViewPickedUp(pickedUpView, pickedUp: false)
                     updateScrollableSize()
@@ -734,7 +729,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 self.removeConnectorLabel(connectorLabel)
             } else if let constraintView = self.constraintViewAtPoint(point) {
                 self.removeConstraintView(constraintView)
-            } else if let (connectorLabel, constraintView, connectorPort) = self.connectionLineAtPoint(point, distanceCutoff: 2.0) {
+            } else if let (_, constraintView, connectorPort) = self.connectionLineAtPoint(point, distanceCutoff: 2.0) {
                 constraintView.removeConnectorAtPort(connectorPort)
                 self.needsSolving = true
                 self.needsLayout = true
@@ -764,13 +759,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         }
         
         var dragLine: CAShapeLayer!
-        if let (connectorLabel, offset) = touchInfo.connectorLabel {
+        if let (connectorLabel, _) = touchInfo.connectorLabel {
             let targetPort = connectorPortAtLocation(point)?.ConnectorPort
             let labelPoint = connectorLabel.center
             let dependent = lastValueWasDependentForConnector(connectorLabel.connector) ?? false
             dragLine = createConnectionLayer(labelPoint, endPoint: point, color: targetPort?.color, isDependent: dependent)
             
-        } else if let (constraintView, offset, connectorPort) = touchInfo.constraintView {
+        } else if let (constraintView, _, connectorPort) = touchInfo.constraintView {
             let startPoint = self.scrollView.convertPoint(connectorPort!.center, fromView: constraintView)
             var endPoint = point
             var dependent = false
@@ -798,13 +793,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         
         var connectionMade = false
         
-        if let (connectorLabel, offset) = touchInfo.connectorLabel {
+        if let (connectorLabel, _) = touchInfo.connectorLabel {
             if let (constraintView, connectorPort) = connectorPortAtLocation(point) {
                 self.connect(connectorLabel, constraintView: constraintView, connectorPort: connectorPort)
                 connectionMade = true
             }
             
-        } else if let (constraintView, offset, connectorPort) = touchInfo.constraintView {
+        } else if let (constraintView, _, connectorPort) = touchInfo.constraintView {
             if let connectorLabel = connectorLabelAtPoint(point) {
                 self.connect(connectorLabel, constraintView: constraintView, connectorPort: connectorPort!)
                 connectionMade = true
@@ -975,7 +970,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         combinedLabels = combinedLabels.substringToIndex(combinedLabels.endIndex.predecessor())
                         isPercent = true
                     }
-                    var recognized = false
                     var writtenValue: Double?
                     if let writtenNumber = Int(combinedLabels) {
                         writtenValue = Double(writtenNumber)
@@ -1007,8 +1001,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         self.addConnectorLabel(newLabel, topPriority: true)
                         self.selectConnectorLabelAndSetToValue(newLabel, value: writtenValue)
                         
-                        recognized = true
-                        
                     } else if combinedLabels == "x" || combinedLabels == "/" {
                         // We recognized a multiply or divide!
                         let newMultiplier = Multiplier()
@@ -1024,7 +1016,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         } else {
                             self.addConstraintView(newView, firstInputPort: nil, secondInputPort: nil, outputPort: nil)
                         }
-                        recognized = true
                         
                     } else if combinedLabels == "+" || combinedLabels == "-" || combinedLabels == "1-" { // The last is a hack for a common misclassification
                         // We recognized an add or subtract!
@@ -1042,7 +1033,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         } else {
                             self.addConstraintView(newView, firstInputPort: nil, secondInputPort: nil, outputPort: nil)
                         }
-                        recognized = true
                         
                     } else if combinedLabels == "^" {
                         let newExponent = Exponent()
@@ -1051,7 +1041,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         newView.center = centerPoint
                         
                         self.addConstraintView(newView, firstInputPort: newView.basePort, secondInputPort: newView.exponentPort, outputPort: newView.resultPort)
-                        recognized = true
                         
                     } else {
                         print("Unable to parse written text: \(combinedLabels)")
