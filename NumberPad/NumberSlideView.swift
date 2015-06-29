@@ -112,18 +112,15 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
             self.addSubview(button)
             
             // The following broke in swift 2.0, so they are expressed more explicity directly below
-//            self.addConstraints(verticalConstraints( [button]-0-| ))
+            self.addVerticalConstraints( [button]-0-| )
             self.addConstraint(button.al_bottom == self.al_bottom)
             if let previousButton = self.scaleButtons.last {
-//                self.addConstraints(horizontalConstraints( [previousButton]-0-[button == previousButton] ))
-                self.addConstraint(previousButton.al_trailing == button.al_leading)
-                self.addConstraint(button.al_width == previousButton.al_width)
+                self.addHorizontalConstraints( [previousButton]-0-[button == previousButton] )
                 
                 self.addConstraint( previousButton.al_height == button.al_height )
             } else {
                 // The first button!
-//                self.addConstraints(horizontalConstraints( |-0-[button] ))
-                self.addConstraint(self.al_leading == button.al_leading)
+                self.addConstraints(horizontalConstraints( |-0-[button] ))
             }
             button.addTarget(self, action: "scaleButtonTapped:", forControlEvents: .TouchUpInside)
             
@@ -131,15 +128,9 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
         }
         
         let lastScaleButton = self.scaleButtons.last!
-//        self.addConstraints(horizontalConstraints( [lastScaleButton]-0-| ))
-//        self.addConstraints(horizontalConstraints( |-0-[scrollView]-0-| ))
-//        self.addConstraints(verticalConstraints( |-0-[scrollView]-0-[lastScaleButton]-0-| ))
-        self.addConstraint(lastScaleButton.al_trailing == self.al_trailing)
-        self.addConstraint(self.al_leading == scrollView.al_leading)
-        self.addConstraint(self.al_trailing == scrollView.al_trailing)
-        self.addConstraint(self.al_top == scrollView.al_top)
-        self.addConstraint(scrollView.al_bottom == lastScaleButton.al_top)
-        self.addConstraint(lastScaleButton.al_bottom == self.al_bottom)
+        self.addHorizontalConstraints( [lastScaleButton]-0-| )
+        self.addHorizontalConstraints( |-0-[scrollView]-0-| )
+        self.addVerticalConstraints( |-0-[scrollView]-0-[lastScaleButton]-0-| )
         
         self.addConstraint(centerMarker.al_height == scrollView.al_height)
         self.addConstraint(centerMarker.al_bottom == scrollView.al_bottom)

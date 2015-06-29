@@ -24,7 +24,7 @@ extension ALVFView {
     }
 }
 
-public protocol ConstraintAble {
+@objc public protocol ConstraintAble {
     func toConstraints(axis: UILayoutConstraintAxis) -> [NSLayoutConstraint];
 }
 
@@ -41,7 +41,7 @@ public func verticalConstraints(constraintAble: [ConstraintAble]) -> [NSLayoutCo
 }
 
 
-public protocol ViewContainingToken : ConstraintAble {
+@objc public protocol ViewContainingToken : ConstraintAble {
     var firstView: ALVFView? { get }
     var lastView: ALVFView? { get }
 }
@@ -51,7 +51,7 @@ protocol ConstantToken {
 }
 
 // This is half of a space constraint, [view]-space
-class ViewAndSpaceToken {
+class ViewAndSpaceToken : NSObject {
     let view: ViewContainingToken
     let space: ConstantToken
     let relation: NSLayoutRelation
@@ -63,7 +63,7 @@ class ViewAndSpaceToken {
 }
 
 // This is half of a space constraint, |-5
-class LeadingSuperviewAndSpaceToken {
+class LeadingSuperviewAndSpaceToken : NSObject {
     let space: ConstantToken
     let relation: NSLayoutRelation
     init(space: ConstantToken, relation: NSLayoutRelation) {
@@ -72,7 +72,7 @@ class LeadingSuperviewAndSpaceToken {
     }
 }
 // This is half of a space constraint, 5-|
-class TrailingSuperviewAndSpaceToken {
+class TrailingSuperviewAndSpaceToken : NSObject {
     let space: ConstantToken
     init(space: ConstantToken) {
         self.space = space
@@ -80,7 +80,7 @@ class TrailingSuperviewAndSpaceToken {
 }
 
 // [view]-5-[view2]
-class SpacedViewsConstraintToken: ConstraintAble, ViewContainingToken {
+class SpacedViewsConstraintToken: NSObject, ConstraintAble, ViewContainingToken {
     let leadingView: ViewContainingToken
     let trailingView: ViewContainingToken
     let space: ConstantToken
@@ -137,7 +137,7 @@ class SpacedViewsConstraintToken: ConstraintAble, ViewContainingToken {
 }
 
 // [view == 50]
-class SizeConstantConstraintToken: ConstraintAble, ViewContainingToken {
+class SizeConstantConstraintToken: NSObject, ConstraintAble, ViewContainingToken {
     let view: ALVFView
     let size: ConstantToken
     let relation: NSLayoutRelation
@@ -179,7 +179,7 @@ class SizeConstantConstraintToken: ConstraintAble, ViewContainingToken {
 }
 
 // [view == view2]
-class SizeRelationConstraintToken: ConstraintAble, ViewContainingToken {
+class SizeRelationConstraintToken: NSObject, ConstraintAble, ViewContainingToken {
     let view: ALVFView
     let relatedView: ALVFView
     let relation: NSLayoutRelation
@@ -216,7 +216,7 @@ class SizeRelationConstraintToken: ConstraintAble, ViewContainingToken {
 }
 
 // |-5-[view]
-public class LeadingSuperviewConstraintToken: ConstraintAble, ViewContainingToken {
+public class LeadingSuperviewConstraintToken: NSObject, ConstraintAble, ViewContainingToken {
     let viewContainer: ViewContainingToken
     let space: ConstantToken
     init(viewContainer: ViewContainingToken, space: ConstantToken) {
@@ -265,7 +265,7 @@ public class LeadingSuperviewConstraintToken: ConstraintAble, ViewContainingToke
 }
 
 // [view]-5-|
-public class TrailingSuperviewConstraintToken: ConstraintAble, ViewContainingToken {
+public class TrailingSuperviewConstraintToken: NSObject, ConstraintAble, ViewContainingToken {
     let viewContainer: ViewContainingToken
     let space: ConstantToken
     init(viewContainer: ViewContainingToken, space: ConstantToken) {
@@ -389,7 +389,6 @@ prefix func |- (constant: ConstantToken) -> LeadingSuperviewAndSpaceToken {
 
 
 extension ALVFView: ViewContainingToken {
-    
     public var firstView: ALVFView? {
         get {
             return self
