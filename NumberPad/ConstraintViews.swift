@@ -34,7 +34,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
         connectorLabelInitialize()
     }
     
-    let borderWidth: CGFloat = 3
+    let borderWidth: CGFloat = 2
     private func connectorLabelInitialize() {
         self.addSubview(self.valueLabel)
         self.valueLabel.font = UIFont.boldSystemFontOfSize(22)
@@ -120,11 +120,11 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
     var isSelected: Bool = false {
         didSet {
             if self.isSelected {
-                self.backgroundColor = UIColor(white: 0.45, alpha: 1.0)
-                self.valueLabel.textColor = UIColor.whiteColor()
+                self.backgroundColor = UIColor.selectedBackgroundColor()
+                self.valueLabel.textColor = UIColor.selectedTextColor()
             } else {
-                self.backgroundColor = UIColor.whiteColor()
-                self.valueLabel.textColor = UIColor.grayColor()
+                self.backgroundColor = UIColor.backgroundColor()
+                self.valueLabel.textColor = UIColor.textColor()
             }
         }
     }
@@ -134,7 +134,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
             if self.hasError {
                 self.layer.borderColor = UIColor.redColor().CGColor
             } else {
-                self.layer.borderColor = UIColor.lightGrayColor().CGColor
+                self.layer.borderColor = UIColor.textColor().CGColor
             }
         }
     }
@@ -231,7 +231,11 @@ protocol ConnectorPort: NSObjectProtocol {
 }
 
 class InternalConnectorPort: NSObject, ConnectorPort {
-    let color: UIColor
+    var color: UIColor = UIColor.whiteColor() {
+        didSet {
+            self.layer.backgroundColor = color.CGColor
+        }
+    }
     var connector: Connector?
     let layer: CALayer
     let isOutput: Bool
@@ -240,8 +244,7 @@ class InternalConnectorPort: NSObject, ConnectorPort {
             return layer.position
         }
     }
-    init(color: UIColor, isOutput: Bool) {
-        self.color = color
+    init(isOutput: Bool) {
         self.isOutput = isOutput
         self.layer = CALayer()
         self.layer.backgroundColor = color.CGColor
@@ -306,26 +309,37 @@ class MultiInputOutputConstraintView: ConstraintView {
         }
     }
     
-    let redInput = InternalConnectorPort(color: UIColor.redColor(), isOutput: false)
-    let blueInput = InternalConnectorPort(color: UIColor.blueColor(), isOutput: false)
-    let purpleOutput = InternalConnectorPort(color: UIColor.purpleColor(), isOutput: true)
+    var inputColor: UIColor {
+        get {
+            return UIColor.adderInputColor()
+        }
+    }
+    var outputColor: UIColor {
+        get {
+            return UIColor.adderOutputColor()
+        }
+    }
+    
+    let firstInput = InternalConnectorPort(isOutput: false)
+    let secondInput = InternalConnectorPort(isOutput: false)
+    let output = InternalConnectorPort(isOutput: true)
     
     override func connectorPorts() -> [ConnectorPort] {
-        return [redInput, blueInput, purpleOutput]
+        return [firstInput, secondInput, output]
     }
     
     func internalConnectorPorts() -> [InternalConnectorPort] {
-        return [redInput, blueInput, purpleOutput]
+        return [firstInput, secondInput, output]
     }
     func connectorPortIsMine(port: ConnectorPort) -> Bool {
-        return port === redInput || port === blueInput || port === purpleOutput
+        return port === firstInput || port === secondInput || port === output
     }
     
     func inputConnectorPorts() -> [ConnectorPort] {
-        return [redInput, blueInput]
+        return [firstInput, secondInput]
     }
     func outputConnectorPorts() -> [ConnectorPort] {
-        return [purpleOutput]
+        return [output]
     }
     
     override func connectorPortForDragAtLocation(location: CGPoint) -> ConnectorPort? {
@@ -375,14 +389,20 @@ class MultiInputOutputConstraintView: ConstraintView {
     init(constraint: MultiInputOutputConstraint) {
         self.innerConstraint = constraint
         super.init(frame: CGRectZero)
+        
+        self.firstInput.color = self.inputColor
+        self.secondInput.color = self.inputColor
+        self.output.color = self.outputColor
+        
         self.layer.cornerRadius = 5
-        addSentinelConnectorToPort(self.redInput)
-        addSentinelConnectorToPort(self.blueInput)
-        addSentinelConnectorToPort(self.purpleOutput)
-        self.redLayer.backgroundColor = UIColor.redColor().CGColor
-        self.blueLayer.backgroundColor = UIColor.blueColor().CGColor
-        self.purpleLayer.backgroundColor = UIColor.purpleColor().CGColor
-        for layer in [self.redLayer, self.blueLayer, self.purpleLayer, self.redInput.layer, self.blueInput.layer, self.purpleOutput.layer] {
+        addSentinelConnectorToPort(self.firstInput)
+        addSentinelConnectorToPort(self.secondInput)
+        addSentinelConnectorToPort(self.output)
+        
+        self.redLayer.backgroundColor = self.inputColor.CGColor
+        self.blueLayer.backgroundColor = self.inputColor.CGColor
+        self.purpleLayer.backgroundColor = self.outputColor.CGColor
+        for layer in [self.redLayer, self.blueLayer, self.purpleLayer, self.firstInput.layer, self.secondInput.layer, self.output.layer] {
             self.layer.addSublayer(layer)
         }
     }
@@ -420,6 +440,17 @@ class MultiplierView: MultiInputOutputConstraintView {
         super.init(constraint: multiplier)
     }
     
+    override var inputColor: UIColor {
+        get {
+            return UIColor.multiplierInputColor()
+        }
+    }
+    override var outputColor: UIColor {
+        get {
+            return UIColor.multiplierOutputColor()
+        }
+    }
+    
     required init(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -440,9 +471,9 @@ class MultiplierView: MultiInputOutputConstraintView {
         self.blueLayer.cornerRadius = barSize / 2
         self.purpleLayer.cornerRadius = barSize / 2
         
-        self.redInput.layer.position = CGPointMake(barSize / 2.0, purpleSquareSize / 2.0 + marginSpace)
-        self.blueInput.layer.position = CGPointMake(purpleSquareSize / 2.0 + marginSpace, barSize / 2.0)
-        self.purpleOutput.layer.position = CGPointMake(mySize, mySize)
+        self.firstInput.layer.position = CGPointMake(barSize / 2.0, purpleSquareSize / 2.0 + marginSpace)
+        self.secondInput.layer.position = CGPointMake(purpleSquareSize / 2.0 + marginSpace, barSize / 2.0)
+        self.output.layer.position = CGPointMake(mySize, mySize)
         
         super.layoutWithConnectorPositions(positions)
     }
@@ -458,6 +489,17 @@ class AdderView: MultiInputOutputConstraintView {
         self.adder = adder
         super.init(constraint: adder)
     }
+    
+    override var inputColor: UIColor {
+        get {
+            return UIColor.adderInputColor()
+        }
+    }
+    override var outputColor: UIColor {
+        get {
+            return UIColor.adderOutputColor()
+        }
+    }
 
     required init(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -468,9 +510,9 @@ class AdderView: MultiInputOutputConstraintView {
     let barHeight: CGFloat = 5.0
     override func layoutWithConnectorPositions(positions: [Connector: CGPoint]) {
         self.sizeToFit()
-        self.redInput.layer.position = CGPointMake(0, barHeight / 2.0)
-        self.blueInput.layer.position = CGPointMake(myWidth, barHeight / 2.0)
-        self.purpleOutput.layer.position = CGPointMake(myWidth / 2.0, barHeight + spacing + barHeight / 2.0)
+        self.firstInput.layer.position = CGPointMake(0, barHeight / 2.0)
+        self.secondInput.layer.position = CGPointMake(myWidth, barHeight / 2.0)
+        self.output.layer.position = CGPointMake(myWidth / 2.0, barHeight + spacing + barHeight / 2.0)
         
         self.redLayer.frame = CGRectMake(0, 0, myWidth / 2.0, barHeight)
         self.blueLayer.frame = CGRectMake(myWidth / 2.0, 0, myWidth / 2.0, barHeight)
@@ -511,9 +553,9 @@ class ExponentView: ConstraintView {
         }
     }
     
-    let baseInput = InternalConnectorPort(color: UIColor.redColor(), isOutput: false)
-    let exponentInput = InternalConnectorPort(color: UIColor.blueColor(), isOutput: false)
-    let resultOutput = InternalConnectorPort(color: UIColor.purpleColor(), isOutput: true)
+    let baseInput = InternalConnectorPort(isOutput: false)
+    let exponentInput = InternalConnectorPort(isOutput: false)
+    let resultOutput = InternalConnectorPort(isOutput: true)
     
     override func connectorPorts() -> [ConnectorPort] {
         return [baseInput, exponentInput, resultOutput]
@@ -566,7 +608,11 @@ class ExponentView: ConstraintView {
         addSentinelConnectorToPort(self.exponentInput)
         addSentinelConnectorToPort(self.baseInput)
         addSentinelConnectorToPort(self.resultOutput)
-        self.resultLayer.strokeColor = UIColor.purpleColor().CGColor
+        self.baseInput.color = UIColor.exponentBaseColor()
+        self.exponentInput.color = UIColor.exponentExponentColor()
+        self.resultOutput.color = UIColor.exponentResultColor()
+        
+        self.resultLayer.strokeColor = UIColor.exponentResultColor().CGColor
         self.resultLayer.lineWidth = 4.0
         self.resultLayer.lineCap = kCALineCapRound
         self.resultLayer.fillColor = nil

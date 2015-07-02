@@ -15,7 +15,7 @@ class Stroke {
     
     init(){
         layer = CAShapeLayer()
-        layer.strokeColor = UIColor.blackColor().CGColor
+        layer.strokeColor = UIColor.textColor().CGColor
         layer.lineWidth = 2
         layer.fillColor = nil
     }
@@ -58,6 +58,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         self.view.multipleTouchEnabled = true
         self.view.userInteractionEnabled = true
         self.view.exclusiveTouch = true
+        self.view.backgroundColor = UIColor.backgroundColor()
         
         let pairingView = FTPenManager.sharedInstance().pairingButtonWithStyle(.Debug);
         self.view.addSubview(pairingView)
@@ -616,7 +617,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 case .Stroke:
                     self.processStrokesCounter += 1
                     touchInfo.currentStroke.updateLayer()
-                    touchInfo.currentStroke.layer.strokeColor = UIColor.blackColor().CGColor
+                    touchInfo.currentStroke.layer.strokeColor = UIColor.textColor().CGColor
                     self.scrollView.layer.addSublayer(touchInfo.currentStroke.layer)
                     
                 case .MakeConnection:
@@ -829,7 +830,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         if pickedUp {
             // Add some styles to make it look picked up
             UIView.animateWithDuration(0.2) {
-                view.layer.shadowColor = UIColor.blackColor().CGColor
+                view.layer.shadowColor = UIColor.darkGrayColor().CGColor
                 view.layer.shadowOpacity = 0.4
                 view.layer.shadowRadius = 10
                 view.layer.shadowOffset = CGSizeMake(5, 5)
@@ -1311,7 +1312,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         dragLine.lineWidth = 3
         dragLine.fillColor = nil
         dragLine.lineCap = kCALineCapRound
-        dragLine.strokeColor = color?.CGColor ?? UIColor.blackColor().CGColor
+        dragLine.strokeColor = color?.CGColor ?? UIColor.textColor().CGColor
         if isDependent {
             dragLine.lineDashPattern = [4, 6]
         }
