@@ -71,6 +71,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         self.view.addGestureRecognizer(self.scrollView.panGestureRecognizer)
         self.view.insertSubview(self.scrollView, atIndex: 0)
         
+        let footballButton = UIButton(type: .Custom)
+        footballButton.setImage(UIImage(named: "football"), forState: .Normal)
+        footballButton.frame = CGRectMake(90, 30, 50, 50)
+        footballButton.imageView?.contentMode = .ScaleAspectFit
+        self.view.addSubview(footballButton)
+        footballButton.addTarget(self, action: "createFootballToy", forControlEvents: .TouchUpInside)
+        
         let valuePickerHeight: CGFloat = 100.0
         valuePicker = NumberSlideView(frame: CGRectMake(0, self.view.bounds.size.height - valuePickerHeight, self.view.bounds.size.width, valuePickerHeight))
         valuePicker.delegate = self
@@ -274,7 +281,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
     func lastValueWasDependentForConnector(connector: Connector) -> Bool? {
         return self.lastSimulationContext?.connectorValues[connector]?.WasDependent
     }
-    
     
     // MARK: Pencil integration
     
@@ -1204,6 +1210,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 label.hasError = false
             }
             
+            // TODO: Take the values of the selected toy here
+            
             // First, the selected connector
             if let selectedConnector = self.selectedConnectorLabel?.connector {
                 if let value = (values[selectedConnector] ?? lastSimulationContext?.connectorValues[selectedConnector]?.DoubleValue) {
@@ -1236,6 +1244,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                     label.displayValue(nil)
                 }
             }
+            
+            self.updateToys(simulationContext, toyYZero: self.view.bounds.height)
             
             self.lastSimulationContext = simulationContext
             self.needsSolving = false
@@ -1272,7 +1282,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 for label in self.connectorLabels {
                     if let value = simulationContext.connectorValues[label.connector] {
                         if value.Expression.expressionType() == .Number {
-                            formattedValues[value.Expression] = label.valueLabel.text
+                            formattedValues[value.Expression] = label.name ?? label.valueLabel.text
                         }
                     }
                 }
@@ -1317,6 +1327,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         super.viewWillTransitionToSize(size, withTransitionCoordinator: coordinator)
         coordinator.animateAlongsideTransition(nil, completion: { context in
             self.updateScrollableSize()
+            
+            if let lastSimulationContext = self.lastSimulationContext {
+                self.updateToys(lastSimulationContext, toyYZero: size.height)
+            }
         })
     }
     
@@ -1333,6 +1347,71 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         }
         
         self.scrollView.contentSize = CGSizeMake(maxX, maxY + self.view.bounds.height)
+    }
+    
+    var toys: [Toy] = []
+    
+    func createFootballToy() {
+        let xConnector = Connector()
+        let xLabel = ConnectorLabel(connector: xConnector)
+        xLabel.scale = 0
+        xLabel.name = "X"
+        xLabel.sizeToFit()
+        xLabel.center = CGPointMake(60, 120)
+        
+        let yConnector = Connector()
+        let yLabel = ConnectorLabel(connector: yConnector)
+        yLabel.scale = 0
+        yLabel.name = "Y"
+        yLabel.sizeToFit()
+        yLabel.center = CGPointMake(60, 200)
+        
+        let angleConnector = Connector()
+        let angleLabel = ConnectorLabel(connector: angleConnector)
+        angleLabel.scale = -2
+        angleLabel.name = "Ω"
+        angleLabel.sizeToFit()
+        angleLabel.center = CGPointMake(60, 280)
+        
+        self.addConnectorLabel(angleLabel, topPriority: false, automaticallyConnect: false)
+        self.selectConnectorLabelAndSetToValue(angleLabel, value: 0)
+        
+        self.addConnectorLabel(yLabel, topPriority: false, automaticallyConnect: false)
+        self.selectConnectorLabelAndSetToValue(yLabel, value: 350)
+        
+        self.addConnectorLabel(xLabel, topPriority: false, automaticallyConnect: false)
+        self.selectConnectorLabelAndSetToValue(xLabel, value: 200)
+        
+        let newToy = Toy(image: UIImage(named: "football")!, xConnector: xConnector, yConnector: yConnector, angleConnector: angleConnector)
+        self.scrollView.addSubview(newToy)
+        toys.append(newToy)
+        
+        if let lastSimulationContext = lastSimulationContext {
+            updateToys(lastSimulationContext, toyYZero: self.view.bounds.height)
+        }
+        
+        let timeConnector = Connector()
+        let timeLabel = ConnectorLabel(connector: timeConnector)
+        timeLabel.name = "time"
+        timeLabel.sizeToFit()
+        timeLabel.center = CGPointMake(200, 40)
+        
+        self.addConnectorLabel(timeLabel, topPriority: false, automaticallyConnect: false)
+        self.selectConnectorLabelAndSetToValue(timeLabel, value: 1)
+    }
+
+    func updateToys(simulationContext: SimulationContext, toyYZero: CGFloat) {
+        for toy in self.toys {
+            if let xPosition = simulationContext.connectorValues[toy.xConnector]?.DoubleValue {
+                toy.center.x = CGFloat(xPosition)
+            }
+            if let yPosition = simulationContext.connectorValues[toy.yConnector]?.DoubleValue {
+                toy.center.y = toyYZero - CGFloat(yPosition)
+            }
+            if let xPosition = simulationContext.connectorValues[toy.xConnector]?.DoubleValue {
+                toy.center.x = CGFloat(xPosition)
+            }
+        }
     }
 }
 

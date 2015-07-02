@@ -20,6 +20,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
     var isPercent: Bool = false
     var equationView: WKWebView?
     var equationViewSize: CGSize?
+    var name: String?
 
     init(connector: Connector) {
         self.connector = connector
@@ -140,6 +141,8 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
     
     // Returns whether it changed size
     func displayValue(value: Double?) -> Bool {
+        
+        let namePrefix = self.name != nil ? self.name! + " : " : ""
         if var value = value {
             var scale = self.scale
             if isPercent {
@@ -165,9 +168,9 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
                 formatString = "%.f"
             }
             
-            self.valueLabel.text = String(format: formatString, value) + (isPercent ? "%" : "")
+            self.valueLabel.text = namePrefix + String(format: formatString, value) + (isPercent ? "%" : "")
         } else {
-            self.valueLabel.text = "?"
+            self.valueLabel.text = namePrefix + "?"
         }
         
         return resizeAndLayout()
