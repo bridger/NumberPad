@@ -299,6 +299,10 @@ class ConstraintView: UIView {
     private func addSentinelConnectorToPort(connectorPort: InternalConnectorPort) {
         self.connectPort(connectorPort, connector: Connector())
     }
+    
+    func idealAngleForNewConnectorLabel(connector: Connector, positions: [Connector: CGPoint]) -> CGFloat {
+        fatalError("This method must be overriden")
+    }
 }
 
 class MultiInputOutputConstraintView: ConstraintView {
@@ -386,6 +390,8 @@ class MultiInputOutputConstraintView: ConstraintView {
     let redLayer: CALayer = CALayer()
     let blueLayer: CALayer = CALayer()
     let purpleLayer: CALayer = CALayer()
+    let inputColoredLayer: CAShapeLayer = CAShapeLayer()
+    let outputColoredLayer: CAShapeLayer = CAShapeLayer()
     init(constraint: MultiInputOutputConstraint) {
         self.innerConstraint = constraint
         super.init(frame: CGRectZero)
@@ -402,42 +408,66 @@ class MultiInputOutputConstraintView: ConstraintView {
         self.redLayer.backgroundColor = self.inputColor.CGColor
         self.blueLayer.backgroundColor = self.inputColor.CGColor
         self.purpleLayer.backgroundColor = self.outputColor.CGColor
-        for layer in [self.redLayer, self.blueLayer, self.purpleLayer, self.firstInput.layer, self.secondInput.layer, self.output.layer] {
+        self.inputColoredLayer.fillColor = self.inputColor.CGColor
+        self.outputColoredLayer.fillColor = self.outputColor.CGColor
+        
+        for layer in [self.redLayer, self.blueLayer, self.purpleLayer, self.firstInput.layer, self.secondInput.layer, self.output.layer, self.inputColoredLayer, self.outputColoredLayer] {
             self.layer.addSublayer(layer)
         }
+    }
+    
+    override func idealAngleForNewConnectorLabel(connector: Connector, positions: [Connector: CGPoint]) -> CGFloat {
+        // We want to maximize the distance from this angle to any other angle. First, we find all of the other
+        // angles and put them in a sorted list.
+        // We know the angle that is furthest from any of them will be a midpoint between two of them. So,
+        // we go through each adjacent pair and find the midpoint, keeping the one that is furthest from its
+        // neighbors
+        var allAngles: [CGFloat] = []
+        for connectorPort in self.connectorPorts() {
+            if let connector = connectorPort.connector, let position = positions[connector] {
+                let offset = position - self.center
+                
+                allAngles.append(atan2(offset.y, offset.x))
+            }
+        }
+        allAngles.sortInPlace()
+        
+        var bestAngle: (angle: CGFloat, score: CGFloat) = (0, CGFloat.min)
+        for index in 0..<allAngles.count {
+            // We grab this angle and the next angle (looping around to the first angle, if necessary)
+            let angle1 = allAngles[index]
+            var angle2 = allAngles[(index + 1) % allAngles.count]
+            if angle2 <= angle1 {
+                // We are wrapping around, for example from the last positive angle to the first negative angle,
+                // or if there is only one angle we might be wrapping around to itself
+                angle2 += CGFloat(M_PI * 2)
+            }
+            let midAngle = (angle2 + angle1) / 2
+            let score = angle2 - midAngle
+            
+            if score > bestAngle.score {
+                bestAngle = (midAngle, score)
+            }
+        }
+        
+        return bestAngle.angle
     }
     
     required init(coder aDecoder: NSCoder) {
         fatalError("Initializer not supported")
     }
-    
-    
-    
-    override func layoutWithConnectorPositions(positions: [Connector: CGPoint]) {
-        // Subclasses should have overriden this method, layed out the connectors, then called super
-        
-        var angles: [(ChangeableAngle: CGFloat, TargetAngle: CGFloat)] = []
-        for internalConnector in self.internalConnectorPorts() {
-            if let connector = internalConnector.connector, let position = positions[connector] {
-                let portAngle = (internalConnector.center - self.bounds.center()).angle
-                let connectorAngle = (position - self.center).angle
-                
-                angles.append((ChangeableAngle: portAngle, TargetAngle: connectorAngle))
-            }
-        }
-        
-        let (idealAngle, idealFlip) = optimizeAngles(angles)
-        let baseTransform = idealFlip ? CGAffineTransformMakeScale(1, -1) : CGAffineTransformIdentity
-        self.transform = CGAffineTransformRotate(baseTransform, idealAngle)
-    }
-    
 }
 
 class MultiplierView: MultiInputOutputConstraintView {
     let multiplier: Multiplier
+    let label = UILabel()
     init(multiplier: Multiplier) {
         self.multiplier = multiplier
         super.init(constraint: multiplier)
+        self.label.textColor = UIColor.textColor()
+        self.label.text = "x"
+        self.label.sizeToFit()
+        self.addSubview(self.label)
     }
     
     override var inputColor: UIColor {
@@ -455,39 +485,50 @@ class MultiplierView: MultiInputOutputConstraintView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    let mySize: CGFloat = 50.0
-    let spacing: CGFloat = 5.0
-    let barSize: CGFloat = 6.0
+    let inputSize: CGFloat = 40.0
+    let outputSize: CGFloat = 15.0
+    let outputOverhang: CGFloat = 4.0
     override func layoutWithConnectorPositions(positions: [Connector: CGPoint]) {
         self.sizeToFit()
         
-        let marginSpace = spacing + barSize
-        let purpleSquareSize = mySize - marginSpace
+        self.inputColoredLayer.frame = CGRectMake(outputOverhang, outputOverhang, inputSize, inputSize)
+        self.inputColoredLayer.path = CGPathCreateWithRect(CGRectMake(0, 0, inputSize, inputSize), nil)
+        self.outputColoredLayer.frame = CGRectMake(0, 0, outputSize, outputSize)
+        self.outputColoredLayer.path = CGPathCreateWithRect(CGRectMake(0, 0, outputSize, outputSize), nil)
         
-        self.redLayer.frame = CGRectMake(0, marginSpace, barSize, purpleSquareSize)
-        self.blueLayer.frame = CGRectMake(marginSpace, 0, purpleSquareSize, barSize)
-        self.purpleLayer.frame = CGRectMake(marginSpace, marginSpace, purpleSquareSize, purpleSquareSize)
-        self.redLayer.cornerRadius = barSize / 2
-        self.blueLayer.cornerRadius = barSize / 2
-        self.purpleLayer.cornerRadius = barSize / 2
+        self.firstInput.layer.position = self.inputColoredLayer.frame.center()
+        self.secondInput.layer.position = self.inputColoredLayer.frame.center()
+        self.output.layer.position = self.outputColoredLayer.frame.center()
+
+        var rotationAngle: CGFloat = 0
+        if let connector = output.connector, let position = positions[connector] {
+            let portAngle = (output.center - self.bounds.center()).angle
+            let connectorAngle = (position - self.center).angle
+            
+            rotationAngle = connectorAngle - portAngle
+        }
         
-        self.firstInput.layer.position = CGPointMake(barSize / 2.0, purpleSquareSize / 2.0 + marginSpace)
-        self.secondInput.layer.position = CGPointMake(purpleSquareSize / 2.0 + marginSpace, barSize / 2.0)
-        self.output.layer.position = CGPointMake(mySize, mySize)
+        self.transform = CGAffineTransformMakeRotation(rotationAngle)
         
-        super.layoutWithConnectorPositions(positions)
+        self.label.center = self.inputColoredLayer.frame.center()
+        self.label.transform = CGAffineTransformMakeRotation(-rotationAngle)
     }
     
     override func sizeThatFits(size: CGSize) -> CGSize {
-        return CGSizeMake(mySize, mySize)
+        return CGSizeMake(inputSize + outputOverhang, inputSize + outputOverhang)
     }
 }
 
 class AdderView: MultiInputOutputConstraintView {
     let adder: Adder
+    let label = UILabel()
     init(adder: Adder) {
         self.adder = adder
         super.init(constraint: adder)
+        self.label.textColor = UIColor.textColor()
+        self.label.text = "+"
+        self.label.sizeToFit()
+        self.addSubview(self.label)
     }
     
     override var inputColor: UIColor {
@@ -505,27 +546,37 @@ class AdderView: MultiInputOutputConstraintView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    let myWidth: CGFloat = 60.0
-    let spacing: CGFloat = 10.0
-    let barHeight: CGFloat = 5.0
+    let inputSize: CGFloat = 40.0
+    let outputSize: CGFloat = 18.0
+    let outputOverhang: CGFloat = 0.0
     override func layoutWithConnectorPositions(positions: [Connector: CGPoint]) {
         self.sizeToFit()
-        self.firstInput.layer.position = CGPointMake(0, barHeight / 2.0)
-        self.secondInput.layer.position = CGPointMake(myWidth, barHeight / 2.0)
-        self.output.layer.position = CGPointMake(myWidth / 2.0, barHeight + spacing + barHeight / 2.0)
         
-        self.redLayer.frame = CGRectMake(0, 0, myWidth / 2.0, barHeight)
-        self.blueLayer.frame = CGRectMake(myWidth / 2.0, 0, myWidth / 2.0, barHeight)
-        self.purpleLayer.frame = CGRectMake(0, barHeight + spacing, myWidth, barHeight)
-        self.redLayer.cornerRadius = barHeight / 2
-        self.blueLayer.cornerRadius = barHeight / 2
-        self.purpleLayer.cornerRadius = barHeight / 2
+        self.inputColoredLayer.frame = CGRectMake(outputOverhang, outputOverhang, inputSize, inputSize)
+        self.inputColoredLayer.path = CGPathCreateWithEllipseInRect(CGRectMake(0, 0, inputSize, inputSize), nil)
+        self.outputColoredLayer.frame = CGRectMake(0, 0, outputSize, outputSize)
+        self.outputColoredLayer.path = CGPathCreateWithEllipseInRect(CGRectMake(0, 0, outputSize, outputSize), nil)
         
-        super.layoutWithConnectorPositions(positions)
+        self.firstInput.layer.position = self.inputColoredLayer.frame.center()
+        self.secondInput.layer.position = self.inputColoredLayer.frame.center()
+        self.output.layer.position = self.outputColoredLayer.frame.center()
+        
+        var rotationAngle: CGFloat = 0
+        if let connector = output.connector, let position = positions[connector] {
+            let portAngle = (output.center - self.bounds.center()).angle
+            let connectorAngle = (position - self.center).angle
+            
+            rotationAngle = connectorAngle - portAngle
+        }
+        
+        self.transform = CGAffineTransformMakeRotation(rotationAngle)
+        
+        self.label.center = self.inputColoredLayer.frame.center()
+        self.label.transform = CGAffineTransformMakeRotation(-rotationAngle)
     }
     
     override func sizeThatFits(size: CGSize) -> CGSize {
-        return CGSizeMake(myWidth, barHeight * 2 + spacing)
+        return CGSizeMake(inputSize + outputOverhang, inputSize + outputOverhang)
     }
 }
 
@@ -602,6 +653,7 @@ class ExponentView: ConstraintView {
     }
     
     let resultLayer: CAShapeLayer = CAShapeLayer()
+    let label = UILabel()
     init(exponent: Exponent) {
         self.exponent = exponent
         super.init(frame: CGRectZero)
@@ -619,6 +671,11 @@ class ExponentView: ConstraintView {
         for layer in [self.resultLayer, self.exponentInput.layer, self.baseInput.layer, self.resultOutput.layer] {
             self.layer.addSublayer(layer)
         }
+        
+        self.label.textColor = UIColor.textColor()
+        self.label.text = "^"
+        self.label.sizeToFit()
+        self.addSubview(self.label)
     }
     
     required init(coder aDecoder: NSCoder) {
@@ -674,6 +731,30 @@ class ExponentView: ConstraintView {
         self.resultLayer.path = path
         
         self.resultOutput.layer.position = pointOnExponentAtX(myWidth * 0.7)
+        self.label.center = self.baseInput.center
+    }
+    
+    override func idealAngleForNewConnectorLabel(connector: Connector, positions: [Connector: CGPoint]) -> CGFloat {
+        var offset: CGPoint?
+        var allCenters = CGPointZero
+        
+        // We find where this connector is in relation to the average center of all our ports. This way, if it
+        // is visually in the top-right of the other connectors then the new connector will appear in the top-right
+        for port in self.connectorPorts() {
+            allCenters += port.center
+            if port.connector == connector {
+                offset = port.center
+            }
+        }
+        allCenters /= CGFloat(self.connectorPorts().count)
+        
+        if let offset = offset {
+            let averagedOffset = offset - allCenters
+            return atan2(averagedOffset.y, averagedOffset.x)
+        } else {
+            print("Asked for an angle not corresponding to any connector port")
+            return 0
+        }
     }
     
     override func sizeThatFits(size: CGSize) -> CGSize {
