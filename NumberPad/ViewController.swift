@@ -1169,14 +1169,21 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         newLabel.scale = self.defaultScaleForNewValue(resolvedValue.DoubleValue)
                         newLabel.sizeToFit()
                         
+                        // Find the positions of the existing connectorLabels on this constraint
+                        var connectorPositions: [Connector: CGPoint] = [:]
+                        for existingConnectorPort in connectTo.constraintView.connectorPorts() {
+                            if let existingConnector = existingConnectorPort.connector,
+                                let existingLabel = self.connectorToLabel[existingConnector] {
+                                connectorPositions[existingConnector] = existingLabel.center
+                            }
+                        }
+                        
+                        let angle = connectTo.constraintView.idealAngleForNewConnectorLabel(connector, positions: connectorPositions)
                         let distance: CGFloat = 80 + max(connectTo.constraintView.bounds.width, connectTo.constraintView.bounds.height)
-                        // If the connectorPort is at the bottom-right, then we want to place it distance points off to the bottom-right
-                        let constraintMiddle = connectTo.constraintView.bounds.center()
-                        let displacement = connectTo.connectorPort.center - connectTo.constraintView.bounds.center()
-                        let newDisplacement = displacement * (distance / displacement.length())
+                        let newDisplacement = CGPointMake(cos(angle), sin(angle)) * distance
                         
                         // Make sure the new point is somewhat on the screen
-                        var newPoint = self.scrollView.convertPoint(newDisplacement + constraintMiddle, fromView: connectTo.constraintView)
+                        var newPoint = connectTo.constraintView.frame.center() + newDisplacement
                         let minMargin: CGFloat = 10
                         newPoint.x = max(newPoint.x, minMargin)
                         newPoint.x = min(newPoint.x, self.scrollView.contentSize.width - minMargin)
