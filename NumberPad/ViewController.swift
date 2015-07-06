@@ -897,7 +897,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
     func connectorPortAtLocation(location: CGPoint) -> (ConstraintView: ConstraintView, ConnectorPort: ConnectorPort)? {
         for constraintView in constraintViews {
             let point = constraintView.convertPoint(location, fromView: self.scrollView)
-            if let port = constraintView.connectorPortForDragAtLocation(point) {
+            if let port = constraintView.connectorPortForDragAtLocation(point, connectorIsVisible: { self.connectorToLabel[$0] != nil}) {
                 return (constraintView, port)
             }
         }
