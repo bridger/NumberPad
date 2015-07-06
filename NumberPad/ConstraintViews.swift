@@ -641,7 +641,6 @@ class ExponentView: ConstraintView {
     let baseLayer = CALayer()
     let exponentLayer = CALayer()
     let resultLayer = CALayer()
-    let resultSmileLayer = CAShapeLayer()
     let label = UILabel()
     init(exponent: Exponent) {
         self.exponent = exponent
@@ -665,12 +664,7 @@ class ExponentView: ConstraintView {
         self.resultLayer.borderWidth = borderWidth
         self.resultLayer.borderColor = self.resultLayer.backgroundColor
         
-        self.resultSmileLayer.strokeColor = UIColor.exponentResultColor().CGColor
-        self.resultSmileLayer.lineWidth = 4.0
-        self.resultSmileLayer.lineCap = kCALineCapRound
-        self.resultSmileLayer.fillColor = nil
-        
-        for layer in [self.baseLayer, self.exponentLayer, self.resultSmileLayer, self.resultLayer] {
+        for layer in [self.baseLayer, self.exponentLayer, self.resultLayer] {
             self.layer.addSublayer(layer)
         }
         
@@ -685,54 +679,26 @@ class ExponentView: ConstraintView {
     }
     
     
-    let myWidth: CGFloat = 60.0
-    let myHeight: CGFloat = 50.0
     let spacing: CGFloat = 10.0
-    let barHeight: CGFloat = 5.0
+    let baseSize: CGFloat = 35
+    let portSize: CGFloat = 18
+    let portOverhang = CGPointMake(0, 0)
     override func layoutWithConnectorPositions(positions: [Connector: CGPoint]) {
         self.sizeToFit()
         
-        let exponentSize: CGFloat = 18
-        self.exponentLayer.frame = CGRectMake(myWidth * 0.4, 0, exponentSize, exponentSize)
-        self.exponentLayer.cornerRadius = exponentSize / 2
-        self.exponentInput.center = self.exponentLayer.position
-        
-        let baseSize: CGFloat = 35
-        let offsetFromExponent = baseSize / 2.0 * CGFloat(M_SQRT1_2) + 2
-        let exponentCenter = self.exponentInput.center
         self.baseLayer.frame = CGRectMake(0, 0, baseSize, baseSize)
-        self.baseLayer.position = CGPointMake(exponentCenter.x - offsetFromExponent, exponentCenter.y + offsetFromExponent)
+        self.baseLayer.position = CGPointMake(baseSize / 2, self.bounds.height / 2)
         self.baseLayer.cornerRadius = baseSize / 2
         self.baseInput.center = self.baseLayer.position
         
-        let pathBase: CGFloat = 95
-        let scale = myHeight / (pathBase - 1.0)
-        func pointOnExponentAtX(x: CGFloat) -> CGPoint {
-            let percentage = x / self.myWidth
-            let y = pow(pathBase, percentage)
-            
-            let point = CGPointMake(x, self.myHeight - (y - 1.0) * scale)
-            return point
-        }
+        self.exponentLayer.frame = CGRectMake(0, 0, portSize, portSize)
+        self.exponentLayer.position = CGPointMake(baseSize + portOverhang.x, self.baseLayer.frame.minY - portOverhang.y)
+        self.exponentLayer.cornerRadius = portSize / 3
+        self.exponentInput.center = self.exponentLayer.position
         
-        let path = CGPathCreateMutable()
-        for var i: CGFloat = 0; i < myWidth; i++ {
-            // Here we draw an exponent curve from x = 0 to x = 1, which results in y=1 to y=base
-            // Then we scale it so y goes from 0 to myHeight
-            let point = pointOnExponentAtX(i)
-            if i == 0 {
-                CGPathMoveToPoint(path, nil, point.x, point.y)
-            } else {
-                CGPathAddLineToPoint(path, nil, point.x, point.y)
-            }
-        }
-        
-        self.resultSmileLayer.path = path
-        
-        let resultSize: CGFloat = 16
-        self.resultLayer.frame = CGRectMake(0, 0, resultSize, resultSize)
-        self.resultLayer.position = pointOnExponentAtX(myWidth * 0.7)
-        self.resultLayer.cornerRadius = resultSize / 2
+        self.resultLayer.frame = CGRectMake(0, 0, portSize, portSize)
+        self.resultLayer.position = CGPointMake(baseSize + portOverhang.x, self.baseLayer.frame.maxY + portOverhang.y)
+        self.resultLayer.cornerRadius = portSize / 3
         self.resultOutput.center = self.resultLayer.position
         self.label.center = self.baseInput.center
     }
@@ -761,7 +727,7 @@ class ExponentView: ConstraintView {
     }
     
     override func sizeThatFits(size: CGSize) -> CGSize {
-        return CGSizeMake(myWidth, myHeight)
+        return CGSizeMake(baseSize + portSize / 2 + portOverhang.x, baseSize + portSize / 2 + portOverhang.y)
     }
     
     override func setConnectorPort(port: ConnectorPort, isHighlighted: Bool) {
