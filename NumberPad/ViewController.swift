@@ -1179,7 +1179,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         }
                         
                         let angle = connectTo.constraintView.idealAngleForNewConnectorLabel(connector, positions: connectorPositions)
-                        let distance: CGFloat = 80 + max(connectTo.constraintView.bounds.width, connectTo.constraintView.bounds.height)
+                        let distance: CGFloat = 70 + max(connectTo.constraintView.bounds.width, connectTo.constraintView.bounds.height)
                         let newDisplacement = CGPointMake(cos(angle), sin(angle)) * distance
                         
                         // Make sure the new point is somewhat on the screen
