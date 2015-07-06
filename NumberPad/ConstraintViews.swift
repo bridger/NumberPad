@@ -224,52 +224,15 @@ protocol ConnectorPort: NSObjectProtocol {
     var center: CGPoint {
         get
     }
-    var isSelected: Bool {
-        get
-        set
-    }
 }
 
 class InternalConnectorPort: NSObject, ConnectorPort {
-    var color: UIColor = UIColor.whiteColor() {
-        didSet {
-            self.layer.backgroundColor = color.CGColor
-        }
-    }
+    var color: UIColor = UIColor.whiteColor()
     var connector: Connector?
-    let layer: CALayer
     let isOutput: Bool
-    var center: CGPoint { // In the constraintView's coordinate system
-        get {
-            return layer.position
-        }
-    }
+    var center: CGPoint = CGPointZero
     init(isOutput: Bool) {
         self.isOutput = isOutput
-        self.layer = CALayer()
-        self.layer.backgroundColor = color.CGColor
-        let connectorSize: CGFloat = 16
-        self.layer.frame = CGRectMake(0, 0, connectorSize, connectorSize)
-        self.layer.cornerRadius = connectorSize / 2.0
-    }
-    var isSelectedInternal: Bool = false
-    var isSelected: Bool {
-        get {
-            return isSelectedInternal
-        }
-        set {
-            isSelectedInternal = newValue
-            if isSelectedInternal {
-                if let saturated = self.color.colorWithSaturationComponent(0.2) {
-                    self.layer.backgroundColor = saturated.CGColor
-                    self.layer.borderColor = self.color.CGColor
-                    self.layer.borderWidth = 2.0
-                }
-            } else {
-                self.layer.backgroundColor = self.color.CGColor
-                self.layer.borderWidth = 0.0
-            }
-        }
     }
 }
 
@@ -303,6 +266,10 @@ class ConstraintView: UIView {
     func idealAngleForNewConnectorLabel(connector: Connector, positions: [Connector: CGPoint]) -> CGFloat {
         fatalError("This method must be overriden")
     }
+    
+    func setConnectorPort(port: ConnectorPort, isHighlighted: Bool) {
+        fatalError("This method must be overriden")
+    }
 }
 
 class MultiInputOutputConstraintView: ConstraintView {
@@ -333,7 +300,7 @@ class MultiInputOutputConstraintView: ConstraintView {
     }
     
     func internalConnectorPorts() -> [InternalConnectorPort] {
-        return [firstInput, secondInput, output]
+        return [output, firstInput, secondInput]
     }
     func connectorPortIsMine(port: ConnectorPort) -> Bool {
         return port === firstInput || port === secondInput || port === output
@@ -348,7 +315,7 @@ class MultiInputOutputConstraintView: ConstraintView {
     
     override func connectorPortForDragAtLocation(location: CGPoint) -> ConnectorPort? {
         for internalPort in internalConnectorPorts() {
-            if euclidianDistanceSquared(internalPort.layer.position, b: location) < 400 {
+            if euclidianDistanceSquared(internalPort.center, b: location) < 400 {
                 return internalPort
             }
         }
@@ -405,13 +372,15 @@ class MultiInputOutputConstraintView: ConstraintView {
         addSentinelConnectorToPort(self.secondInput)
         addSentinelConnectorToPort(self.output)
         
-        self.redLayer.backgroundColor = self.inputColor.CGColor
-        self.blueLayer.backgroundColor = self.inputColor.CGColor
-        self.purpleLayer.backgroundColor = self.outputColor.CGColor
+        let borderWidth: CGFloat = 2.0
         self.inputColoredLayer.fillColor = self.inputColor.CGColor
+        self.inputColoredLayer.strokeColor = self.inputColor.CGColor
+        self.inputColoredLayer.lineWidth = borderWidth
         self.outputColoredLayer.fillColor = self.outputColor.CGColor
+        self.outputColoredLayer.strokeColor = self.outputColor.CGColor
+        self.outputColoredLayer.lineWidth = borderWidth
         
-        for layer in [self.redLayer, self.blueLayer, self.purpleLayer, self.firstInput.layer, self.secondInput.layer, self.output.layer, self.inputColoredLayer, self.outputColoredLayer] {
+        for layer in [self.inputColoredLayer, self.outputColoredLayer] {
             self.layer.addSublayer(layer)
         }
     }
@@ -451,6 +420,23 @@ class MultiInputOutputConstraintView: ConstraintView {
         }
         
         return bestAngle.angle
+    }
+    
+    override func setConnectorPort(port: ConnectorPort, isHighlighted: Bool) {
+        guard let port = port as? InternalConnectorPort else {
+            return
+        }
+        let color: UIColor
+        let layer: CAShapeLayer
+        if port.isOutput {
+            color = self.outputColor
+            layer = self.outputColoredLayer
+        } else {
+            color = self.inputColor
+            layer = self.inputColoredLayer
+        }
+        
+        layer.fillColor = isHighlighted ? color.colorWithSaturationComponent(0.25, brightness: 1.0).CGColor : color.CGColor
     }
     
     required init(coder aDecoder: NSCoder) {
@@ -496,9 +482,9 @@ class MultiplierView: MultiInputOutputConstraintView {
         self.outputColoredLayer.frame = CGRectMake(0, 0, outputSize, outputSize)
         self.outputColoredLayer.path = CGPathCreateWithRect(CGRectMake(0, 0, outputSize, outputSize), nil)
         
-        self.firstInput.layer.position = self.inputColoredLayer.frame.center()
-        self.secondInput.layer.position = self.inputColoredLayer.frame.center()
-        self.output.layer.position = self.outputColoredLayer.frame.center()
+        self.firstInput.center = self.inputColoredLayer.frame.center()
+        self.secondInput.center = self.inputColoredLayer.frame.center()
+        self.output.center = self.outputColoredLayer.frame.center()
 
         var rotationAngle: CGFloat = 0
         if let connector = output.connector, let position = positions[connector] {
@@ -557,9 +543,9 @@ class AdderView: MultiInputOutputConstraintView {
         self.outputColoredLayer.frame = CGRectMake(0, 0, outputSize, outputSize)
         self.outputColoredLayer.path = CGPathCreateWithEllipseInRect(CGRectMake(0, 0, outputSize, outputSize), nil)
         
-        self.firstInput.layer.position = self.inputColoredLayer.frame.center()
-        self.secondInput.layer.position = self.inputColoredLayer.frame.center()
-        self.output.layer.position = self.outputColoredLayer.frame.center()
+        self.firstInput.center = self.inputColoredLayer.frame.center()
+        self.secondInput.center = self.inputColoredLayer.frame.center()
+        self.output.center = self.outputColoredLayer.frame.center()
         
         var rotationAngle: CGFloat = 0
         if let connector = output.connector, let position = positions[connector] {
@@ -623,7 +609,7 @@ class ExponentView: ConstraintView {
     override func connectorPortForDragAtLocation(location: CGPoint) -> ConnectorPort? {
         for internalPort in internalConnectorPorts() {
             let cutoffSquared: CGFloat = (internalPort === basePort) ? 900 : 400
-            if euclidianDistanceSquared(internalPort.layer.position, b: location) < cutoffSquared {
+            if euclidianDistanceSquared(internalPort.center, b: location) < cutoffSquared {
                 return internalPort
             }
         }
@@ -652,7 +638,10 @@ class ExponentView: ConstraintView {
         }
     }
     
-    let resultLayer: CAShapeLayer = CAShapeLayer()
+    let baseLayer = CALayer()
+    let exponentLayer = CALayer()
+    let resultLayer = CALayer()
+    let resultSmileLayer = CAShapeLayer()
     let label = UILabel()
     init(exponent: Exponent) {
         self.exponent = exponent
@@ -664,11 +653,24 @@ class ExponentView: ConstraintView {
         self.exponentInput.color = UIColor.exponentExponentColor()
         self.resultOutput.color = UIColor.exponentResultColor()
         
-        self.resultLayer.strokeColor = UIColor.exponentResultColor().CGColor
-        self.resultLayer.lineWidth = 4.0
-        self.resultLayer.lineCap = kCALineCapRound
-        self.resultLayer.fillColor = nil
-        for layer in [self.resultLayer, self.exponentInput.layer, self.baseInput.layer, self.resultOutput.layer] {
+        self.baseLayer.backgroundColor = self.baseInput.color.CGColor
+        self.exponentLayer.backgroundColor = self.exponentInput.color.CGColor
+        self.resultLayer.backgroundColor = self.resultOutput.color.CGColor
+        
+        let borderWidth: CGFloat = 2.0
+        self.baseLayer.borderWidth = borderWidth
+        self.baseLayer.borderColor = self.baseLayer.backgroundColor
+        self.exponentLayer.borderWidth = borderWidth
+        self.exponentLayer.borderColor = self.exponentLayer.backgroundColor
+        self.resultLayer.borderWidth = borderWidth
+        self.resultLayer.borderColor = self.resultLayer.backgroundColor
+        
+        self.resultSmileLayer.strokeColor = UIColor.exponentResultColor().CGColor
+        self.resultSmileLayer.lineWidth = 4.0
+        self.resultSmileLayer.lineCap = kCALineCapRound
+        self.resultSmileLayer.fillColor = nil
+        
+        for layer in [self.baseLayer, self.exponentLayer, self.resultSmileLayer, self.resultLayer] {
             self.layer.addSublayer(layer)
         }
         
@@ -690,21 +692,18 @@ class ExponentView: ConstraintView {
     override func layoutWithConnectorPositions(positions: [Connector: CGPoint]) {
         self.sizeToFit()
         
-        self.baseInput.layer.zPosition = 0
-        self.exponentInput.layer.zPosition = 1
-        self.resultLayer.zPosition = 2
-        self.resultOutput.layer.zPosition = 3
-        
         let exponentSize: CGFloat = 18
-        self.exponentInput.layer.frame = CGRectMake(myWidth * 0.4, 0, exponentSize, exponentSize)
-        self.exponentInput.layer.cornerRadius = exponentSize / 2
+        self.exponentLayer.frame = CGRectMake(myWidth * 0.4, 0, exponentSize, exponentSize)
+        self.exponentLayer.cornerRadius = exponentSize / 2
+        self.exponentInput.center = self.exponentLayer.position
         
         let baseSize: CGFloat = 35
         let offsetFromExponent = baseSize / 2.0 * CGFloat(M_SQRT1_2) + 2
-        let exponentCenter = self.exponentInput.layer.position
-        self.baseInput.layer.frame = CGRectMake(0, 0, baseSize, baseSize)
-        self.baseInput.layer.position = CGPointMake(exponentCenter.x - offsetFromExponent, exponentCenter.y + offsetFromExponent)
-        self.baseInput.layer.cornerRadius = baseSize / 2
+        let exponentCenter = self.exponentInput.center
+        self.baseLayer.frame = CGRectMake(0, 0, baseSize, baseSize)
+        self.baseLayer.position = CGPointMake(exponentCenter.x - offsetFromExponent, exponentCenter.y + offsetFromExponent)
+        self.baseLayer.cornerRadius = baseSize / 2
+        self.baseInput.center = self.baseLayer.position
         
         let pathBase: CGFloat = 95
         let scale = myHeight / (pathBase - 1.0)
@@ -728,9 +727,13 @@ class ExponentView: ConstraintView {
             }
         }
         
-        self.resultLayer.path = path
+        self.resultSmileLayer.path = path
         
-        self.resultOutput.layer.position = pointOnExponentAtX(myWidth * 0.7)
+        let resultSize: CGFloat = 16
+        self.resultLayer.frame = CGRectMake(0, 0, resultSize, resultSize)
+        self.resultLayer.position = pointOnExponentAtX(myWidth * 0.7)
+        self.resultLayer.cornerRadius = resultSize / 2
+        self.resultOutput.center = self.resultLayer.position
         self.label.center = self.baseInput.center
     }
     
@@ -759,6 +762,23 @@ class ExponentView: ConstraintView {
     
     override func sizeThatFits(size: CGSize) -> CGSize {
         return CGSizeMake(myWidth, myHeight)
+    }
+    
+    override func setConnectorPort(port: ConnectorPort, isHighlighted: Bool) {
+        let color: UIColor
+        let layer: CALayer
+        if port === baseInput {
+            color = UIColor.exponentBaseColor()
+            layer = self.baseLayer
+        } else if port === exponentInput {
+            color = UIColor.exponentExponentColor()
+            layer = self.exponentLayer
+        } else {
+            color = UIColor.exponentResultColor()
+            layer = self.resultLayer
+        }
+        
+        layer.backgroundColor = isHighlighted ? color.colorWithSaturationComponent(0.25, brightness: 1.0).CGColor : color.CGColor
     }
     
 }

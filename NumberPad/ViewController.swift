@@ -241,12 +241,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
     }
     var selectedConnectorPort: (ConstraintView: ConstraintView, ConnectorPort: ConnectorPort)? {
         didSet {
-            if let (_, oldConnectorPort) = oldValue {
-                oldConnectorPort.isSelected = false
+            if let (oldConstraintView, oldConnectorPort) = oldValue {
+                oldConstraintView.setConnectorPort(oldConnectorPort, isHighlighted: false)
             }
             
-            if let (_, newConnectorPort) = self.selectedConnectorPort {
-                newConnectorPort.isSelected = true
+            if let (newConstraintView, newConnectorPort) = self.selectedConnectorPort {
+                newConstraintView.setConnectorPort(newConnectorPort, isHighlighted: true)
                 
                 if self.selectedConnectorLabel != nil {
                     self.selectedConnectorLabel = nil

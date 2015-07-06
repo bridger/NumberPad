@@ -10,7 +10,7 @@ import Foundation
 
 extension UIColor {
     class func backgroundColor() -> UIColor {
-        return UIColor(red: 0.80, green: 0.83, blue: 0.81, alpha: 1.0)
+        return UIColor(red: 0.95, green: 0.98, blue: 0.96, alpha: 1.0)
     }
     
     class func selectedBackgroundColor() -> UIColor {
@@ -42,11 +42,11 @@ extension UIColor {
     }
     
     class func exponentExponentColor() -> UIColor {
-        return UIColor.whiteColor()
+        return UIColor(red: 0.98, green: 0.41, blue: 0.0, alpha: 1.0)
     }
     
     class func exponentResultColor() -> UIColor {
-        return UIColor(red: 0.98, green: 0.41, blue: 0.0, alpha: 1.0)
+        return UIColor(red: 0.98, green: 0.21, blue: 0.0, alpha: 1.0)
     }
     
     class func textColor() -> UIColor {
@@ -54,6 +54,7 @@ extension UIColor {
     }
     
     class func selectedTextColor() -> UIColor {
-        return UIColor(red: 0.80, green: 0.83, blue: 0.81, alpha: 1.0)
+        return backgroundColor()
+        //return UIColor(red: 0.80, green: 0.83, blue: 0.81, alpha: 1.0)
     }
 }
