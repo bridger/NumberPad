@@ -223,9 +223,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         updateScrollableSize()
         
         if let outputPort = outputPort, (lastConstraint, inputPort) = self.selectedConnectorPort {
-                if connectorToLabel[inputPort.connector!] == nil {
-                    self.connectConstraintViews(constraintView, firstConnectorPort: outputPort, secondConstraintView: lastConstraint, secondConnectorPort: inputPort)
-                }
+            if connectorToLabel[inputPort.connector] == nil {
+                self.connectConstraintViews(constraintView, firstConnectorPort: outputPort, secondConstraintView: lastConstraint, secondConnectorPort: inputPort)
+            }
         }
         
         if let firstInputPort = firstInputPort, selectedConnector = self.selectedConnectorLabel {
@@ -475,7 +475,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 }
                 
                 if touchInfo.classification != nil {
-                        updateGestureForTouch(touchInfo)
+                    updateGestureForTouch(touchInfo)
                 }
                 
             } else {
@@ -912,18 +912,16 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         var minMatch: (ConnectorLabel, ConstraintView, ConnectorPort)?
         for constraintView in constraintViews {
             for connectorPort in constraintView.connectorPorts() {
-                if let connector = connectorPort.connector {
-                    if let connectorLabel = connectorToLabel[connector] {
-                        let connectorPoint = self.scrollView.convertPoint(connectorPort.center, fromView: constraintView)
-                        let labelPoint = connectorLabel.center
-                        
-                        let squaredDistance = shortestDistanceSquaredToLineSegmentFromPoint(connectorPoint, segmentEnd: labelPoint, testPoint: point)
-                        if squaredDistance < squaredDistanceCutoff {
-                            if minSquaredDistance == nil || squaredDistance < minSquaredDistance! {
-                                print("Found elligible distance of \(sqrt(squaredDistance))")
-                                minMatch = (connectorLabel, constraintView, connectorPort)
-                                minSquaredDistance = squaredDistance
-                            }
+                if let connectorLabel = connectorToLabel[connectorPort.connector] {
+                    let connectorPoint = self.scrollView.convertPoint(connectorPort.center, fromView: constraintView)
+                    let labelPoint = connectorLabel.center
+                    
+                    let squaredDistance = shortestDistanceSquaredToLineSegmentFromPoint(connectorPoint, segmentEnd: labelPoint, testPoint: point)
+                    if squaredDistance < squaredDistanceCutoff {
+                        if minSquaredDistance == nil || squaredDistance < minSquaredDistance! {
+                            print("Found elligible distance of \(sqrt(squaredDistance))")
+                            minMatch = (connectorLabel, constraintView, connectorPort)
+                            minSquaredDistance = squaredDistance
                         }
                     }
                 }
@@ -1108,18 +1106,16 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             
             for constraintView in self.constraintViews {
                 for connectorPort in constraintView.connectorPorts() {
-                    if let connector = connectorPort.connector {
-                        if let connectorLabel = self.connectorToLabel[connector] {
-                            let connectorPoint = self.scrollView.convertPoint(connectorPort.center, fromView: constraintView)
-                            let labelPoint = connectorLabel.center
-                            
-                            let dependent = self.lastValueWasDependentForConnector(connectorLabel.connector) ?? false
-                            let connectionLayer = self.createConnectionLayer(labelPoint, endPoint: connectorPoint, color: connectorPort.color, isDependent: dependent)
-                            
-                            self.connectionLayers.append(connectionLayer)
-                            connectionLayer.zPosition = self.connectionLayersZPosition
-                            self.scrollView.layer.addSublayer(connectionLayer)
-                        }
+                    if let connectorLabel = self.connectorToLabel[connectorPort.connector] {
+                        let connectorPoint = self.scrollView.convertPoint(connectorPort.center, fromView: constraintView)
+                        let labelPoint = connectorLabel.center
+                        
+                        let dependent = self.lastValueWasDependentForConnector(connectorLabel.connector) ?? false
+                        let connectionLayer = self.createConnectionLayer(labelPoint, endPoint: connectorPoint, color: connectorPort.color, isDependent: dependent)
+                        
+                        self.connectionLayers.append(connectionLayer)
+                        connectionLayer.zPosition = self.connectionLayersZPosition
+                        self.scrollView.layer.addSublayer(connectionLayer)
                     }
                 }
             }
@@ -1171,9 +1167,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         
                         // Find the positions of the existing connectorLabels on this constraint
                         var connectorPositions: [Connector: CGPoint] = [:]
-                        for existingConnectorPort in connectTo.constraintView.connectorPorts() {
-                            if let existingConnector = existingConnectorPort.connector,
-                                let existingLabel = self.connectorToLabel[existingConnector] {
+                        for existingConnector in connectTo.constraintView.connectorPorts().map({$0.connector}) {
+                             if let existingLabel = self.connectorToLabel[existingConnector] {
                                 connectorPositions[existingConnector] = existingLabel.center
                             }
                         }

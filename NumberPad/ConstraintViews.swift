@@ -218,7 +218,7 @@ protocol ConnectorPort: NSObjectProtocol {
     var color: UIColor {
         get
     }
-    var connector: Connector? {
+    var connector: Connector {
         get
     }
     var center: CGPoint {
@@ -228,7 +228,7 @@ protocol ConnectorPort: NSObjectProtocol {
 
 class InternalConnectorPort: NSObject, ConnectorPort {
     var color: UIColor = UIColor.whiteColor()
-    var connector: Connector?
+    var connector = Connector()
     let isOutput: Bool
     var center: CGPoint = CGPointZero
     init(isOutput: Bool) {
@@ -246,7 +246,7 @@ class ConstraintView: UIView {
     func connectorPorts() -> [ConnectorPort] {
         fatalError("This method must be overriden")
     }
-    func connectorPortForDragAtLocation(location: CGPoint, connectorIsVisible: (Connector) -> Bool) -> ConnectorPort? {
+    func connectorPortForDragAtLocation(location: CGPoint, @noescape connectorIsVisible: (Connector) -> Bool) -> ConnectorPort? {
         fatalError("This method must be overriden")
     }
     func connectPort(port: ConnectorPort, connector: Connector) {
@@ -309,17 +309,15 @@ class MultiInputOutputConstraintView: ConstraintView {
         return [outputPort as ConnectorPort]
     }
     
-    override func connectorPortForDragAtLocation(location: CGPoint, connectorIsVisible: (Connector) -> Bool) -> ConnectorPort? {
+    override func connectorPortForDragAtLocation(location: CGPoint, @noescape connectorIsVisible: (Connector) -> Bool) -> ConnectorPort? {
         if euclidianDistanceSquared(outputPort.center, b: location) < 400 {
             return outputPort
         } else if euclidianDistanceSquared(inputPorts[0].center, b: location) < 400 {
             // We should give back an input port. If we have less than two that are connected then we return
             // one of them. Otherwise, we make a new one
             for input in inputPorts {
-                if let connector = input.connector {
-                    if !connectorIsVisible(connector) {
-                        return input
-                    }
+                if !connectorIsVisible(input.connector) {
+                    return input
                 }
             }
             
@@ -337,12 +335,11 @@ class MultiInputOutputConstraintView: ConstraintView {
             return
         }
         
-        if let oldConnector = port.connector {
-            if port.isOutput {
-                innerConstraint.removeOutput(oldConnector)
-            } else {
-                innerConstraint.removeInput(oldConnector)
-            }
+        let oldConnector = port.connector
+        if port.isOutput {
+            innerConstraint.removeOutput(oldConnector)
+        } else {
+            innerConstraint.removeInput(oldConnector)
         }
         
         if port.isOutput {
@@ -368,9 +365,7 @@ class MultiInputOutputConstraintView: ConstraintView {
                 return
             }
             inputPorts.removeAtIndex(inputIndex)
-            if let connector = port.connector {
-                innerConstraint.removeInput(connector)
-            }
+            innerConstraint.removeInput(port.connector)
         } else {
             addSentinelConnectorToPort(port) // This will remove the old connector
         }
@@ -413,7 +408,7 @@ class MultiInputOutputConstraintView: ConstraintView {
         // neighbors
         var allAngles: [CGFloat] = []
         for connectorPort in self.connectorPorts() {
-            if let connector = connectorPort.connector, let position = positions[connector] {
+            if let position = positions[connectorPort.connector] {
                 let offset = position - self.center
                 
                 allAngles.append(atan2(offset.y, offset.x))
@@ -508,7 +503,7 @@ class MultiplierView: MultiInputOutputConstraintView {
         self.outputPort.center = self.outputColoredLayer.frame.center()
 
         var rotationAngle: CGFloat = 0
-        if let connector = outputPort.connector, let position = positions[connector] {
+        if let position = positions[outputPort.connector] {
             let portAngle = (outputPort.center - self.bounds.center()).angle
             let connectorAngle = (position - self.center).angle
             
@@ -570,7 +565,7 @@ class AdderView: MultiInputOutputConstraintView {
         self.outputPort.center = self.outputColoredLayer.frame.center()
         
         var rotationAngle: CGFloat = 0
-        if let connector = outputPort.connector, let position = positions[connector] {
+        if let position = positions[outputPort.connector] {
             let portAngle = (outputPort.center - self.bounds.center()).angle
             let connectorAngle = (position - self.center).angle
             
@@ -625,7 +620,7 @@ class ExponentView: ConstraintView {
         return [exponentInput, resultOutput, baseInput]
     }
     
-    override func connectorPortForDragAtLocation(location: CGPoint, connectorIsVisible: (Connector) -> Bool) -> ConnectorPort? {
+    override func connectorPortForDragAtLocation(location: CGPoint, @noescape connectorIsVisible: (Connector) -> Bool) -> ConnectorPort? {
         for internalPort in internalConnectorPorts() {
             let cutoffSquared: CGFloat = (internalPort === basePort) ? 900 : 400
             if euclidianDistanceSquared(internalPort.center, b: location) < cutoffSquared {
