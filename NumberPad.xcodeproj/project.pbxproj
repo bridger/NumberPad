@@ -76,6 +76,7 @@
 		AEA8E8751A86C6C60050344B /* _DDRewriteRule.m in Sources */ = {isa = PBXBuildFile; fileRef = AEA8E8721A86C6C60050344B /* _DDRewriteRule.m */; };
 		AEA8E8761A86C6C60050344B /* DDExpressionRewriter.m in Sources */ = {isa = PBXBuildFile; fileRef = AEA8E8741A86C6C60050344B /* DDExpressionRewriter.m */; };
 		AEA8E8781A871B4E0050344B /* MathML.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA8E8771A871B4E0050344B /* MathML.swift */; };
+		AEC033261B4B7A0400E72EE3 /* ArrowPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC033251B4B7A0400E72EE3 /* ArrowPath.swift */; };
 		AEC9EEC01A3CDC4A002C7B08 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */; };
 		AEC9EEC21A3CDC4A002C7B08 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEC11A3CDC4A002C7B08 /* ViewController.swift */; };
 		AEC9EEC71A3CDC4A002C7B08 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AEC9EEC61A3CDC4A002C7B08 /* Images.xcassets */; };
@@ -238,6 +239,7 @@
 		AEA8E8731A86C6C60050344B /* DDExpressionRewriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDExpressionRewriter.h; sourceTree = "<group>"; };
 		AEA8E8741A86C6C60050344B /* DDExpressionRewriter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDExpressionRewriter.m; sourceTree = "<group>"; };
 		AEA8E8771A871B4E0050344B /* MathML.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MathML.swift; sourceTree = "<group>"; };
+		AEC033251B4B7A0400E72EE3 /* ArrowPath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArrowPath.swift; sourceTree = "<group>"; };
 		AEC9EEBA1A3CDC4A002C7B08 /* NumberPad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NumberPad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC9EEBE1A3CDC4A002C7B08 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -529,6 +531,7 @@
 				AE064B6A1A64679200A10381 /* Constraints.swift */,
 				AEA8E8771A871B4E0050344B /* MathML.swift */,
 				AE064B6D1A646A6300A10381 /* ConstraintViews.swift */,
+				AEC033251B4B7A0400E72EE3 /* ArrowPath.swift */,
 				AE0EF4501B40EF82000DFFE2 /* Toy.swift */,
 				AEDB570E1B45CDD10065A4DD /* UIColor+Additions.swift */,
 				AE064B6F1A646FB200A10381 /* Utils.swift */,
@@ -867,6 +870,7 @@
 				AEA8E8781A871B4E0050344B /* MathML.swift in Sources */,
 				AEA8E8341A86C52D0050344B /* DDMathOperatorSet.m in Sources */,
 				AE1CA0761A8C652A00CC1FDA /* VisualFormat.swift in Sources */,
+				AEC033261B4B7A0400E72EE3 /* ArrowPath.swift in Sources */,
 				AEDB570F1B45CDD10065A4DD /* UIColor+Additions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

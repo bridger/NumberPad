@@ -275,12 +275,15 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
     
     
     var connectionLayers: [CAShapeLayer] = []
-    var lastSimulationContext: SimulationContext?
+    var lastSimulationValues: [Connector: SimulationContext.ResolvedValue]?
     func lastValueForConnector(connector: Connector) -> Double? {
-        return self.lastSimulationContext?.connectorValues[connector]?.DoubleValue
+        return self.lastSimulationValues?[connector]?.DoubleValue
     }
-    func lastValueWasDependentForConnector(connector: Connector) -> Bool? {
-        return self.lastSimulationContext?.connectorValues[connector]?.WasDependent
+    func lastInformantForConnector(connector: Connector) -> (WasDependent: Bool, Informant: Constraint?)? {
+        if let lastValue = self.lastSimulationValues?[connector] {
+            return (lastValue.WasDependent, lastValue.Informant)
+        }
+        return nil
     }
     
     // MARK: Pencil integration
@@ -543,9 +546,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                             }
                             
                         } else if let (connectorLabel, _, _) = self.connectionLineAtPoint(point) {
-                            let lastValueWasDependent = self.lastValueWasDependentForConnector(connectorLabel.connector)
+                            let lastInformant = self.lastInformantForConnector(connectorLabel.connector)
                             
-                            if (lastValueWasDependent != nil && lastValueWasDependent!) {
+                            if (lastInformant != nil && lastInformant!.WasDependent) {
                                 // Try to make this connector high priority, so it is constant instead of dependent
                                 moveConnectorToTopPriority(connectorLabel)
                             } else {
@@ -769,8 +772,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         if let (connectorLabel, _) = touchInfo.connectorLabel {
             let targetPort = connectorPortAtLocation(point)?.ConnectorPort
             let labelPoint = connectorLabel.center
-            let dependent = lastValueWasDependentForConnector(connectorLabel.connector) ?? false
-            dragLine = createConnectionLayer(labelPoint, endPoint: point, color: targetPort?.color, isDependent: dependent)
+            let dependent = lastInformantForConnector(connectorLabel.connector)?.WasDependent ?? false
+            dragLine = createConnectionLayer(labelPoint, endPoint: point, color: targetPort?.color, isDependent: dependent, drawArrow: false)
             
         } else if let (constraintView, _, connectorPort) = touchInfo.constraintView {
             let startPoint = self.scrollView.convertPoint(connectorPort!.center, fromView: constraintView)
@@ -778,9 +781,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             var dependent = false
             if let targetConnector = connectorLabelAtPoint(point) {
                 endPoint = targetConnector.center
-                dependent = lastValueWasDependentForConnector(targetConnector.connector) ?? false
+                dependent = lastInformantForConnector(targetConnector.connector)?.WasDependent ?? false
             }
-            dragLine = createConnectionLayer(startPoint, endPoint: endPoint, color: connectorPort!.color, isDependent: dependent)
+            dragLine = createConnectionLayer(startPoint, endPoint: endPoint, color: connectorPort!.color, isDependent: dependent, drawArrow: false)
             
         } else {
             fatalError("A touchInfo was classified as MakeConnection, but didn't have a connectorLabel or connectorPort.")
@@ -1107,11 +1110,25 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             for constraintView in self.constraintViews {
                 for connectorPort in constraintView.connectorPorts() {
                     if let connectorLabel = self.connectorToLabel[connectorPort.connector] {
-                        let connectorPoint = self.scrollView.convertPoint(connectorPort.center, fromView: constraintView)
+                        let constraintPoint = self.scrollView.convertPoint(connectorPort.center, fromView: constraintView)
                         let labelPoint = connectorLabel.center
                         
-                        let dependent = self.lastValueWasDependentForConnector(connectorLabel.connector) ?? false
-                        let connectionLayer = self.createConnectionLayer(labelPoint, endPoint: connectorPoint, color: connectorPort.color, isDependent: dependent)
+                        let lastInformant = self.lastInformantForConnector(connectorLabel.connector)
+                        let dependent = lastInformant?.WasDependent ?? false
+                        
+                        let startPoint: CGPoint
+                        let endPoint: CGPoint
+                        // If this contraintView was the informant, then the arrow goes from the constraint
+                        // to the connector. Otherwise, it goes from the connector to the constraint
+                        if lastInformant?.Informant == constraintView.constraint {
+                            startPoint = constraintPoint
+                            endPoint = labelPoint
+                        } else {
+                            startPoint = labelPoint
+                            endPoint = constraintPoint
+                        }
+                        
+                        let connectionLayer = self.createConnectionLayer(startPoint, endPoint: endPoint, color: connectorPort.color, isDependent: dependent, drawArrow: true)
                         
                         self.connectionLayers.append(connectionLayer)
                         connectionLayer.zPosition = self.connectionLayersZPosition
@@ -1135,12 +1152,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         }
         
         func runSolver(values: [Connector: Double]) {
-            let lastSimulationContext = self.lastSimulationContext
+            let lastSimulationValues = self.lastSimulationValues
             
             var connectorToSelect: ConnectorLabel?
-            let simulationContext = SimulationContext(connectorResolvedCallback: { (connector, resolvedValue, informant) -> Void in
+            let simulationContext = SimulationContext(connectorResolvedCallback: { (connector, resolvedValue) -> Void in
                 if self.connectorToLabel[connector] == nil {
-                    if let constraint = informant {
+                    if let constraint = resolvedValue.Informant {
                         // This happens when a constraint makes a connector on it's own. For example, if you set two inputs on a multiplier then it will resolve the output automatically. We need to add a view for it and display it
                         
                         // We need to find the constraintView and the connectorPort this belongs to
@@ -1197,12 +1214,15 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 
                 if let label = self.connectorToLabel[connector] {
                     label.displayValue(resolvedValue.DoubleValue)
-                    if label.isDependent != resolvedValue.WasDependent {
-                        self.needsRebuildConnectionLayers = true
-                        label.isDependent = resolvedValue.WasDependent
-                    }
                 }
-                }, connectorConflictCallback: { (connector, resolvedValue, informant) -> Void in
+                if let lastValue = lastSimulationValues?[connector] {
+                    if (lastValue.WasDependent != resolvedValue.WasDependent || lastValue.Informant != resolvedValue.Informant) {
+                        self.needsRebuildConnectionLayers = true
+                    }
+                } else {
+                    self.needsRebuildConnectionLayers = true
+                }
+                }, connectorConflictCallback: { (connector, resolvedValue) -> Void in
                     if let label = self.connectorToLabel[connector] {
                         label.hasError = true
                     }
@@ -1217,14 +1237,14 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             
             // First, the selected connector
             if let selectedConnector = self.selectedConnectorLabel?.connector {
-                if let value = (values[selectedConnector] ?? lastSimulationContext?.connectorValues[selectedConnector]?.DoubleValue) {
-                    simulationContext.setConnectorValue(selectedConnector, value: (DoubleValue: value, Expression: constantExpression(value), WasDependent: true), informant: nil)
+                if let value = (values[selectedConnector] ?? lastSimulationValues?[selectedConnector]?.DoubleValue) {
+                    simulationContext.setConnectorValue(selectedConnector, value: (DoubleValue: value, Expression: constantExpression(value), WasDependent: true, Informant: nil))
                 }
             }
             
             // These are the first priority
             for (connector, value) in values {
-                simulationContext.setConnectorValue(connector, value: (DoubleValue: value, Expression: constantExpression(value), WasDependent: false), informant: nil)
+                simulationContext.setConnectorValue(connector, value: (DoubleValue: value, Expression: constantExpression(value), WasDependent: false, Informant: nil))
             }
             
             // We loop through connectorLabels like this, because it can mutate during the simulation, if a constraint "resolves a port"
@@ -1234,8 +1254,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 
                 // If we haven't already resolved this connector, then set it as a non-dependent variable to the value from the last simulation
                 if simulationContext.connectorValues[connector] == nil {
-                    if let lastValue = lastSimulationContext?.connectorValues[connector]?.DoubleValue {
-                        simulationContext.setConnectorValue(connector, value: (DoubleValue: lastValue, Expression: constantExpression(lastValue), WasDependent: false), informant: nil)
+                    if let lastValue = lastSimulationValues?[connector]?.DoubleValue {
+                        simulationContext.setConnectorValue(connector, value: (DoubleValue: lastValue, Expression: constantExpression(lastValue), WasDependent: false, Informant: nil))
                     }
                 }
                 index += 1
@@ -1248,9 +1268,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 }
             }
             
-            self.updateToys(simulationContext, toyYZero: self.view.bounds.height)
+            self.updateToys(simulationContext.connectorValues, toyYZero: self.view.bounds.height)
             
-            self.lastSimulationContext = simulationContext
+            self.lastSimulationValues = simulationContext.connectorValues
             self.needsSolving = false
             
             if let connectorToSelect = connectorToSelect {
@@ -1278,12 +1298,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         }
 
         if ranSolver {
-            if let simulationContext = self.lastSimulationContext {
+            if let lastSimulationValues = self.lastSimulationValues {
                 
                 // We first make a map from value DDExpressions to the formatted value
                 var formattedValues: [DDExpression : String] = [:]
                 for label in self.connectorLabels {
-                    if let value = simulationContext.connectorValues[label.connector] {
+                    if let value = lastSimulationValues[label.connector] {
                         if value.Expression.expressionType() == .Number {
                             formattedValues[value.Expression] = label.name ?? label.valueLabel.text
                         }
@@ -1292,7 +1312,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 
                 for label in self.connectorLabels {
                     var displayedEquation = false
-                    if let value = simulationContext.connectorValues[label.connector] {
+                    if let value = lastSimulationValues[label.connector] {
                         if value.Expression.expressionType() == .Function {
                             if let mathML = mathMLForExpression(value.Expression, formattedValues: formattedValues) {
                                 label.displayEquation(mathML)
@@ -1307,22 +1327,15 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             }
         }
     }
-        
     
-    func createConnectionLayer(startPoint: CGPoint, endPoint: CGPoint, color: UIColor?, isDependent: Bool) -> CAShapeLayer {
+    func createConnectionLayer(startPoint: CGPoint, endPoint: CGPoint, color: UIColor?, isDependent: Bool, drawArrow: Bool) -> CAShapeLayer {
         let dragLine = CAShapeLayer()
         dragLine.lineWidth = 3
         dragLine.fillColor = nil
         dragLine.lineCap = kCALineCapRound
         dragLine.strokeColor = color?.CGColor ?? UIColor.textColor().CGColor
-        if isDependent {
-            dragLine.lineDashPattern = [4, 6]
-        }
         
-        let path = CGPathCreateMutable()
-        CGPathMoveToPoint(path, nil, startPoint.x, startPoint.y)
-        CGPathAddLineToPoint(path, nil, endPoint.x, endPoint.y)
-        dragLine.path = path
+        dragLine.path = createPointingLine(startPoint, endPoint: endPoint, dash: isDependent, arrowHead: drawArrow)
         return dragLine
     }
     
@@ -1331,8 +1344,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         coordinator.animateAlongsideTransition(nil, completion: { context in
             self.updateScrollableSize()
             
-            if let lastSimulationContext = self.lastSimulationContext {
-                self.updateToys(lastSimulationContext, toyYZero: size.height)
+            if let lastSimulationValues = self.lastSimulationValues {
+                self.updateToys(lastSimulationValues, toyYZero: size.height)
             }
         })
     }
@@ -1389,8 +1402,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         self.scrollView.addSubview(newToy)
         toys.append(newToy)
         
-        if let lastSimulationContext = lastSimulationContext {
-            updateToys(lastSimulationContext, toyYZero: self.view.bounds.height)
+        if let lastSimulationValues = lastSimulationValues {
+            updateToys(lastSimulationValues, toyYZero: self.view.bounds.height)
         }
         
         let timeConnector = Connector()
@@ -1403,15 +1416,15 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         self.selectConnectorLabelAndSetToValue(timeLabel, value: 1)
     }
 
-    func updateToys(simulationContext: SimulationContext, toyYZero: CGFloat) {
+    func updateToys(lastSimulationValues: [Connector: SimulationContext.ResolvedValue], toyYZero: CGFloat) {
         for toy in self.toys {
-            if let xPosition = simulationContext.connectorValues[toy.xConnector]?.DoubleValue {
+            if let xPosition = lastSimulationValues[toy.xConnector]?.DoubleValue {
                 toy.center.x = CGFloat(xPosition)
             }
-            if let yPosition = simulationContext.connectorValues[toy.yConnector]?.DoubleValue {
+            if let yPosition = lastSimulationValues[toy.yConnector]?.DoubleValue {
                 toy.center.y = toyYZero - CGFloat(yPosition)
             }
-            if let xPosition = simulationContext.connectorValues[toy.xConnector]?.DoubleValue {
+            if let xPosition = lastSimulationValues[toy.xConnector]?.DoubleValue {
                 toy.center.x = CGFloat(xPosition)
             }
         }
