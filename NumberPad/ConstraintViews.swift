@@ -16,7 +16,6 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
     let valueLabel: UILabel = UILabel()
     var scale: Int16 = -1
     let connector: Connector
-    var isDependent: Bool = false
     var isPercent: Bool = false
     var equationView: WKWebView?
     var equationViewSize: CGSize?
@@ -339,7 +338,9 @@ class MultiInputOutputConstraintView: ConstraintView {
         if port.isOutput {
             innerConstraint.removeOutput(oldConnector)
         } else {
-            innerConstraint.removeInput(oldConnector)
+            if inputPorts.indexOf(port) != nil {
+                innerConstraint.removeInput(oldConnector)
+            }
         }
         
         if port.isOutput {
