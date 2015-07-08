@@ -79,7 +79,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         self.view.addSubview(footballButton)
         footballButton.addTarget(self, action: "createFootballToy", forControlEvents: .TouchUpInside)
         
-        let valuePickerHeight: CGFloat = 100.0
+        let valuePickerHeight: CGFloat = 85.0
         valuePicker = NumberSlideView(frame: CGRectMake(0, self.view.bounds.size.height - valuePickerHeight, self.view.bounds.size.width, valuePickerHeight))
         valuePicker.delegate = self
         valuePicker.autoresizingMask = [.FlexibleWidth, .FlexibleTopMargin]
@@ -936,7 +936,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         return nil
     }
     
-    func connectionLineAtPoint(point: CGPoint, distanceCutoff: CGFloat = 10.0) -> (ConnectorLabel: ConnectorLabel, ConstraintView: ConstraintView, ConnectorPort: ConnectorPort)? {
+    func connectionLineAtPoint(point: CGPoint, distanceCutoff: CGFloat = 12.0) -> (ConnectorLabel: ConnectorLabel, ConstraintView: ConstraintView, ConnectorPort: ConnectorPort)? {
         // This is a hit-test to see if the user has tapped on a line between a connector and a connectorPort.
         let squaredDistanceCutoff = distanceCutoff * distanceCutoff
         

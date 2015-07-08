@@ -22,31 +22,31 @@ extension UIColor {
     }
     
     class func adderInputColor() -> UIColor {
-        return UIColor(red: 0.25, green: 0.75, blue: 0.80, alpha: 1.0)
+        return UIColor(red: 0.15, green: 0.66, blue: 0.88, alpha: 1.0)
     }
     
     class func adderOutputColor() -> UIColor {
-        return UIColor(red: 0.0, green: 0.66, blue: 0.78, alpha: 1.0)
+        return UIColor(red: 0.17, green: 0.31, blue: 0.75, alpha: 1.0)
     }
     
     class func multiplierInputColor() -> UIColor {
-        return UIColor(red: 0.68, green: 0.8, blue: 0.22, alpha: 1.0)
+        return UIColor(red: 0.36, green: 0.79, blue: 0.16, alpha: 1.0)
     }
     
     class func multiplierOutputColor() -> UIColor {
-        return UIColor(red: 0.56, green: 0.75, blue: 0.0, alpha: 1.0)
+        return UIColor(red: 0.23, green: 0.51, blue: 0.11, alpha: 1.0)
     }
     
     class func exponentBaseColor() -> UIColor {
-        return UIColor(red: 0.95, green: 0.53, blue: 0.19, alpha: 1.0)
+        return UIColor(red: 1.0, green: 0.52, blue: 0.00, alpha: 1.0)
     }
     
     class func exponentExponentColor() -> UIColor {
-        return UIColor(red: 0.98, green: 0.41, blue: 0.0, alpha: 1.0)
+        return UIColor(red: 0.80, green: 0.03, blue: 0.0, alpha: 1.0)
     }
     
     class func exponentResultColor() -> UIColor {
-        return UIColor(red: 0.98, green: 0.21, blue: 0.0, alpha: 1.0)
+        return UIColor(red: 1.0, green: 0.11, blue: 0.11, alpha: 1.0)
     }
     
     class func textColor() -> UIColor {

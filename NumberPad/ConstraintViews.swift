@@ -36,7 +36,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
     let borderWidth: CGFloat = 2
     private func connectorLabelInitialize() {
         self.addSubview(self.valueLabel)
-        self.valueLabel.font = UIFont.boldSystemFontOfSize(22)
+        self.valueLabel.font = UIFont.boldSystemFontOfSize(18)
         self.layer.borderWidth = borderWidth
         self.layer.cornerRadius = 12
         self.valueLabel.textAlignment = .Center
@@ -66,7 +66,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
         }
         
         if let equationView = self.equationView { // Should always succeed
-            let htmlString = "<!DOCTYPE html><html lang='en'><head><meta name='viewport' content='initial-scale=1.0'/></head><body style='margin:0px'><math id='math-element'><mathstyle fontsize='12pt' mathcolor='rgb(127,127,127)'><mrow>\(mathML)</mrow></mathstyle></math></body></html>"
+            let htmlString = "<!DOCTYPE html><html lang='en'><head><meta name='viewport' content='initial-scale=1.0'/></head><body style='margin:0px'><math id='math-element'><mathstyle fontsize='10pt' mathcolor='rgb(43,66,81)'><mrow>\(mathML)</mrow></mathstyle></math></body></html>"
             equationView.loadHTMLString(htmlString, baseURL: nil)
         }
     }
@@ -191,8 +191,8 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
         let valueLabelSize = self.valueLabel.frame.size
         var newSize = valueLabelSize
         
-        let verticalMargin: CGFloat = 7.0 + borderWidth
-        let horizontalMargin: CGFloat = 7.0 + borderWidth
+        let verticalMargin: CGFloat = 5.0 + borderWidth
+        let horizontalMargin: CGFloat = 5.0 + borderWidth
         let equationSpace: CGFloat = 2.0
         
         if let equationSize = self.equationViewSize where equationView != nil {
@@ -309,9 +309,9 @@ class MultiInputOutputConstraintView: ConstraintView {
     }
     
     override func connectorPortForDragAtLocation(location: CGPoint, @noescape connectorIsVisible: (Connector) -> Bool) -> ConnectorPort? {
-        if euclidianDistanceSquared(outputPort.center, b: location) < 400 {
+        if euclidianDistanceSquared(outputPort.center, b: location) < 18*18 {
             return outputPort
-        } else if euclidianDistanceSquared(inputPorts[0].center, b: location) < 400 {
+        } else if euclidianDistanceSquared(inputPorts[0].center, b: location) < 18*18 {
             // We should give back an input port. If we have less than two that are connected then we return
             // one of them. Otherwise, we make a new one
             for input in inputPorts {
@@ -487,9 +487,9 @@ class MultiplierView: MultiInputOutputConstraintView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    let inputSize: CGFloat = 40.0
-    let outputSize: CGFloat = 15.0
-    let outputOverhang: CGFloat = 4.0
+    let inputSize: CGFloat = 32.0
+    let outputSize: CGFloat = 16.0
+    let outputOverhang: CGFloat = 7.0
     override func layoutWithConnectorPositions(positions: [Connector: CGPoint]) {
         self.sizeToFit()
         
@@ -549,9 +549,9 @@ class AdderView: MultiInputOutputConstraintView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    let inputSize: CGFloat = 40.0
+    let inputSize: CGFloat = 35.0
     let outputSize: CGFloat = 18.0
-    let outputOverhang: CGFloat = 0.0
+    let outputOverhang: CGFloat = 3.0
     override func layoutWithConnectorPositions(positions: [Connector: CGPoint]) {
         self.sizeToFit()
         
