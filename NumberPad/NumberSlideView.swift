@@ -19,9 +19,9 @@ class ScaleButton: UIButton {
     override var selected: Bool {
         didSet {
             if self.selected {
-                self.backgroundColor = UIColor.grayColor()
+                self.backgroundColor = UIColor.textColor()
             } else {
-                self.backgroundColor = UIColor.lightGrayColor()
+                self.backgroundColor = UIColor.selectedBackgroundColor()
             }
         }
     }
@@ -87,9 +87,9 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
     let scrollingContentContainer = UIView()
     let centerMarker = UIView()
     func setup() {
-        self.backgroundColor = UIColor(white: 0.45, alpha: 1.0)
+        self.backgroundColor = UIColor.selectedBackgroundColor()
         centerMarker.translatesAutoresizingMaskIntoConstraints = false
-        centerMarker.backgroundColor = UIColor.redColor()
+        centerMarker.backgroundColor = UIColor.textColor()
         self.addSubview(centerMarker)
         
         scrollView.translatesAutoresizingMaskIntoConstraints = false
@@ -223,6 +223,7 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
         newLabel.font = UIFont.systemFontOfSize(22)
         newLabel.sizeToFit()
         newLabel.center = CGPointMake(centerX, CGRectGetMidY(scrollingContentContainer.bounds))
+        newLabel.textColor = UIColor.selectedTextColor()
         scrollingContentContainer.addSubview(newLabel)
         return newLabel
     }
@@ -308,7 +309,7 @@ class NumberLabel: UILabel {
         self.number = number
         super.init(frame: CGRectZero)
         self.text = number.description
-        self.textColor = UIColor.whiteColor()
+        self.textColor = UIColor.selectedTextColor()
     }
 
     required init(coder aDecoder: NSCoder) {
