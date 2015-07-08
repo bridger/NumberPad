@@ -254,6 +254,16 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             }
         }
     }
+    // This is a conviencence for unhighlighting a connector port that was possibly part of a drag. We only
+    // want to do this if it isn't the permanently selected connector. Also, this accepts the parameters as
+    // optionals for convenience.
+    func unhighlightConnectorPortIfNotSelected(constraintView: ConstraintView?, connectorPort: ConnectorPort?) {
+        if let constraintView = constraintView, connectorPort = connectorPort {
+            if selectedConnectorPort?.ConnectorPort !== connectorPort {
+                constraintView.setConnectorPort(connectorPort, isHighlighted: false)
+            }
+        }
+    }
     
     func removeConstraintView(constraintView: ConstraintView) {
         if let index = constraintViews.indexOf(constraintView) {
@@ -361,6 +371,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         var connectorLabel: (ConnectorLabel: ConnectorLabel, Offset: CGPoint)?
         var constraintView: (ConstraintView: ConstraintView, Offset: CGPoint, ConnectorPort: ConnectorPort?)?
         var drawConnectionLine: CAShapeLayer?
+        var highlightedConnectorPort: (ConstraintView: ConstraintView, ConnectorPort: ConnectorPort)?
         
         let currentStroke = Stroke()
         
@@ -653,6 +664,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 if let dragLine = touchInfo.drawConnectionLine {
                     dragLine.removeFromSuperlayer()
                 }
+                unhighlightConnectorPortIfNotSelected(touchInfo.constraintView?.ConstraintView, connectorPort: touchInfo.constraintView?.ConnectorPort)
+                unhighlightConnectorPortIfNotSelected(touchInfo.highlightedConnectorPort?.ConstraintView, connectorPort: touchInfo.highlightedConnectorPort?.ConnectorPort)
             case .Drag:
                 if let (pickedUpView, _) = touchInfo.pickedUpView() {
                     setViewPickedUp(pickedUpView, pickedUp: false)
@@ -767,13 +780,19 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         if let oldDragLine = touchInfo.drawConnectionLine {
             oldDragLine.removeFromSuperlayer()
         }
+        unhighlightConnectorPortIfNotSelected(touchInfo.highlightedConnectorPort?.ConstraintView, connectorPort: touchInfo.highlightedConnectorPort?.ConnectorPort)
         
         var dragLine: CAShapeLayer!
         if let (connectorLabel, _) = touchInfo.connectorLabel {
-            let targetPort = connectorPortAtLocation(point)?.ConnectorPort
+            let targetConstraint = connectorPortAtLocation(point)
             let labelPoint = connectorLabel.center
             let dependent = lastInformantForConnector(connectorLabel.connector)?.WasDependent ?? false
-            dragLine = createConnectionLayer(labelPoint, endPoint: point, color: targetPort?.color, isDependent: dependent, drawArrow: false)
+            dragLine = createConnectionLayer(labelPoint, endPoint: point, color: targetConstraint?.ConnectorPort.color, isDependent: dependent, drawArrow: false)
+            
+            touchInfo.highlightedConnectorPort = targetConstraint
+            if let (constraintView, connectorPort) = targetConstraint {
+                constraintView.setConnectorPort(connectorPort, isHighlighted: true)
+            }
             
         } else if let (constraintView, _, connectorPort) = touchInfo.constraintView {
             let startPoint = self.scrollView.convertPoint(connectorPort!.center, fromView: constraintView)
@@ -782,8 +801,16 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             if let targetConnector = connectorLabelAtPoint(point) {
                 endPoint = targetConnector.center
                 dependent = lastInformantForConnector(targetConnector.connector)?.WasDependent ?? false
+                touchInfo.highlightedConnectorPort = nil
+            } else {
+                let targetConstraint = connectorPortAtLocation(point)
+                touchInfo.highlightedConnectorPort = targetConstraint
+                if let (constraintView, connectorPort) = targetConstraint {
+                    constraintView.setConnectorPort(connectorPort, isHighlighted: true)
+                }
             }
             dragLine = createConnectionLayer(startPoint, endPoint: endPoint, color: connectorPort!.color, isDependent: dependent, drawArrow: false)
+            constraintView.setConnectorPort(connectorPort!, isHighlighted: true)
             
         } else {
             fatalError("A touchInfo was classified as MakeConnection, but didn't have a connectorLabel or connectorPort.")
@@ -800,6 +827,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         if let oldDragLine = touchInfo.drawConnectionLine {
             oldDragLine.removeFromSuperlayer()
         }
+        unhighlightConnectorPortIfNotSelected(touchInfo.constraintView?.ConstraintView, connectorPort: touchInfo.constraintView?.ConnectorPort)
+        unhighlightConnectorPortIfNotSelected(touchInfo.highlightedConnectorPort?.ConstraintView, connectorPort: touchInfo.highlightedConnectorPort?.ConnectorPort)
         
         var connectionMade = false
         
