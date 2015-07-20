@@ -27,7 +27,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
         connectorLabelInitialize()
     }
     
-    required init(coder aDecoder: NSCoder) {
+    required init?(coder aDecoder: NSCoder) {
         self.connector = Connector()
         super.init(coder: aDecoder)
         connectorLabelInitialize()

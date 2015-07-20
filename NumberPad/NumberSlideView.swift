@@ -9,8 +9,8 @@
 import UIKit
 
 public protocol NumberSlideViewDelegate: NSObjectProtocol {
-    func numberSlideView(NumberSlideView, didSelectNewValue newValue: NSDecimalNumber, scale: Int16)
-    func numberSlideView(NumberSlideView, didSelectNewScale scale: Int16)
+    func numberSlideView(numberSlideView: NumberSlideView, didSelectNewValue newValue: NSDecimalNumber, scale: Int16)
+    func numberSlideView(numberSlideView: NumberSlideView, didSelectNewScale scale: Int16)
 }
 
 class ScaleButton: UIButton {
@@ -78,7 +78,7 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
         setup()
     }
     
-    public required init(coder aDecoder: NSCoder) {
+    public required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         setup()
     }
