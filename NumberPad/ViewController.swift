@@ -47,7 +47,7 @@ class Stroke {
 
 class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlideViewDelegate, FTPenManagerDelegate, FTTouchClassificationsChangedDelegate {
     
-    required init(coder aDecoder: NSCoder) {
+    required init?(coder aDecoder: NSCoder) {
         self.digitClassifier = DTWDigitClassifier()
         super.init(coder: aDecoder)
     }
@@ -1106,14 +1106,14 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         }
     }
     
-    func numberSlideView(NumberSlideView, didSelectNewValue newValue: NSDecimalNumber, scale: Int16) {
+    func numberSlideView(_: NumberSlideView, didSelectNewValue newValue: NSDecimalNumber, scale: Int16) {
         if let selectedConnectorLabel = self.selectedConnectorLabel {
             selectedConnectorLabel.scale = scale
             self.updateDisplay([selectedConnectorLabel.connector : newValue.doubleValue], needsSolving: true, selectNewConnectorLabel: false)
         }
     }
     
-    func numberSlideView(NumberSlideView, didSelectNewScale scale: Int16) {
+    func numberSlideView(_: NumberSlideView, didSelectNewScale scale: Int16) {
         if let selectedConnectorLabel = self.selectedConnectorLabel {
             selectedConnectorLabel.scale = scale
             selectedConnectorLabel.displayValue(lastValueForConnector(selectedConnectorLabel.connector))
