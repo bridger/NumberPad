@@ -203,7 +203,7 @@ public class DTWDigitClassifier {
     }
     
     public class func jsonLibraryFromFile(path: String) -> [String: JSONCompatibleLibrary]? {
-        let filename = path.lastPathComponent
+        let filename = NSURL(fileURLWithPath: path).lastPathComponent
         if let data = NSData(contentsOfFile: path) {
             do {
                 let json: AnyObject = try NSJSONSerialization.JSONObjectWithData(data, options: [])

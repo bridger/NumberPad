@@ -9,43 +9,7 @@
 import UIKit
 import DigitRecognizerSDK
 
-class Stroke {
-    var points: [CGPoint] = []
-    var layer: CAShapeLayer
-    
-    init(){
-        layer = CAShapeLayer()
-        layer.strokeColor = UIColor.textColor().CGColor
-        layer.lineWidth = 2
-        layer.fillColor = nil
-    }
-    
-    var layerNeedsUpdate = false
-    func addPoint(point: CGPoint)
-    {
-        points.append(point)
-        layerNeedsUpdate = true
-    }
-    
-    func updateLayer() {
-        if layerNeedsUpdate {
-            let path = CGPathCreateMutable()
-            for (index, point) in points.enumerate() {
-                if index == 0 {
-                    CGPathMoveToPoint(path, nil, point.x, point.y)
-                } else {
-                    CGPathAddLineToPoint(path, nil, point.x, point.y)
-                }
-            }
-            layer.path = path;
-            
-            layerNeedsUpdate = false
-        }
-    }
-    
-}
-
-class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlideViewDelegate, FTPenManagerDelegate, FTTouchClassificationsChangedDelegate {
+class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlideViewDelegate, FTPenManagerDelegate, FTTouchClassificationsChangedDelegate, NameCanvasDelegate, UIViewControllerTransitioningDelegate {
     
     required init?(coder aDecoder: NSCoder) {
         self.digitClassifier = DTWDigitClassifier()
@@ -491,9 +455,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 if touchInfo.classification != nil {
                     updateGestureForTouch(touchInfo)
                 }
-                
-            } else {
-                print("Unable to find info for touchMoved ID \(touchID)")
             }
         }
     }
@@ -533,7 +494,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                                 if self.selectedConnectorLabel != connectorLabel {
                                     self.selectedConnectorLabel = connectorLabel
                                 } else {
-                                    self.selectedConnectorLabel = nil
+                                    showNameCanvas()
                                 }
                             } else {
                                 // We delay this by a bit, so that the selection doesn't happen if a double-tap completes and the connector is deleted
@@ -542,7 +503,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                                         if self.selectedConnectorLabel != connectorLabel {
                                             self.selectedConnectorLabel = connectorLabel
                                         } else {
-                                            self.selectedConnectorLabel = nil
+                                            self.showNameCanvas()
                                         }
                                     }
                                 }
@@ -1457,6 +1418,52 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 toy.center.x = CGFloat(xPosition)
             }
         }
+    }
+    
+    var nameCanvas: NameCanvasViewController?
+    
+    func showNameCanvas() {
+        let canvasViewController = NameCanvasViewController()
+        self.nameCanvas = canvasViewController
+        canvasViewController.delegate = self;
+        
+        canvasViewController.transitioningDelegate = self
+        canvasViewController.modalPresentationStyle = .Custom
+        
+        self.presentViewController(canvasViewController, animated: true, completion: nil)
+    }
+    
+    func nameCanvasViewControllerDidFinish(nameCanvasViewController: NameCanvasViewController) {
+        guard let canvasViewController = self.nameCanvas where canvasViewController == nameCanvasViewController else {
+            return
+        }
+        
+        if let selectedConnectorLabel = self.selectedConnectorLabel {
+            let scale = UIScreen.mainScreen().scale
+            let height = selectedConnectorLabel.valueLabel.frame.size.height
+            
+            if let nameImage = canvasViewController.renderedImage(height, scale: scale, color: UIColor.textColor().CGColor),
+                let selectedNameImage = canvasViewController.renderedImage(height, scale: scale, color: UIColor.selectedTextColor().CGColor) {
+                    
+                    selectedConnectorLabel.nameImages = (image: nameImage, selectedImage: selectedNameImage)
+            } else {
+                selectedConnectorLabel.nameImages = nil
+            }
+        }
+        
+        self.dismissViewControllerAnimated(true, completion: nil)
+    }
+    
+    
+    func animationControllerForPresentedController(presented: UIViewController, presentingController presenting: UIViewController, sourceController source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        
+        let animator = NameCanvasAnimator()
+        animator.presenting = true
+        return animator
+    }
+    
+    func animationControllerForDismissedController(dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        return NameCanvasAnimator()
     }
 }
 

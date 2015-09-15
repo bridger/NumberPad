@@ -40,6 +40,8 @@
 		AE5554F51A5CBD25007DCF1D /* StrokeGestureRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEDF1A3CEB3A002C7B08 /* StrokeGestureRecognizer.swift */; };
 		AE5554F91A5CE08C007DCF1D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AE5554F71A5CE08C007DCF1D /* Main.storyboard */; };
 		AE5554FC1A5CE0A5007DCF1D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AE5554FA1A5CE0A5007DCF1D /* Main.storyboard */; };
+		AE57BB4F1B5C8BC100600F50 /* NameCanvasViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE57BB4E1B5C8BC100600F50 /* NameCanvasViewController.swift */; };
+		AE57BB511B5CA12D00600F50 /* Stroke.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE57BB501B5CA12D00600F50 /* Stroke.swift */; };
 		AE890D0D1A65AFAE00E604C4 /* Launch Screen.xib in Resources */ = {isa = PBXBuildFile; fileRef = AE890D0B1A65AFAE00E604C4 /* Launch Screen.xib */; };
 		AE890D0F1A68970800E604C4 /* CGPoint+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE890D0E1A68970800E604C4 /* CGPoint+Extensions.swift */; };
 		AE890D111A68AB5B00E604C4 /* VisualizeCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE890D101A68AB5B00E604C4 /* VisualizeCollectionViewController.swift */; };
@@ -181,6 +183,8 @@
 		AE5554D41A5CBBF7007DCF1D /* DigitRecognizerSDKTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DigitRecognizerSDKTests.swift; sourceTree = "<group>"; };
 		AE5554F81A5CE08C007DCF1D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		AE5554FB1A5CE0A5007DCF1D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		AE57BB4E1B5C8BC100600F50 /* NameCanvasViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NameCanvasViewController.swift; sourceTree = "<group>"; };
+		AE57BB501B5CA12D00600F50 /* Stroke.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stroke.swift; sourceTree = "<group>"; };
 		AE890D0C1A65AFAE00E604C4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = "Base.lproj/Launch Screen.xib"; sourceTree = "<group>"; };
 		AE890D0E1A68970800E604C4 /* CGPoint+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGPoint+Extensions.swift"; sourceTree = "<group>"; };
 		AE890D101A68AB5B00E604C4 /* VisualizeCollectionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VisualizeCollectionViewController.swift; sourceTree = "<group>"; };
@@ -528,7 +532,9 @@
 				AE0EF44E1B40EE95000DFFE2 /* football@2x.png */,
 				AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */,
 				AEC9EEC11A3CDC4A002C7B08 /* ViewController.swift */,
+				AE57BB501B5CA12D00600F50 /* Stroke.swift */,
 				AE064B6A1A64679200A10381 /* Constraints.swift */,
+				AE57BB4E1B5C8BC100600F50 /* NameCanvasViewController.swift */,
 				AEA8E8771A871B4E0050344B /* MathML.swift */,
 				AE064B6D1A646A6300A10381 /* ConstraintViews.swift */,
 				AEC033251B4B7A0400E72EE3 /* ArrowPath.swift */,
@@ -846,6 +852,7 @@
 				AEA8E8631A86C63C0050344B /* _DDFunctionEvaluator.m in Sources */,
 				AEA8E84C1A86C5A30050344B /* DDEnumerator.m in Sources */,
 				AEA8E86F1A86C6B60050344B /* _DDNumberExpression.m in Sources */,
+				AE57BB4F1B5C8BC100600F50 /* NameCanvasViewController.swift in Sources */,
 				AEC9EEC21A3CDC4A002C7B08 /* ViewController.swift in Sources */,
 				AEA8E8401A86C55E0050344B /* DDMathTokenizer.m in Sources */,
 				AEA8E86E1A86C6B60050344B /* _DDFunctionExpression.m in Sources */,
@@ -867,6 +874,7 @@
 				AE064B6E1A646A6300A10381 /* ConstraintViews.swift in Sources */,
 				AEA8E83F1A86C55E0050344B /* DDMathTokenInterpreter.m in Sources */,
 				AEA8E8761A86C6C60050344B /* DDExpressionRewriter.m in Sources */,
+				AE57BB511B5CA12D00600F50 /* Stroke.swift in Sources */,
 				AEA8E8781A871B4E0050344B /* MathML.swift in Sources */,
 				AEA8E8341A86C52D0050344B /* DDMathOperatorSet.m in Sources */,
 				AE1CA0761A8C652A00CC1FDA /* VisualFormat.swift in Sources */,
@@ -1134,6 +1142,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/NumberPad",
@@ -1154,6 +1163,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/NumberPad",
