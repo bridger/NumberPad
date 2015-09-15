@@ -14,12 +14,19 @@ import WebKit
 
 class ConnectorLabel: UIView, WKScriptMessageHandler {
     let valueLabel: UILabel = UILabel()
+    let nameAndValueView = UIView()
+    var nameView: UIImageView?
     var scale: Int16 = -1
     let connector: Connector
     var isPercent: Bool = false
     var equationView: WKWebView?
     var equationViewSize: CGSize?
     var name: String?
+    var nameImages: (image: UIImage, selectedImage: UIImage)? {
+        didSet {
+            updateNameView()
+        }
+    }
 
     init(connector: Connector) {
         self.connector = connector
@@ -35,7 +42,8 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
     
     let borderWidth: CGFloat = 2
     private func connectorLabelInitialize() {
-        self.addSubview(self.valueLabel)
+        self.addSubview(self.nameAndValueView)
+        self.nameAndValueView.addSubview(self.valueLabel)
         self.valueLabel.font = UIFont.boldSystemFontOfSize(18)
         self.layer.borderWidth = borderWidth
         self.layer.cornerRadius = 12
@@ -125,6 +133,9 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
                 self.backgroundColor = UIColor.backgroundColor()
                 self.valueLabel.textColor = UIColor.textColor()
             }
+            if oldValue != isSelected {
+                updateNameView()
+            }
         }
     }
     
@@ -175,6 +186,27 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
         return resizeAndLayout()
     }
     
+    func updateNameView() {
+        if self.nameView == nil && self.nameImages != nil {
+            let imageView = UIImageView()
+            self.nameView = imageView
+            self.nameAndValueView.addSubview(imageView)
+        }
+        if let nameView = self.nameView where self.nameImages == nil {
+            nameView.removeFromSuperview()
+            self.nameView = nil
+        }
+        
+        if let nameView = nameView, let (image, selectedImage) = self.nameImages {
+            if self.isSelected {
+                nameView.image = selectedImage
+            } else {
+                nameView.image = image
+            }
+        }
+        resizeAndLayout()
+    }
+    
     func resizeAndLayout() -> Bool {
         let center = self.center
         let size = self.bounds.size
@@ -188,8 +220,26 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
     
     override func sizeToFit() {
         self.valueLabel.sizeToFit()
-        let valueLabelSize = self.valueLabel.frame.size
-        var newSize = valueLabelSize
+        let nameAndValueSize: CGSize
+        if let nameView = self.nameView {
+            nameView.sizeToFit()
+            
+            let valueSize = self.valueLabel.frame.size
+            let nameSize = nameView.frame.size
+            nameAndValueSize = CGSizeMake(valueSize.width + nameSize.width,
+                max(valueSize.height, nameSize.height))
+            
+            // Lay out |[nameView][valueLabel]|
+            self.nameAndValueView.frame.size = nameAndValueSize
+            nameView.frame.origin = CGPointZero
+            valueLabel.frame.origin = CGPointMake(nameSize.width, 0)
+        } else {
+            nameAndValueSize = self.valueLabel.frame.size
+            self.nameAndValueView.frame.size = nameAndValueSize
+            self.valueLabel.frame.origin = CGPointZero
+        }
+        
+        var newSize = nameAndValueSize
         
         let verticalMargin: CGFloat = 5.0 + borderWidth
         let horizontalMargin: CGFloat = 5.0 + borderWidth
@@ -199,14 +249,14 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
             newSize.width = max(newSize.width, equationSize.width)
             newSize.height += equationSpace + equationSize.height
         }
-
+        
         newSize.width += horizontalMargin * 2
         newSize.height += verticalMargin * 2
         
-        self.valueLabel.center = CGPointMake(newSize.width / 2, verticalMargin + valueLabelSize.height / 2)
+        self.nameAndValueView.center = CGPointMake(newSize.width / 2, verticalMargin + nameAndValueSize.height / 2)
         if let equationView = self.equationView {
             equationView.center = CGPointMake(newSize.width / 2,
-                verticalMargin + valueLabelSize.height + equationSpace + equationView.frame.size.height / 2)
+                verticalMargin + nameAndValueSize.height + equationSpace + equationView.frame.size.height / 2)
         }
         
         self.frame.size = newSize

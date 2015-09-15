@@ -355,7 +355,7 @@ class Exponent : Constraint {
             if exponentValue != nil && exponentValue!.DoubleValue == 0 {
                 // If exponent is 0, then result is 1 (unless base is also zero)
                 if baseValue != nil && baseValue!.DoubleValue == 0 {
-                    print("Unable to determine result if exponent and base are 0", appendNewline: false)
+                    print("Unable to determine result if exponent and base are 0", terminator: "")
                 } else {
                     context.setConnectorValue(result, value: (1.0, constantExpression(1.0), exponentValue!.WasDependent, self))
                 }

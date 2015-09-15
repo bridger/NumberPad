@@ -26,7 +26,7 @@ func insertionIndexOf<T>(array: [T], elem: T, isOrderedBefore: (T, T) -> Bool) -
 }
 
 public struct SortedMinArray<Value: Comparable, Element> {
-    typealias ValueTuple = (value: Value, element: Element)
+    public typealias ValueTuple = (value: Value, element: Element)
     
     private var contents: [ValueTuple] = []
     let capacity: Int
@@ -70,7 +70,7 @@ public struct SortedMinArray<Value: Comparable, Element> {
 }
 
 extension SortedMinArray : SequenceType {
-    typealias Generator = IndexingGenerator<[ValueTuple]>
+    public typealias Generator = IndexingGenerator<[ValueTuple]>
     public func generate() -> Generator {
         return contents.generate()
     }
