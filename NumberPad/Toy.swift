@@ -37,7 +37,7 @@ class Toy : UIView {
     var activeGhosts: [UIView] = []
     var reuseGhosts: [UIView] = []
     
-    func createNewGhost() -> UIView {
+    func createNewGhost(percent: Double) -> UIView {
         let ghost: UIView
         if let oldGhost = reuseGhosts.popLast() {
             ghost = oldGhost
@@ -45,7 +45,8 @@ class Toy : UIView {
             ghost = UIImageView(image: self.image)
             ghost.sizeToFit()
         }
-        ghost.alpha = 0.2
+        let alpha = (1.0 - abs(percent)) * 0.35
+        ghost.alpha = CGFloat(alpha)
         
         activeGhosts.append(ghost)
         return ghost

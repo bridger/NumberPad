@@ -1268,20 +1268,21 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             }
         }
         
-        func findToyGhostValues(driverConnector: Connector) -> [[Connector: SimulationContext.ResolvedValue]] {
+        func findToyGhostValues(driverConnector: Connector) -> [Double: [Connector: SimulationContext.ResolvedValue]] {
             guard let driverConnectorLabel = self.connectorToLabel[driverConnector] else {
-                return []
+                return [:]
             }
             guard let initialDriverValue = self.lastSimulationValues?[driverConnector] else {
-                return []
+                return [:]
             }
             if initialDriverValue.WasDependent && self.selectedConnectorLabel?.connector != driverConnector {
                 // We don't run the simulation if the driver value was dependent on another selected connector
-                return []
+                return [:]
             }
             
-            var ghostContexts: [[Connector: SimulationContext.ResolvedValue]] = []
-            for offset in -5...5 {
+            var ghostContexts: [Double : [Connector: SimulationContext.ResolvedValue]] = [:]
+            let range = 5
+            for offset in -range...range {
                 if offset == 0 {
                     continue
                 }
@@ -1317,7 +1318,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                     }
                 }
                 
-                ghostContexts.append(simulationContext.connectorValues)
+                let percent = Double(offset) / Double(range)
+                ghostContexts[percent] = simulationContext.connectorValues
             }
             
             return ghostContexts
@@ -1376,7 +1378,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         }
     }
     
-    func updateToy(toy: Toy, lastSimulationValues: [Connector: SimulationContext.ResolvedValue], ghostSimulations: [[Connector: SimulationContext.ResolvedValue]]?, toyYZero: CGFloat) {
+    func updateToy(toy: Toy, lastSimulationValues: [Connector: SimulationContext.ResolvedValue], ghostSimulations: [Double : [Connector: SimulationContext.ResolvedValue]]?, toyYZero: CGFloat) {
         
         if let xPosition = lastSimulationValues[toy.xConnector]?.DoubleValue {
             toy.center.x = CGFloat(xPosition)
@@ -1391,11 +1393,11 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             return
         }
         
-        for ghostValues in ghostSimulations {
+        for (percent, ghostValues) in ghostSimulations {
             if let xPosition = ghostValues[toy.xConnector]?.DoubleValue,
                 let yPosition = ghostValues[toy.yConnector]?.DoubleValue {
                     
-                    let ghost = toy.createNewGhost()
+                    let ghost = toy.createNewGhost(percent)
                     self.scrollView.insertSubview(ghost, belowSubview: toy)
                     ghost.center.x = CGFloat(xPosition)
                     ghost.center.y = toyYZero - CGFloat(yPosition)
