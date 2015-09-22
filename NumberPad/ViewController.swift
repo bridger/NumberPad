@@ -1268,17 +1268,38 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             }
         }
         
-        func findToyGhostValues(driverConnector: Connector) -> [Double: [Connector: SimulationContext.ResolvedValue]] {
+        func findToyGhostValues(toy: Toy) -> [Double: [Connector: SimulationContext.ResolvedValue]] {
+            let driverConnector = toy.driverConnector
             guard let driverConnectorLabel = self.connectorToLabel[driverConnector] else {
                 return [:]
             }
             guard let initialDriverValue = self.lastSimulationValues?[driverConnector] else {
                 return [:]
             }
-            if initialDriverValue.WasDependent && self.selectedConnectorLabel?.connector != driverConnector {
+            if initialDriverValue.WasDependent || self.selectedConnectorLabel?.connector == driverConnector {
                 // We don't run the simulation if the driver value was dependent on another selected connector
+                // or if we are selected on the driver
                 return [:]
             }
+            let dependentConnectors = [toy.xConnector, toy.yConnector, toy.angleConnector]
+            
+            // Construct a list of all connectors in order of priority. It is okay to have duplicates
+            // First the selected connector
+            var allConnectors = [self.selectedConnectorLabel?.connector].flatMap({$0})
+            // Then the ones from the values map
+            allConnectors += values.map{ (connector, value) in
+                return connector
+            }
+            // Then the ones from the last context
+            allConnectors += self.connectorLabels.map{ connectorLabel in
+                return connectorLabel.connector
+            }
+            // Filter out any of the dependent connectors, to make sure they are last priority
+            allConnectors = allConnectors.filter({ connector -> Bool in
+                return !dependentConnectors.contains(connector)
+            })
+            allConnectors = allConnectors + dependentConnectors
+            
             
             var ghostContexts: [Double : [Connector: SimulationContext.ResolvedValue]] = [:]
             let range = 5
@@ -1296,25 +1317,14 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 // First the new value on the driver
                 simulationContext.setConnectorValue(driverConnector, value: (DoubleValue: offsetDriverValue, Expression: constantExpression(offsetDriverValue), WasDependent: false, Informant: nil))
                 
-                // Then the selected connector
-                if let selectedConnector = self.selectedConnectorLabel?.connector where selectedConnector != driverConnector {
-                    if let value = (values[selectedConnector] ?? lastSimulationValues?[selectedConnector]?.DoubleValue) {
-                        simulationContext.setConnectorValue(selectedConnector, value: (DoubleValue: value, Expression: constantExpression(value), WasDependent: true, Informant: nil))
+                // Go through all the connectors and fill in previous values until they are all resolved
+                for connector in allConnectors {
+                    if simulationContext.connectorValues[connector] != nil {
+                        // This connector has already been resolved
+                        continue
                     }
-                }
-                
-                // These are the first priority
-                for (connector, value) in values where connector != driverConnector {
-                    simulationContext.setConnectorValue(connector, value: (DoubleValue: value, Expression: constantExpression(value), WasDependent: false, Informant: nil))
-                }
-                
-                // Now just use the values from the last context until everything is figured out
-                for connectorLabel in self.connectorLabels {
-                    let connector = connectorLabel.connector
-                    if simulationContext.connectorValues[connector] == nil {
-                        if let lastValue = lastSimulationValues?[connector]?.DoubleValue {
-                            simulationContext.setConnectorValue(connector, value: (DoubleValue: lastValue, Expression: constantExpression(lastValue), WasDependent: false, Informant: nil))
-                        }
+                    if let value = (values[connector] ?? lastSimulationValues?[connector]?.DoubleValue) {
+                        simulationContext.setConnectorValue(connector, value: (DoubleValue: value, Expression: constantExpression(value), WasDependent: true, Informant: nil))
                     }
                 }
                 
@@ -1347,7 +1357,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
 
         if let lastSimulationValues = self.lastSimulationValues where ranSolver {
             for toy in self.toys {
-                let ghostSimulations = findToyGhostValues(toy.driverConnector)
+                let ghostSimulations = findToyGhostValues(toy)
                 self.updateToy(toy, lastSimulationValues: lastSimulationValues, ghostSimulations: ghostSimulations, toyYZero: self.view.bounds.height)
             }
             
@@ -1485,7 +1495,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         self.scrollView.addSubview(newToy)
         toys.append(newToy)
         
-        self.addConnectorLabel(timeLabel, topPriority: false, automaticallyConnect: false)
+        self.addConnectorLabel(timeLabel, topPriority: true, automaticallyConnect: false)
         self.selectConnectorLabelAndSetToValue(timeLabel, value: 1)
     }
     
