@@ -1141,7 +1141,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             self.needsRebuildConnectionLayers = true
         }
         
-        func runSolver(values: [Connector: Double]) {
+        func runSolver() {
             let lastSimulationValues = self.lastSimulationValues
             
             var connectorToSelect: ConnectorLabel?
@@ -1258,8 +1258,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 }
             }
             
-            self.updateToys(simulationContext.connectorValues, toyYZero: self.view.bounds.height)
-            
             self.lastSimulationValues = simulationContext.connectorValues
             self.needsSolving = false
             
@@ -1270,6 +1268,63 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             }
         }
         
+        func findToyGhostValues(driverConnector: Connector) -> [[Connector: SimulationContext.ResolvedValue]] {
+            guard let driverConnectorLabel = self.connectorToLabel[driverConnector] else {
+                return []
+            }
+            guard let initialDriverValue = self.lastSimulationValues?[driverConnector] else {
+                return []
+            }
+            if initialDriverValue.WasDependent && self.selectedConnectorLabel?.connector != driverConnector {
+                // We don't run the simulation if the driver value was dependent on another selected connector
+                return []
+            }
+            
+            var ghostContexts: [[Connector: SimulationContext.ResolvedValue]] = []
+            for offset in -5...5 {
+                if offset == 0 {
+                    continue
+                }
+                let valueOffset = Double(offset) * pow(10.0, Double(driverConnectorLabel.scale + 1))
+                let offsetDriverValue = initialDriverValue.DoubleValue + valueOffset
+                
+                // Set up the context
+                let simulationContext = SimulationContext(connectorResolvedCallback: { (_, _) in },
+                    connectorConflictCallback: { (_, _) in })
+                
+                // First the new value on the driver
+                simulationContext.setConnectorValue(driverConnector, value: (DoubleValue: offsetDriverValue, Expression: constantExpression(offsetDriverValue), WasDependent: false, Informant: nil))
+                
+                // Then the selected connector
+                if let selectedConnector = self.selectedConnectorLabel?.connector where selectedConnector != driverConnector {
+                    if let value = (values[selectedConnector] ?? lastSimulationValues?[selectedConnector]?.DoubleValue) {
+                        simulationContext.setConnectorValue(selectedConnector, value: (DoubleValue: value, Expression: constantExpression(value), WasDependent: true, Informant: nil))
+                    }
+                }
+                
+                // These are the first priority
+                for (connector, value) in values where connector != driverConnector {
+                    simulationContext.setConnectorValue(connector, value: (DoubleValue: value, Expression: constantExpression(value), WasDependent: false, Informant: nil))
+                }
+                
+                // Now just use the values from the last context until everything is figured out
+                for connectorLabel in self.connectorLabels {
+                    let connector = connectorLabel.connector
+                    if simulationContext.connectorValues[connector] == nil {
+                        if let lastValue = lastSimulationValues?[connector]?.DoubleValue {
+                            simulationContext.setConnectorValue(connector, value: (DoubleValue: lastValue, Expression: constantExpression(lastValue), WasDependent: false, Informant: nil))
+                        }
+                    }
+                }
+                
+                ghostContexts.append(simulationContext.connectorValues)
+            }
+            
+            return ghostContexts
+        }
+        
+        
+        
         var ranSolver = false
         while (self.needsLayout || self.needsSolving) {
             // First, we layout. This way, if solving generates a new connector then it will be pointed in a sane direction
@@ -1278,7 +1333,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 layoutConstraintViews()
             }
             if (self.needsSolving) {
-                runSolver(values)
+                runSolver()
                 ranSolver = true
             }
         }
@@ -1286,34 +1341,64 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         if (self.needsRebuildConnectionLayers) {
             rebuildAllConnectionLayers()
         }
+        
 
-        if ranSolver {
-            if let lastSimulationValues = self.lastSimulationValues {
-                
-                // We first make a map from value DDExpressions to the formatted value
-                var formattedValues: [DDExpression : String] = [:]
-                for label in self.connectorLabels {
-                    if let value = lastSimulationValues[label.connector] {
-                        if value.Expression.expressionType() == .Number {
-                            formattedValues[value.Expression] = label.name ?? label.valueLabel.text
+        if let lastSimulationValues = self.lastSimulationValues where ranSolver {
+            for toy in self.toys {
+                let ghostSimulations = findToyGhostValues(toy.driverConnector)
+                self.updateToy(toy, lastSimulationValues: lastSimulationValues, ghostSimulations: ghostSimulations, toyYZero: self.view.bounds.height)
+            }
+            
+            // We first make a map from value DDExpressions to the formatted value
+            var formattedValues: [DDExpression : String] = [:]
+            for label in self.connectorLabels {
+                if let value = lastSimulationValues[label.connector] {
+                    if value.Expression.expressionType() == .Number {
+                        formattedValues[value.Expression] = label.name ?? label.valueLabel.text
+                    }
+                }
+            }
+            
+            for label in self.connectorLabels {
+                var displayedEquation = false
+                if let value = lastSimulationValues[label.connector] {
+                    if value.Expression.expressionType() == .Function {
+                        if let mathML = mathMLForExpression(value.Expression, formattedValues: formattedValues) {
+                            label.displayEquation(mathML)
+                            displayedEquation = true
                         }
                     }
                 }
-                
-                for label in self.connectorLabels {
-                    var displayedEquation = false
-                    if let value = lastSimulationValues[label.connector] {
-                        if value.Expression.expressionType() == .Function {
-                            if let mathML = mathMLForExpression(value.Expression, formattedValues: formattedValues) {
-                                label.displayEquation(mathML)
-                                displayedEquation = true
-                            }
-                        }
-                    }
-                    if !displayedEquation {
-                        label.hideEquation()
-                    }
+                if !displayedEquation {
+                    label.hideEquation()
                 }
+            }
+        }
+    }
+    
+    func updateToy(toy: Toy, lastSimulationValues: [Connector: SimulationContext.ResolvedValue], ghostSimulations: [[Connector: SimulationContext.ResolvedValue]]?, toyYZero: CGFloat) {
+        
+        if let xPosition = lastSimulationValues[toy.xConnector]?.DoubleValue {
+            toy.center.x = CGFloat(xPosition)
+        }
+        if let yPosition = lastSimulationValues[toy.yConnector]?.DoubleValue {
+            toy.center.y = toyYZero - CGFloat(yPosition)
+        }
+        
+        // Update the ghosts
+        toy.removeAllGhosts()
+        guard let ghostSimulations = ghostSimulations else {
+            return
+        }
+        
+        for ghostValues in ghostSimulations {
+            if let xPosition = ghostValues[toy.xConnector]?.DoubleValue,
+                let yPosition = ghostValues[toy.yConnector]?.DoubleValue {
+                    
+                    let ghost = toy.createNewGhost()
+                    self.scrollView.insertSubview(ghost, belowSubview: toy)
+                    ghost.center.x = CGFloat(xPosition)
+                    ghost.center.y = toyYZero - CGFloat(yPosition)
             }
         }
     }
@@ -1335,7 +1420,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             self.updateScrollableSize()
             
             if let lastSimulationValues = self.lastSimulationValues {
-                self.updateToys(lastSimulationValues, toyYZero: size.height)
+                // TODO: Adjust the position of the toys by the difference in height
             }
         })
     }
@@ -1388,36 +1473,18 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         self.addConnectorLabel(xLabel, topPriority: false, automaticallyConnect: false)
         self.selectConnectorLabelAndSetToValue(xLabel, value: 200)
         
-        let newToy = Toy(image: UIImage(named: "football")!, xConnector: xConnector, yConnector: yConnector, angleConnector: angleConnector)
-        self.scrollView.addSubview(newToy)
-        toys.append(newToy)
-        
-        if let lastSimulationValues = lastSimulationValues {
-            updateToys(lastSimulationValues, toyYZero: self.view.bounds.height)
-        }
-        
         let timeConnector = Connector()
         let timeLabel = ConnectorLabel(connector: timeConnector)
         timeLabel.name = "time"
         timeLabel.sizeToFit()
         timeLabel.center = CGPointMake(200, 40)
         
+        let newToy = Toy(image: UIImage(named: "football")!, xConnector: xConnector, yConnector: yConnector, angleConnector: angleConnector, driverConnector: timeConnector)
+        self.scrollView.addSubview(newToy)
+        toys.append(newToy)
+        
         self.addConnectorLabel(timeLabel, topPriority: false, automaticallyConnect: false)
         self.selectConnectorLabelAndSetToValue(timeLabel, value: 1)
-    }
-
-    func updateToys(lastSimulationValues: [Connector: SimulationContext.ResolvedValue], toyYZero: CGFloat) {
-        for toy in self.toys {
-            if let xPosition = lastSimulationValues[toy.xConnector]?.DoubleValue {
-                toy.center.x = CGFloat(xPosition)
-            }
-            if let yPosition = lastSimulationValues[toy.yConnector]?.DoubleValue {
-                toy.center.y = toyYZero - CGFloat(yPosition)
-            }
-            if let xPosition = lastSimulationValues[toy.xConnector]?.DoubleValue {
-                toy.center.x = CGFloat(xPosition)
-            }
-        }
     }
     
     var nameCanvas: NameCanvasViewController?

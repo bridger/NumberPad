@@ -11,11 +11,15 @@ class Toy : UIView {
     let xConnector: Connector
     let yConnector: Connector
     let angleConnector: Connector
+    let driverConnector: Connector
+    let image: UIImage
     
-    init(image: UIImage, xConnector: Connector, yConnector: Connector, angleConnector: Connector) {
+    init(image: UIImage, xConnector: Connector, yConnector: Connector, angleConnector: Connector, driverConnector: Connector) {
         self.xConnector = xConnector
         self.yConnector = yConnector
         self.angleConnector = angleConnector
+        self.driverConnector = driverConnector
+        self.image = image
         
         super.init(frame: CGRectZero)
         
@@ -28,5 +32,30 @@ class Toy : UIView {
 
     required init(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    var activeGhosts: [UIView] = []
+    var reuseGhosts: [UIView] = []
+    
+    func createNewGhost() -> UIView {
+        let ghost: UIView
+        if let oldGhost = reuseGhosts.popLast() {
+            ghost = oldGhost
+        } else {
+            ghost = UIImageView(image: self.image)
+            ghost.sizeToFit()
+        }
+        ghost.alpha = 0.2
+        
+        activeGhosts.append(ghost)
+        return ghost
+    }
+    
+    func removeAllGhosts() {
+        for ghost in activeGhosts {
+            ghost.removeFromSuperview()
+            reuseGhosts.append(ghost)
+        }
+        activeGhosts = []
     }
 }
