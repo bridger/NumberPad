@@ -11,6 +11,7 @@ import Foundation
 class SimulationContext {
     typealias ResolvedValue = (DoubleValue: Double, Expression: DDExpression, WasDependent: Bool, Informant: Constraint?)
     var connectorValues: [Connector: ResolvedValue] = [:]
+    var rewriteExpressions = true
     
     let connectorResolvedCallback: (Connector, ResolvedValue) -> Void
     let connectorConflictCallback: (Connector, ResolvedValue) -> Void
@@ -25,10 +26,12 @@ class SimulationContext {
             }
         } else {
             var rewrittenValue = value
-            if let rewrittenExpression = DDExpressionRewriter.defaultRewriter().expressionByRewritingExpression(value.Expression, withEvaluator: mathEvaluator) {
-                rewrittenValue = (value.DoubleValue, rewrittenExpression, value.WasDependent, value.Informant)
-            } else {
-                print("Error rewriting expression \(value.Expression)")
+            if rewriteExpressions {
+                if let rewrittenExpression = DDExpressionRewriter.defaultRewriter().expressionByRewritingExpression(value.Expression, withEvaluator: mathEvaluator) {
+                    rewrittenValue = (value.DoubleValue, rewrittenExpression, value.WasDependent, value.Informant)
+                } else {
+                    print("Error rewriting expression \(value.Expression)")
+                }
             }
             connectorValues[connector] = rewrittenValue
             connectorResolvedCallback(connector, rewrittenValue)

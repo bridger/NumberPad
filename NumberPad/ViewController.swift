@@ -1313,6 +1313,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 // Set up the context
                 let simulationContext = SimulationContext(connectorResolvedCallback: { (_, _) in },
                     connectorConflictCallback: { (_, _) in })
+                simulationContext.rewriteExpressions = false
                 
                 // First the new value on the driver
                 simulationContext.setConnectorValue(driverConnector, value: (DoubleValue: offsetDriverValue, Expression: constantExpression(offsetDriverValue), WasDependent: false, Informant: nil))
@@ -1496,7 +1497,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         toys.append(newToy)
         
         self.addConnectorLabel(timeLabel, topPriority: true, automaticallyConnect: false)
-        self.selectConnectorLabelAndSetToValue(timeLabel, value: 1)
+        self.selectConnectorLabelAndSetToValue(timeLabel, value: 5)
     }
     
     var nameCanvas: NameCanvasViewController?
