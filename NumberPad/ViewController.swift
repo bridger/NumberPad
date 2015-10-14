@@ -1418,25 +1418,58 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
     var toys: [Toy] = []
     
     func createFootballToy() {
-        let xConnector = Connector()
-        let xLabel = ConnectorLabel(connector: xConnector)
-        xLabel.scale = 0
-        xLabel.name = "X"
-        xLabel.sizeToFit()
-        xLabel.center = CGPointMake(60, 120)
+//        let xConnector = Connector()
+//        let xLabel = ConnectorLabel(connector: xConnector)
+//        xLabel.scale = 0
+//        xLabel.name = "X"
+//        xLabel.sizeToFit()
+//        xLabel.center = CGPointMake(60, 120)
+//        
+//        let yConnector = Connector()
+//        let yLabel = ConnectorLabel(connector: yConnector)
+//        yLabel.scale = 0
+//        yLabel.name = "Y"
+//        yLabel.sizeToFit()
+//        yLabel.center = CGPointMake(60, 200)
+//        
+//        self.addConnectorLabel(yLabel, topPriority: false, automaticallyConnect: false)
+//        self.selectConnectorLabelAndSetToValue(yLabel, value: 350)
+//        
+//        self.addConnectorLabel(xLabel, topPriority: false, automaticallyConnect: false)
+//        self.selectConnectorLabelAndSetToValue(xLabel, value: 200)
+//        
+//        let timeConnector = Connector()
+//        let timeLabel = ConnectorLabel(connector: timeConnector)
+//        timeLabel.name = "time"
+//        timeLabel.sizeToFit()
+//        timeLabel.center = CGPointMake(200, 40)
+//        
+//        let newToy = MotionToy(image: UIImage(named: "football")!, xConnector: xConnector, yConnector: yConnector, driverConnector: timeConnector)
+//        self.scrollView.addSubview(newToy)
+//        toys.append(newToy)
+//        
+//        self.addConnectorLabel(timeLabel, topPriority: true, automaticallyConnect: false)
+//        self.selectConnectorLabelAndSetToValue(timeLabel, value: 5)
         
-        let yConnector = Connector()
-        let yLabel = ConnectorLabel(connector: yConnector)
-        yLabel.scale = 0
-        yLabel.name = "Y"
-        yLabel.sizeToFit()
-        yLabel.center = CGPointMake(60, 200)
         
-        self.addConnectorLabel(yLabel, topPriority: false, automaticallyConnect: false)
-        self.selectConnectorLabelAndSetToValue(yLabel, value: 350)
+        let diameterConnector = Connector()
+        let diameterLabel = ConnectorLabel(connector: diameterConnector)
+        diameterLabel.scale = 0
+        diameterLabel.name = "diameter"
+        diameterLabel.sizeToFit()
+        diameterLabel.center = CGPointMake(60, 120)
         
-        self.addConnectorLabel(xLabel, topPriority: false, automaticallyConnect: false)
-        self.selectConnectorLabelAndSetToValue(xLabel, value: 200)
+        let circumferenceConnector = Connector()
+        let circumferenceLabel = ConnectorLabel(connector: circumferenceConnector)
+        circumferenceLabel.scale = 0
+        circumferenceLabel.name = "circumference"
+        circumferenceLabel.sizeToFit()
+        circumferenceLabel.center = CGPointMake(60, 200)
+        
+        let initialDiameter: Double = 200
+        
+        self.addConnectorLabel(circumferenceLabel, topPriority: false, automaticallyConnect: false)
+        self.selectConnectorLabelAndSetToValue(circumferenceLabel, value: initialDiameter * M_PI_4)
         
         let timeConnector = Connector()
         let timeLabel = ConnectorLabel(connector: timeConnector)
@@ -1444,12 +1477,14 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         timeLabel.sizeToFit()
         timeLabel.center = CGPointMake(200, 40)
         
-        let newToy = MotionToy(image: UIImage(named: "football")!, xConnector: xConnector, yConnector: yConnector, driverConnector: timeConnector)
-        self.scrollView.addSubview(newToy)
+        let newToy = CirclesToy(diameterConnector: diameterConnector, circumferenceConnector: circumferenceConnector)
+        self.view.addSubview(newToy)
+        newToy.frame = self.view.bounds
+        newToy.autoresizingMask = [.FlexibleWidth, .FlexibleHeight]
         toys.append(newToy)
         
-        self.addConnectorLabel(timeLabel, topPriority: true, automaticallyConnect: false)
-        self.selectConnectorLabelAndSetToValue(timeLabel, value: 5)
+        self.addConnectorLabel(diameterLabel, topPriority: false, automaticallyConnect: false)
+        self.selectConnectorLabelAndSetToValue(diameterLabel, value: initialDiameter)
     }
     
     var nameCanvas: NameCanvasViewController?
