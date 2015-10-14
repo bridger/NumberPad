@@ -1268,20 +1268,20 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             }
         }
         
-        func findToyGhostValues(toy: Toy) -> [Double: [Connector: SimulationContext.ResolvedValue]] {
-            let driverConnector = toy.driverConnector
-            guard let driverConnectorLabel = self.connectorToLabel[driverConnector] else {
-                return [:]
+        func updateToyAndGhosts(toy: Toy, lastSimulationValues: [Connector: SimulationContext.ResolvedValue]) {
+            toy.update(lastSimulationValues)
+            
+            // Now, get the state needed to update the ghosts
+            
+            var inputConnectorStates: [Connector: ConnectorState] = [:]
+            for inputConnector in toy.inputConnectors() {
+                guard let inputConnectorLabel = self.connectorToLabel[inputConnector],
+                    let initialValue = lastSimulationValues[inputConnector] else {
+                        // Somehow this input connector isn't in our context. We've got to bail
+                    return
+                }
+                inputConnectorStates[inputConnector] = ConnectorState(Value: initialValue, Scale: inputConnectorLabel.scale)
             }
-            guard let initialDriverValue = self.lastSimulationValues?[driverConnector] else {
-                return [:]
-            }
-            if initialDriverValue.WasDependent || self.selectedConnectorLabel?.connector == driverConnector {
-                // We don't run the simulation if the driver value was dependent on another selected connector
-                // or if we are selected on the driver
-                return [:]
-            }
-            let dependentConnectors = [toy.xConnector, toy.yConnector, toy.angleConnector]
             
             // Construct a list of all connectors in order of priority. It is okay to have duplicates
             // First the selected connector
@@ -1294,46 +1294,40 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             allConnectors += self.connectorLabels.map{ connectorLabel in
                 return connectorLabel.connector
             }
-            // Filter out any of the dependent connectors, to make sure they are last priority
+            // Filter out any of the output connectors, to make sure they are last priority
+            let outputConnectors = toy.outputConnectors()
             allConnectors = allConnectors.filter({ connector -> Bool in
-                return !dependentConnectors.contains(connector)
+                return !outputConnectors.contains(connector)
             })
-            allConnectors = allConnectors + dependentConnectors
+            allConnectors = allConnectors + outputConnectors
             
             
-            var ghostContexts: [Double : [Connector: SimulationContext.ResolvedValue]] = [:]
-            let range = 5
-            for offset in -range...range {
-                if offset == 0 {
-                    continue
-                }
-                let valueOffset = Double(offset) * pow(10.0, Double(driverConnectorLabel.scale + 1))
-                let offsetDriverValue = initialDriverValue.DoubleValue + valueOffset
+            toy.updateGhosts(inputConnectorStates) { (inputValues: [Connector: Double]) -> [Connector : SimulationContext.ResolvedValue] in
+                // The toy calls this each time it wants to know what the outputs end up being for a given input
                 
                 // Set up the context
                 let simulationContext = SimulationContext(connectorResolvedCallback: { (_, _) in },
                     connectorConflictCallback: { (_, _) in })
                 simulationContext.rewriteExpressions = false
                 
-                // First the new value on the driver
-                simulationContext.setConnectorValue(driverConnector, value: (DoubleValue: offsetDriverValue, Expression: constantExpression(offsetDriverValue), WasDependent: false, Informant: nil))
+                // First the new values on the inputs
+                for (inputConnector, inputValue) in inputValues {
+                    simulationContext.setConnectorValue(inputConnector, value: (DoubleValue: inputValue, Expression: constantExpression(inputValue), WasDependent: false, Informant: nil))
+                }
                 
-                // Go through all the connectors and fill in previous values until they are all resolved
+                // Go through all the connectors in order and fill in previous values until they are all resolved
                 for connector in allConnectors {
                     if simulationContext.connectorValues[connector] != nil {
                         // This connector has already been resolved
                         continue
                     }
-                    if let value = (values[connector] ?? lastSimulationValues?[connector]?.DoubleValue) {
+                    if let value = (values[connector] ?? lastSimulationValues[connector]?.DoubleValue) {
                         simulationContext.setConnectorValue(connector, value: (DoubleValue: value, Expression: constantExpression(value), WasDependent: true, Informant: nil))
                     }
                 }
                 
-                let percent = Double(offset) / Double(range)
-                ghostContexts[percent] = simulationContext.connectorValues
+                return simulationContext.connectorValues
             }
-            
-            return ghostContexts
         }
         
         
@@ -1358,8 +1352,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
 
         if let lastSimulationValues = self.lastSimulationValues where ranSolver {
             for toy in self.toys {
-                let ghostSimulations = findToyGhostValues(toy)
-                self.updateToy(toy, lastSimulationValues: lastSimulationValues, ghostSimulations: ghostSimulations, toyYZero: self.view.bounds.height)
+                updateToyAndGhosts(toy, lastSimulationValues: lastSimulationValues)
             }
             
             // We first make a map from value DDExpressions to the formatted value
@@ -1389,33 +1382,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         }
     }
     
-    func updateToy(toy: Toy, lastSimulationValues: [Connector: SimulationContext.ResolvedValue], ghostSimulations: [Double : [Connector: SimulationContext.ResolvedValue]]?, toyYZero: CGFloat) {
-        
-        if let xPosition = lastSimulationValues[toy.xConnector]?.DoubleValue {
-            toy.center.x = CGFloat(xPosition)
-        }
-        if let yPosition = lastSimulationValues[toy.yConnector]?.DoubleValue {
-            toy.center.y = toyYZero - CGFloat(yPosition)
-        }
-        
-        // Update the ghosts
-        toy.removeAllGhosts()
-        guard let ghostSimulations = ghostSimulations else {
-            return
-        }
-        
-        for (percent, ghostValues) in ghostSimulations {
-            if let xPosition = ghostValues[toy.xConnector]?.DoubleValue,
-                let yPosition = ghostValues[toy.yConnector]?.DoubleValue {
-                    
-                    let ghost = toy.createNewGhost(percent)
-                    self.scrollView.insertSubview(ghost, belowSubview: toy)
-                    ghost.center.x = CGFloat(xPosition)
-                    ghost.center.y = toyYZero - CGFloat(yPosition)
-            }
-        }
-    }
-    
     func createConnectionLayer(startPoint: CGPoint, endPoint: CGPoint, color: UIColor?, isDependent: Bool, drawArrow: Bool) -> CAShapeLayer {
         let dragLine = CAShapeLayer()
         dragLine.lineWidth = 3
@@ -1431,10 +1397,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         super.viewWillTransitionToSize(size, withTransitionCoordinator: coordinator)
         coordinator.animateAlongsideTransition(nil, completion: { context in
             self.updateScrollableSize()
-            
-            if let lastSimulationValues = self.lastSimulationValues {
-                // TODO: Adjust the position of the toys by the difference in height
-            }
         })
     }
     
@@ -1470,16 +1432,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         yLabel.sizeToFit()
         yLabel.center = CGPointMake(60, 200)
         
-        let angleConnector = Connector()
-        let angleLabel = ConnectorLabel(connector: angleConnector)
-        angleLabel.scale = -2
-        angleLabel.name = "Ω"
-        angleLabel.sizeToFit()
-        angleLabel.center = CGPointMake(60, 280)
-        
-        self.addConnectorLabel(angleLabel, topPriority: false, automaticallyConnect: false)
-        self.selectConnectorLabelAndSetToValue(angleLabel, value: 0)
-        
         self.addConnectorLabel(yLabel, topPriority: false, automaticallyConnect: false)
         self.selectConnectorLabelAndSetToValue(yLabel, value: 350)
         
@@ -1492,7 +1444,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         timeLabel.sizeToFit()
         timeLabel.center = CGPointMake(200, 40)
         
-        let newToy = Toy(image: UIImage(named: "football")!, xConnector: xConnector, yConnector: yConnector, angleConnector: angleConnector, driverConnector: timeConnector)
+        let newToy = MotionToy(image: UIImage(named: "football")!, xConnector: xConnector, yConnector: yConnector, driverConnector: timeConnector)
         self.scrollView.addSubview(newToy)
         toys.append(newToy)
         
