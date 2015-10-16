@@ -159,17 +159,17 @@ class CircleLayer {
     init() {
         self.mainLayer = CAShapeLayer()
         self.mainLayer.lineWidth = 4
-        self.mainLayer.strokeColor = UIColor.lightGrayColor().CGColor
+        self.mainLayer.strokeColor = UIColor.multiplierInputColor().CGColor
         self.mainLayer.fillColor = nil
         
         self.diameterLayer = CAShapeLayer()
         self.diameterLayer.lineWidth = 4
-        self.diameterLayer.strokeColor = UIColor.blueColor().CGColor
+        self.diameterLayer.strokeColor = UIColor.multiplierInputColor().CGColor
         self.diameterLayer.fillColor = nil
         
         self.circumferenceLayer = CAShapeLayer()
-        self.circumferenceLayer.lineWidth = 6
-        self.circumferenceLayer.strokeColor = UIColor.darkGrayColor().colorWithAlphaComponent(0.5).CGColor
+        self.circumferenceLayer.lineWidth = 7
+        self.circumferenceLayer.strokeColor = UIColor.adderOutputColor().CGColor
         self.circumferenceLayer.fillColor = nil
         
         self.mainLayer.addSublayer(self.diameterLayer)
@@ -203,6 +203,15 @@ class CircleLayer {
         CGPathAddArc(circumferencePath, nil, cgRadius, cgRadius, cgRadius, 0, angle, clockwise)
         
         self.circumferenceLayer.path = circumferencePath
+        let expectedCircumference = self.diameter * M_PI
+        let difference = abs(self.circumference - expectedCircumference)
+        let maxDifference: Double = 6.0
+        let minOpacity: Float = 0.3
+        if difference < maxDifference {
+            self.circumferenceLayer.opacity = 1.0 - Float(difference / maxDifference) * (1.0 - minOpacity)
+        } else {
+            self.circumferenceLayer.opacity = minOpacity
+        }
         
         CATransaction.commit()
     }
