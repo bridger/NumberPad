@@ -559,7 +559,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         var deletedSomething = false
                         if let (connectorLabel, _) = touchInfo.connectorLabel {
                             // Delete this connector!
-                            removeConnectorLabel(connectorLabel)
+                            if !self.connectorIsForToy(connectorLabel.connector) {
+                                removeConnectorLabel(connectorLabel)
+                            }
                             deletedSomething = true
                         }
                         if deletedSomething == false {
@@ -728,7 +730,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         // Find all the connectors, constraintViews, and connections that fall under the stroke and remove them
         for point in touchInfo.currentStroke.points {
             if let connectorLabel = self.connectorLabelAtPoint(point) {
-                self.removeConnectorLabel(connectorLabel)
+                if !self.connectorIsForToy(connectorLabel.connector) {
+                    self.removeConnectorLabel(connectorLabel)
+                }
             } else if let constraintView = self.constraintViewAtPoint(point) {
                 self.removeConstraintView(constraintView)
             } else if let (_, constraintView, connectorPort) = self.connectionLineAtPoint(point, distanceCutoff: 2.0) {
@@ -1498,6 +1502,15 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         
         self.addConnectorLabel(diameterLabel, topPriority: false, automaticallyConnect: false)
         self.selectConnectorLabelAndSetToValue(diameterLabel, value: initialDiameter)
+    }
+    
+    func connectorIsForToy(connector: Connector) -> Bool {
+        for toy in self.toys {
+            if toy.outputConnectors().contains(connector) || toy.inputConnectors().contains(connector) {
+                return true
+            }
+        }
+        return false
     }
     
     var nameCanvas: NameCanvasViewController?
