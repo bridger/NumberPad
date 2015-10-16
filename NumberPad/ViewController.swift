@@ -169,6 +169,17 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                 }
                 valuePicker.resetToValue( NSDecimalNumber(double: Double(valueToDisplay)), scale: connectorLabel.scale)
                 
+                // If this is the input of a toy, make sure the outputs are low priority
+                for toy in self.toys {
+                    if toy.inputConnectors().contains(connectorLabel.connector)  {
+                        for output in toy.outputConnectors() {
+                            if let outputLabel = self.connectorToLabel[output] {
+                                self.moveConnectorToBottomPriority(outputLabel)
+                            }
+                        }
+                    }
+                }
+                
                 if let selectedValue = selectedValue {
                     updateDisplay([connectorLabel.connector : selectedValue], needsSolving: true)
                 } else {
