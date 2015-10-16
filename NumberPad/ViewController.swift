@@ -43,6 +43,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
         self.view.addSubview(footballButton)
         footballButton.addTarget(self, action: "createFootballToy", forControlEvents: .TouchUpInside)
         
+        let circleButton = UIButton(type: .Custom)
+        circleButton.setImage(UIImage(named: "circleToy"), forState: .Normal)
+        circleButton.frame = CGRectMake(180, 30, 50, 50)
+        circleButton.imageView?.contentMode = .ScaleAspectFit
+        self.view.addSubview(circleButton)
+        circleButton.addTarget(self, action: "createCircleToy", forControlEvents: .TouchUpInside)
+        
         let valuePickerHeight: CGFloat = 85.0
         valuePicker = NumberSlideView(frame: CGRectMake(0, self.view.bounds.size.height - valuePickerHeight, self.view.bounds.size.width, valuePickerHeight))
         valuePicker.delegate = self
@@ -1418,64 +1425,59 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
     var toys: [Toy] = []
     
     func createFootballToy() {
-//        let xConnector = Connector()
-//        let xLabel = ConnectorLabel(connector: xConnector)
-//        xLabel.scale = 0
-//        xLabel.name = "X"
-//        xLabel.sizeToFit()
-//        xLabel.center = CGPointMake(60, 120)
-//        
-//        let yConnector = Connector()
-//        let yLabel = ConnectorLabel(connector: yConnector)
-//        yLabel.scale = 0
-//        yLabel.name = "Y"
-//        yLabel.sizeToFit()
-//        yLabel.center = CGPointMake(60, 200)
-//        
-//        self.addConnectorLabel(yLabel, topPriority: false, automaticallyConnect: false)
-//        self.selectConnectorLabelAndSetToValue(yLabel, value: 350)
-//        
-//        self.addConnectorLabel(xLabel, topPriority: false, automaticallyConnect: false)
-//        self.selectConnectorLabelAndSetToValue(xLabel, value: 200)
-//        
-//        let timeConnector = Connector()
-//        let timeLabel = ConnectorLabel(connector: timeConnector)
-//        timeLabel.name = "time"
-//        timeLabel.sizeToFit()
-//        timeLabel.center = CGPointMake(200, 40)
-//        
-//        let newToy = MotionToy(image: UIImage(named: "football")!, xConnector: xConnector, yConnector: yConnector, driverConnector: timeConnector)
-//        self.scrollView.addSubview(newToy)
-//        toys.append(newToy)
-//        
-//        self.addConnectorLabel(timeLabel, topPriority: true, automaticallyConnect: false)
-//        self.selectConnectorLabelAndSetToValue(timeLabel, value: 5)
+        let xConnector = Connector()
+        let xLabel = ConnectorLabel(connector: xConnector)
+        xLabel.scale = 0
+        xLabel.name = "X"
+        xLabel.sizeToFit()
+        xLabel.center = CGPointMake(60, 200)
         
+        let yConnector = Connector()
+        let yLabel = ConnectorLabel(connector: yConnector)
+        yLabel.scale = 0
+        yLabel.name = "Y"
+        yLabel.sizeToFit()
+        yLabel.center = CGPointMake(300, 200)
         
+        self.addConnectorLabel(yLabel, topPriority: false, automaticallyConnect: false)
+        self.selectConnectorLabelAndSetToValue(yLabel, value: 350)
+        
+        self.addConnectorLabel(xLabel, topPriority: false, automaticallyConnect: false)
+        self.selectConnectorLabelAndSetToValue(xLabel, value: 200)
+        
+        let timeConnector = Connector()
+        let timeLabel = ConnectorLabel(connector: timeConnector)
+        timeLabel.name = "time"
+        timeLabel.sizeToFit()
+        timeLabel.center = CGPointMake(200, 120)
+        
+        let newToy = MotionToy(image: UIImage(named: "football")!, xConnector: xConnector, yConnector: yConnector, driverConnector: timeConnector)
+        self.scrollView.addSubview(newToy)
+        toys.append(newToy)
+        
+        self.addConnectorLabel(timeLabel, topPriority: true, automaticallyConnect: false)
+        self.selectConnectorLabelAndSetToValue(timeLabel, value: 5)
+    }
+    
+    func createCircleToy() {
         let diameterConnector = Connector()
         let diameterLabel = ConnectorLabel(connector: diameterConnector)
         diameterLabel.scale = 0
         diameterLabel.name = "diameter"
         diameterLabel.sizeToFit()
-        diameterLabel.center = CGPointMake(60, 120)
+        diameterLabel.center = CGPointMake(200, self.view.frame.size.height - 300)
         
         let circumferenceConnector = Connector()
         let circumferenceLabel = ConnectorLabel(connector: circumferenceConnector)
         circumferenceLabel.scale = 0
         circumferenceLabel.name = "circumference"
         circumferenceLabel.sizeToFit()
-        circumferenceLabel.center = CGPointMake(60, 200)
+        circumferenceLabel.center = CGPointMake(200, self.view.frame.size.height - 180)
         
-        let initialDiameter: Double = 200
+        let initialDiameter: Double = 160
         
         self.addConnectorLabel(circumferenceLabel, topPriority: false, automaticallyConnect: false)
         self.selectConnectorLabelAndSetToValue(circumferenceLabel, value: initialDiameter * M_PI_4)
-        
-        let timeConnector = Connector()
-        let timeLabel = ConnectorLabel(connector: timeConnector)
-        timeLabel.name = "time"
-        timeLabel.sizeToFit()
-        timeLabel.center = CGPointMake(200, 40)
         
         let newToy = CirclesToy(diameterConnector: diameterConnector, circumferenceConnector: circumferenceConnector)
         self.view.addSubview(newToy)
