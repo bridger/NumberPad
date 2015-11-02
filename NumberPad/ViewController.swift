@@ -1000,7 +1000,59 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         writtenValue = writtenValue! / 100.0
                     }
                     
-                    if let writtenValue = writtenValue {
+                    if combinedLabels == "?" {
+                        let newConnector = Connector()
+                        let newLabel = ConnectorLabel(connector: newConnector)
+                        newLabel.sizeToFit()
+                        newLabel.center = centerPoint
+                        
+                        self.addConnectorLabel(newLabel, topPriority: false)
+                        self.selectedConnectorLabel = newLabel
+                        
+                    } else if combinedLabels == "x" || combinedLabels == "/" {
+                        // We recognized a multiply or divide!
+                        let newMultiplier = Multiplier()
+                        let newView = MultiplierView(multiplier: newMultiplier)
+                        newView.layoutWithConnectorPositions([:])
+                        newView.center = centerPoint
+                        let inputs = newView.inputConnectorPorts()
+                        let outputs = newView.outputConnectorPorts()
+                        if combinedLabels == "x" {
+                            self.addConstraintView(newView, firstInputPort: inputs[0], secondInputPort: inputs[1], outputPort: outputs[0])
+                        } else if combinedLabels == "/" {
+                            newView.showInverseOperator = true
+                            self.addConstraintView(newView, firstInputPort: outputs[0], secondInputPort: inputs[0], outputPort: inputs[1])
+                        } else {
+                            self.addConstraintView(newView, firstInputPort: nil, secondInputPort: nil, outputPort: nil)
+                        }
+                        
+                    } else if combinedLabels == "+" || combinedLabels == "-" || combinedLabels == "1-" || combinedLabels == "-1" { // The last is a hack for a common misclassification
+                        // We recognized an add or subtract!
+                        let newAdder = Adder()
+                        let newView = AdderView(adder: newAdder)
+                        newView.layoutWithConnectorPositions([:])
+                        newView.center = centerPoint
+                        let inputs = newView.inputConnectorPorts()
+                        let outputs = newView.outputConnectorPorts()
+                        if combinedLabels == "+" || combinedLabels == "1-" || combinedLabels == "-1" {
+                            let inputs = newView.inputConnectorPorts()
+                            self.addConstraintView(newView, firstInputPort: inputs[0], secondInputPort: inputs[1], outputPort: outputs[0])
+                        } else if combinedLabels == "-" {
+                            newView.showInverseOperator = true
+                            self.addConstraintView(newView, firstInputPort: outputs[0], secondInputPort: inputs[0], outputPort: inputs[1])
+                        } else {
+                            self.addConstraintView(newView, firstInputPort: nil, secondInputPort: nil, outputPort: nil)
+                        }
+                        
+                    } else if combinedLabels == "^" {
+                        let newExponent = Exponent()
+                        let newView = ExponentView(exponent: newExponent)
+                        newView.layoutWithConnectorPositions([:])
+                        newView.center = centerPoint
+                        
+                        self.addConstraintView(newView, firstInputPort: newView.basePort, secondInputPort: newView.exponentPort, outputPort: newView.resultPort)
+                        
+                    } else if let writtenValue = writtenValue {
                         // We recognized a number!
                         let newConnector = Connector()
                         let newLabel = ConnectorLabel(connector: newConnector)
@@ -1020,56 +1072,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         
                         self.addConnectorLabel(newLabel, topPriority: true)
                         self.selectConnectorLabelAndSetToValue(newLabel, value: writtenValue)
-                        
-                    } else if combinedLabels == "?" {
-                        let newConnector = Connector()
-                        let newLabel = ConnectorLabel(connector: newConnector)
-                        newLabel.sizeToFit()
-                        newLabel.center = centerPoint
-                        
-                        self.addConnectorLabel(newLabel, topPriority: false)
-                        self.updateDisplay(needsSolving: true)
-                        
-                    } else if combinedLabels == "x" || combinedLabels == "/" {
-                        // We recognized a multiply or divide!
-                        let newMultiplier = Multiplier()
-                        let newView = MultiplierView(multiplier: newMultiplier)
-                        newView.layoutWithConnectorPositions([:])
-                        newView.center = centerPoint
-                        let inputs = newView.inputConnectorPorts()
-                        let outputs = newView.outputConnectorPorts()
-                        if combinedLabels == "x" {
-                            self.addConstraintView(newView, firstInputPort: inputs[0], secondInputPort: inputs[1], outputPort: outputs[0])
-                        } else if combinedLabels == "/" {
-                            self.addConstraintView(newView, firstInputPort: outputs[0], secondInputPort: inputs[0], outputPort: inputs[1])
-                        } else {
-                            self.addConstraintView(newView, firstInputPort: nil, secondInputPort: nil, outputPort: nil)
-                        }
-                        
-                    } else if combinedLabels == "+" || combinedLabels == "-" || combinedLabels == "1-" || combinedLabels == "-1" { // The last is a hack for a common misclassification
-                        // We recognized an add or subtract!
-                        let newAdder = Adder()
-                        let newView = AdderView(adder: newAdder)
-                        newView.layoutWithConnectorPositions([:])
-                        newView.center = centerPoint
-                        let inputs = newView.inputConnectorPorts()
-                        let outputs = newView.outputConnectorPorts()
-                        if combinedLabels == "+" || combinedLabels == "1-" {
-                            let inputs = newView.inputConnectorPorts()
-                            self.addConstraintView(newView, firstInputPort: inputs[0], secondInputPort: inputs[1], outputPort: outputs[0])
-                        } else if combinedLabels == "-" {
-                            self.addConstraintView(newView, firstInputPort: outputs[0], secondInputPort: inputs[0], outputPort: inputs[1])
-                        } else {
-                            self.addConstraintView(newView, firstInputPort: nil, secondInputPort: nil, outputPort: nil)
-                        }
-                        
-                    } else if combinedLabels == "^" {
-                        let newExponent = Exponent()
-                        let newView = ExponentView(exponent: newExponent)
-                        newView.layoutWithConnectorPositions([:])
-                        newView.center = centerPoint
-                        
-                        self.addConstraintView(newView, firstInputPort: newView.basePort, secondInputPort: newView.exponentPort, outputPort: newView.resultPort)
                         
                     } else {
                         print("Unable to parse written text: \(combinedLabels)")
@@ -1149,7 +1151,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                             endPoint = constraintPoint
                         }
                         
-                        let connectionLayer = self.createConnectionLayer(startPoint, endPoint: endPoint, color: connectorPort.color, isDependent: dependent, drawArrow: true)
+                        let connectionLayer = self.createConnectionLayer(startPoint, endPoint: endPoint, color: connectorPort.color, isDependent: dependent, drawArrow: lastInformant != nil)
                         
                         self.connectionLayers.append(connectionLayer)
                         connectionLayer.zPosition = self.connectionLayersZPosition
@@ -1286,6 +1288,26 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
             for label in self.connectorLabels {
                 if simulationContext.connectorValues[label.connector] == nil {
                     label.displayValue(nil)
+                }
+            }
+            
+            constraintLoop: for constraintView in self.constraintViews {
+                if let constraintView = constraintView as? MultiInputOutputConstraintView {
+                    // Check to see if this constraint resolved one of its inputs or outputs and update it
+                    // accordingly
+                    let constraint = constraintView.innerConstraint
+                    for connector in constraint.inputs {
+                        if simulationContext.connectorValues[connector]?.Informant == constraint {
+                            constraintView.showInverseOperator = true
+                            continue constraintLoop
+                        }
+                    }
+                    for connector in constraint.outputs {
+                        if simulationContext.connectorValues[connector]?.Informant == constraint {
+                            constraintView.showInverseOperator = false
+                            continue constraintLoop
+                        }
+                    }
                 }
             }
             
