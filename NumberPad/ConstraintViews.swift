@@ -340,6 +340,8 @@ class MultiInputOutputConstraintView: ConstraintView {
         }
     }
     
+    var showInverseOperator: Bool = false
+    
     var inputPorts = [InternalConnectorPort(isOutput: false), InternalConnectorPort(isOutput: false)]
     let outputPort = InternalConnectorPort(isOutput: true)
     
@@ -522,6 +524,19 @@ class MultiplierView: MultiInputOutputConstraintView {
         self.addSubview(self.label)
     }
     
+    override var showInverseOperator: Bool {
+        didSet {
+            let labelCenter = self.label.center
+            if showInverseOperator {
+                self.label.text = "÷"
+            } else {
+                self.label.text = "x"
+            }
+            self.label.sizeToFit()
+            self.label.center = labelCenter
+        }
+    }
+    
     override var inputColor: UIColor {
         get {
             return UIColor.multiplierInputColor()
@@ -592,6 +607,19 @@ class AdderView: MultiInputOutputConstraintView {
     override var outputColor: UIColor {
         get {
             return UIColor.adderOutputColor()
+        }
+    }
+    
+    override var showInverseOperator: Bool {
+        didSet {
+            let labelCenter = self.label.center
+            if showInverseOperator {
+                self.label.text = "—"
+            } else {
+                self.label.text = "+"
+            }
+            self.label.sizeToFit()
+            self.label.center = labelCenter
         }
     }
 
