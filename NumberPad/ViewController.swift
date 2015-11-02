@@ -1021,6 +1021,15 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                         self.addConnectorLabel(newLabel, topPriority: true)
                         self.selectConnectorLabelAndSetToValue(newLabel, value: writtenValue)
                         
+                    } else if combinedLabels == "?" {
+                        let newConnector = Connector()
+                        let newLabel = ConnectorLabel(connector: newConnector)
+                        newLabel.sizeToFit()
+                        newLabel.center = centerPoint
+                        
+                        self.addConnectorLabel(newLabel, topPriority: false)
+                        self.updateDisplay(needsSolving: true)
+                        
                     } else if combinedLabels == "x" || combinedLabels == "/" {
                         // We recognized a multiply or divide!
                         let newMultiplier = Multiplier()
@@ -1037,7 +1046,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlide
                             self.addConstraintView(newView, firstInputPort: nil, secondInputPort: nil, outputPort: nil)
                         }
                         
-                    } else if combinedLabels == "+" || combinedLabels == "-" || combinedLabels == "1-" { // The last is a hack for a common misclassification
+                    } else if combinedLabels == "+" || combinedLabels == "-" || combinedLabels == "1-" || combinedLabels == "-1" { // The last is a hack for a common misclassification
                         // We recognized an add or subtract!
                         let newAdder = Adder()
                         let newView = AdderView(adder: newAdder)

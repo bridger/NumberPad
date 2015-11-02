@@ -13,6 +13,11 @@ let filePrefix = "SavedLibraries-"
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
+    /*
+      To add another digit:
+      Change the storyboard to have another character in the segmented control. Make sure onlySaveNormalizedData. Then, run the app and input a bunch of samples for the new digit. Once you are done, copy the resulting file from the Documents directory. It is the new "training" file. Replace the existing train file. Now, temporarily set onlySaveNormalizedData to true. Launch the app and then send it to the background to re-save the training data as a normalized set. Replace the normalized.json file with the resulting file.
+    */
+    let onlySaveNormalizedData = false
     
     var window: UIWindow?
     var digitClassifier: DTWDigitClassifier = DTWDigitClassifier()
@@ -40,7 +45,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func saveData() {
-        let dataToSave = self.digitClassifier.dataToSave(true, saveNormalizedData: true)
+        let dataToSave = self.digitClassifier.dataToSave(!onlySaveNormalizedData, saveNormalizedData: true)
         
         let saveNumber: Int
         if let lastSave = newestSavedData(), let lastNumber = Int(lastSave.substringFromIndex(filePrefix.endIndex))  {
