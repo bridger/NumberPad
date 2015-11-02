@@ -79,9 +79,9 @@ class DTWDigitClassifierTests: XCTestCase {
             }
             
             
-            print("All misclassified: ", appendNewline: false)
+            print("All misclassified: ", terminator: "")
             for misclassified in misclassifieds {
-                print(misclassified.description + ", ", appendNewline: false)
+                print(misclassified.description + ", ", terminator: "")
             }
             print("")
             

@@ -46,7 +46,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
     
     required init(coder aDecoder: NSCoder) {
         self.digitClassifier = DTWDigitClassifier()
-        super.init(coder: aDecoder)
+        super.init(coder: aDecoder)!
     }
     
     override func viewDidLoad() {

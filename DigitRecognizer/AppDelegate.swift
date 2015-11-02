@@ -34,8 +34,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         saveData()
     }
     
-    func documentsDirectory() -> String {
-        return NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)[0] as String
+    func documentsDirectory() -> NSURL {
+        let path = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)[0] as String
+        return NSURL(fileURLWithPath: path)
     }
     
     func saveData() {
@@ -50,11 +51,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             saveNumber = 1
         }
         
-        let documentName = self.documentsDirectory().stringByAppendingPathComponent( filePrefix + String(saveNumber))
+        let documentName = self.documentsDirectory().URLByAppendingPathComponent(filePrefix + String(saveNumber))
         
         do {
             let jsonObject = try NSJSONSerialization.dataWithJSONObject(dataToSave, options: [])
-            jsonObject.writeToFile(documentName, atomically: false)
+            jsonObject.writeToURL(documentName, atomically: false)
         } catch let error as NSError {
             print("Couldn't save data \(error)")
         }
@@ -70,7 +71,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func newestSavedData() -> String? {
         let contents: [AnyObject]?
         do {
-            contents = try NSFileManager.defaultManager().contentsOfDirectoryAtPath(self.documentsDirectory())
+            contents = try NSFileManager.defaultManager().contentsOfDirectoryAtPath(self.documentsDirectory().path!)
         } catch _ {
             contents = nil
         }
@@ -96,9 +97,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let testDataJson = DTWDigitClassifier.jsonLibraryFromFile(testDataPath)!["rawData"]!
         let testData = DTWDigitClassifier.jsonToLibrary(testDataJson)
         let randomNumber = arc4random() % 500
-        let documentDirectory = documentsDirectory().stringByAppendingPathComponent("\(randomNumber)")
+        let documentDirectory = documentsDirectory().URLByAppendingPathComponent("\(randomNumber)")
         do {
-            try NSFileManager.defaultManager().createDirectoryAtPath(documentDirectory, withIntermediateDirectories: true, attributes: nil)
+            try NSFileManager.defaultManager().createDirectoryAtURL(documentDirectory, withIntermediateDirectories: true, attributes: nil)
         } catch _ {
         }
 
@@ -112,7 +113,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             
             let testStrokeImage = visualizeNormalizedStrokes(normalizedTestStroke!, imageSize: imageSize)
             let trainStrokeImage = visualizeNormalizedStrokes(trainStroke, imageSize: imageSize)
-    
+            
             func safeName(name: String) -> String {
                 if name == "+" {
                     return "plus"
@@ -123,17 +124,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 }
                 return name
             }
-            let fileName = documentDirectory.stringByAppendingPathComponent("\(safeName(testLabel)) as \(safeName(trainLabel)) indexes \(testIndex) \(trainIndex)")
-            let testFileName = fileName + " - Test.png"
-            let trainFileName = fileName + " - Train.png"
+            
+            let baseName = "\(safeName(testLabel)) as \(safeName(trainLabel)) indexes \(testIndex) \(trainIndex)"
+            let testFileName = documentDirectory.URLByAppendingPathComponent(baseName + " - Test.png")
+            let trainFileName = documentDirectory.URLByAppendingPathComponent(baseName + " - Train.png")
             
             do {
-                try UIImagePNGRepresentation(testStrokeImage)!.writeToFile(testFileName, options: [])
+                try UIImagePNGRepresentation(testStrokeImage)!.writeToURL(testFileName, options: [])
             } catch let error as NSError {
                 print("Unable to write file \(testFileName) + \(error)")
             }
             do {
-                try UIImagePNGRepresentation(trainStrokeImage)!.writeToFile(trainFileName, options: [])
+                try UIImagePNGRepresentation(trainStrokeImage)!.writeToURL(trainFileName, options: [])
             } catch let error as NSError {
                 print("Unable to write file \(trainFileName) + \(error)")
             }
