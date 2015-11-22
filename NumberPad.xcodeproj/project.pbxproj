@@ -41,6 +41,7 @@
 		AE5554FC1A5CE0A5007DCF1D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AE5554FA1A5CE0A5007DCF1D /* Main.storyboard */; };
 		AE57BB4F1B5C8BC100600F50 /* NameCanvasViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE57BB4E1B5C8BC100600F50 /* NameCanvasViewController.swift */; };
 		AE57BB511B5CA12D00600F50 /* Stroke.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE57BB501B5CA12D00600F50 /* Stroke.swift */; };
+		AE6023E21C01786500D34FEB /* IntroViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE6023E11C01786500D34FEB /* IntroViewController.swift */; };
 		AE890D0D1A65AFAE00E604C4 /* Launch Screen.xib in Resources */ = {isa = PBXBuildFile; fileRef = AE890D0B1A65AFAE00E604C4 /* Launch Screen.xib */; };
 		AE890D0F1A68970800E604C4 /* CGPoint+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE890D0E1A68970800E604C4 /* CGPoint+Extensions.swift */; };
 		AE890D111A68AB5B00E604C4 /* VisualizeCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE890D101A68AB5B00E604C4 /* VisualizeCollectionViewController.swift */; };
@@ -79,7 +80,7 @@
 		AEA8E8781A871B4E0050344B /* MathML.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA8E8771A871B4E0050344B /* MathML.swift */; };
 		AEC033261B4B7A0400E72EE3 /* ArrowPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC033251B4B7A0400E72EE3 /* ArrowPath.swift */; };
 		AEC9EEC01A3CDC4A002C7B08 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */; };
-		AEC9EEC21A3CDC4A002C7B08 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEC11A3CDC4A002C7B08 /* ViewController.swift */; };
+		AEC9EEC21A3CDC4A002C7B08 /* CanvasViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEC11A3CDC4A002C7B08 /* CanvasViewController.swift */; };
 		AEC9EEC71A3CDC4A002C7B08 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AEC9EEC61A3CDC4A002C7B08 /* Images.xcassets */; };
 		AEC9EED61A3CDC4A002C7B08 /* NumberPadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EED51A3CDC4A002C7B08 /* NumberPadTests.swift */; };
 		AECB34FC1A6B1F460034A2AB /* NumberSlideView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AECB34FB1A6B1F460034A2AB /* NumberSlideView.swift */; };
@@ -183,6 +184,7 @@
 		AE5554FB1A5CE0A5007DCF1D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		AE57BB4E1B5C8BC100600F50 /* NameCanvasViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NameCanvasViewController.swift; sourceTree = "<group>"; };
 		AE57BB501B5CA12D00600F50 /* Stroke.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stroke.swift; sourceTree = "<group>"; };
+		AE6023E11C01786500D34FEB /* IntroViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntroViewController.swift; sourceTree = "<group>"; };
 		AE890D0C1A65AFAE00E604C4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = "Base.lproj/Launch Screen.xib"; sourceTree = "<group>"; };
 		AE890D0E1A68970800E604C4 /* CGPoint+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGPoint+Extensions.swift"; sourceTree = "<group>"; };
 		AE890D101A68AB5B00E604C4 /* VisualizeCollectionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VisualizeCollectionViewController.swift; sourceTree = "<group>"; };
@@ -245,7 +247,7 @@
 		AEC9EEBA1A3CDC4A002C7B08 /* NumberPad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NumberPad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC9EEBE1A3CDC4A002C7B08 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		AEC9EEC11A3CDC4A002C7B08 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		AEC9EEC11A3CDC4A002C7B08 /* CanvasViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasViewController.swift; sourceTree = "<group>"; };
 		AEC9EEC61A3CDC4A002C7B08 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		AEC9EECF1A3CDC4A002C7B08 /* NumberPadTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NumberPadTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC9EED41A3CDC4A002C7B08 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -528,7 +530,8 @@
 			isa = PBXGroup;
 			children = (
 				AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */,
-				AEC9EEC11A3CDC4A002C7B08 /* ViewController.swift */,
+				AEC9EEC11A3CDC4A002C7B08 /* CanvasViewController.swift */,
+				AE6023E11C01786500D34FEB /* IntroViewController.swift */,
 				AE57BB501B5CA12D00600F50 /* Stroke.swift */,
 				AE064B6A1A64679200A10381 /* Constraints.swift */,
 				AE57BB4E1B5C8BC100600F50 /* NameCanvasViewController.swift */,
@@ -849,7 +852,7 @@
 				AEA8E84C1A86C5A30050344B /* DDEnumerator.m in Sources */,
 				AEA8E86F1A86C6B60050344B /* _DDNumberExpression.m in Sources */,
 				AE57BB4F1B5C8BC100600F50 /* NameCanvasViewController.swift in Sources */,
-				AEC9EEC21A3CDC4A002C7B08 /* ViewController.swift in Sources */,
+				AEC9EEC21A3CDC4A002C7B08 /* CanvasViewController.swift in Sources */,
 				AEA8E8401A86C55E0050344B /* DDMathTokenizer.m in Sources */,
 				AEA8E86E1A86C6B60050344B /* _DDFunctionExpression.m in Sources */,
 				AE0EF4511B40EF82000DFFE2 /* Toy.swift in Sources */,
@@ -876,6 +879,7 @@
 				AE1CA0761A8C652A00CC1FDA /* VisualFormat.swift in Sources */,
 				AEC033261B4B7A0400E72EE3 /* ArrowPath.swift in Sources */,
 				AEDB570F1B45CDD10065A4DD /* UIColor+Additions.swift in Sources */,
+				AE6023E21C01786500D34FEB /* IntroViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1088,7 +1092,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -1125,7 +1129,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 2;
