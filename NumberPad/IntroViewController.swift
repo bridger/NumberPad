@@ -91,6 +91,48 @@ class IntroViewController: UIViewController {
         self.navigationController?.pushViewController(canvas, animated: true)
     }
     
+    @IBAction func startPythagoreanDemo(sender: AnyObject) {
+        
+        let canvas = configureNewCanvas()
+        
+        let aConnector = Connector()
+        let aLabel = ConnectorLabel(connector: aConnector)
+        aLabel.scale = 0
+        aLabel.name = "A"
+        aLabel.sizeToFit()
+        aLabel.center = CGPointMake(60, 250)
+        
+        let bConnector = Connector()
+        let bLabel = ConnectorLabel(connector: bConnector)
+        bLabel.scale = 0
+        bLabel.name = "B"
+        bLabel.sizeToFit()
+        bLabel.center = CGPointMake(self.view.bounds.size.width - 60, 250)
+        
+        canvas.addConnectorLabel(bLabel, topPriority: false, automaticallyConnect: false)
+        canvas.selectConnectorLabelAndSetToValue(bLabel, value: 150)
+        
+        canvas.addConnectorLabel(aLabel, topPriority: false, automaticallyConnect: false)
+        canvas.selectConnectorLabelAndSetToValue(aLabel, value: 50)
+        
+        let cConnector = Connector()
+        let cLabel = ConnectorLabel(connector: cConnector)
+        cLabel.scale = 0
+        cLabel.name = "C"
+        cLabel.sizeToFit()
+        cLabel.center = CGPointMake(self.view.bounds.size.width / 2, self.view.bounds.size.height - 300)
+        
+        let newToy = PythagorasToy(aConnector: aConnector, bConnector: bConnector, cConnector: cConnector)
+        canvas.view.addSubview(newToy)
+        newToy.frame = self.view.bounds
+        newToy.autoresizingMask = [.FlexibleWidth, .FlexibleHeight]
+        canvas.toys.append(newToy)
+        
+        canvas.addConnectorLabel(cLabel, topPriority: false, automaticallyConnect: false)
+        canvas.selectConnectorLabelAndSetToValue(cLabel, value: 120)
+        
+        self.navigationController?.pushViewController(canvas, animated: true)
+    }
     
     @IBAction func startFootballDemo(sender: AnyObject) {
         let canvas = configureNewCanvas()
