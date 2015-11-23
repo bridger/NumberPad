@@ -719,6 +719,7 @@
 					};
 					AEC9EEB91A3CDC4A002C7B08 = {
 						CreatedOnToolsVersion = 6.1.1;
+						DevelopmentTeam = DW543M2N27;
 					};
 					AEC9EECE1A3CDC4A002C7B08 = {
 						CreatedOnToolsVersion = 6.1.1;
@@ -1142,12 +1143,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/NumberPad",
 				);
-				GCC_OPTIMIZATION_LEVEL = s;
 				INFOPLIST_FILE = NumberPad/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = "-ObjC";
@@ -1163,6 +1164,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",

@@ -17,27 +17,35 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="yIV-uG-Pqw">
+                            <stackView opaque="NO" contentMode="scaleToFill" misplaced="YES" axis="vertical" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="yIV-uG-Pqw">
                                 <rect key="frame" x="233" y="0.0" width="135" height="600"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3ZE-rA-Zne">
-                                        <rect key="frame" x="0.0" y="0.0" width="135" height="200"/>
+                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3ZE-rA-Zne">
+                                        <rect key="frame" x="0.0" y="0.0" width="135" height="150"/>
                                         <animations/>
                                         <state key="normal" image="whiteboard"/>
                                         <connections>
                                             <action selector="startSandbox:" destination="BYZ-38-t0r" eventType="touchUpInside" id="DIa-oe-ImB"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Fpt-yS-Bbt">
-                                        <rect key="frame" x="0.0" y="200" width="135" height="200"/>
+                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Fpt-yS-Bbt">
+                                        <rect key="frame" x="0.0" y="150" width="135" height="150"/>
                                         <animations/>
                                         <state key="normal" image="circleToy"/>
                                         <connections>
                                             <action selector="startCircumferenceDemo:" destination="BYZ-38-t0r" eventType="touchUpInside" id="92g-Cm-W9D"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="66T-Ft-5T1">
-                                        <rect key="frame" x="0.0" y="400" width="135" height="200"/>
+                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xAJ-Bx-mXf">
+                                        <rect key="frame" x="0.0" y="300" width="135" height="150"/>
+                                        <animations/>
+                                        <state key="normal" image="pythagorean"/>
+                                        <connections>
+                                            <action selector="startPythagoreanDemo:" destination="BYZ-38-t0r" eventType="touchUpInside" id="5tu-81-wIl"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="66T-Ft-5T1">
+                                        <rect key="frame" x="0.0" y="450" width="135" height="150"/>
                                         <animations/>
                                         <state key="normal" image="football"/>
                                         <connections>
@@ -83,6 +91,7 @@
     <resources>
         <image name="circleToy" width="135" height="136"/>
         <image name="football" width="125" height="75"/>
+        <image name="pythagorean" width="135" height="134"/>
         <image name="whiteboard" width="135" height="135"/>
     </resources>
 </document>

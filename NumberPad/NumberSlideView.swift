@@ -92,8 +92,8 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
         centerMarker.backgroundColor = UIColor.textColor()
         self.addSubview(centerMarker)
         
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        self.addSubview(scrollView)
+        self.addAutoLayoutSubview(scrollView)
+        self.addHorizontalConstraints( |-0-[scrollView]-0-| )
         scrollView.delegate = self
         self.scrollView.showsHorizontalScrollIndicator = false
         
@@ -129,7 +129,6 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
         
         let lastScaleButton = self.scaleButtons.last!
         self.addHorizontalConstraints( [lastScaleButton]-0-| )
-        self.addHorizontalConstraints( |-0-[scrollView]-0-| )
         self.addVerticalConstraints( |-0-[scrollView]-0-[lastScaleButton]-0-| )
         
         self.addConstraint(centerMarker.al_height == scrollView.al_height)
