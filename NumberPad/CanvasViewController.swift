@@ -106,7 +106,8 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             print("Tried to move connector to bottom priority, but couldn't find it!")
         }
     }
-    func removeConnectorLabel(label: ConnectorLabel) {
+    func removeConnectorLabel(label: ConnectorLabel) -> [(ConstraintView, ConnectorPort)] {
+        var oldPorts: [(ConstraintView, ConnectorPort)] = []
         if let index = connectorLabels.indexOf(label) {
             if label == selectedConnectorLabel {
                 selectedConnectorLabel = nil
@@ -120,6 +121,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 for port in constraintView.connectorPorts() {
                     if port.connector === deleteConnector {
                         constraintView.removeConnectorAtPort(port)
+                        oldPorts.append((constraintView, port))
                     }
                 }
             }
@@ -128,6 +130,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         } else {
             print("Cannot remove that label!")
         }
+        return oldPorts
     }
     
     var selectedConnectorLabelValueOverride: Double?
@@ -808,6 +811,19 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             if let (constraintView, connectorPort) = connectorPortAtLocation(point) {
                 self.connect(connectorLabel, constraintView: constraintView, connectorPort: connectorPort)
                 connectionMade = true
+            } else if let destinationConnectorLabel = connectorLabelAtPoint(point) where destinationConnectorLabel != connectorLabel {
+                // Try to combine these connector labels
+                if connectorIsForToy(destinationConnectorLabel.connector) {
+                    if connectorIsForToy(connectorLabel.connector) {
+                        // We can't combine these because they are both for toys
+                    } else {
+                        combineConnectors(destinationConnectorLabel, connectorLabelToDelete: connectorLabel)
+                        connectionMade = true
+                    }
+                } else {
+                    combineConnectors(connectorLabel, connectorLabelToDelete: destinationConnectorLabel)
+                    connectionMade = true
+                }
             }
             
         } else if let (constraintView, _, connectorPort) = touchInfo.constraintView {
@@ -848,6 +864,18 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         }
     }
     
+    func combineConnectors(bigConnectorLabel: ConnectorLabel, connectorLabelToDelete: ConnectorLabel) {
+        if bigConnectorLabel == connectorLabelToDelete {
+            return
+        }
+        
+        // We just delete connectorLabelToDelete, but wire up all connections to bigConnectorLabel
+        
+        let oldPorts = removeConnectorLabel(connectorLabelToDelete)
+        for (constraintView, port) in oldPorts {
+            connect(bigConnectorLabel, constraintView: constraintView, connectorPort: port)
+        }
+    }
     
     func connect(connectorLabel: ConnectorLabel, constraintView: ConstraintView, connectorPort: ConnectorPort) {
         for connectorPort in constraintView.connectorPorts() {
