@@ -98,14 +98,14 @@ class IntroViewController: UIViewController {
         let aConnector = Connector()
         let aLabel = ConnectorLabel(connector: aConnector)
         aLabel.scale = 0
-        aLabel.name = "A"
+        aLabel.name = "📗"
         aLabel.sizeToFit()
         aLabel.center = CGPointMake(60, 250)
         
         let bConnector = Connector()
         let bLabel = ConnectorLabel(connector: bConnector)
         bLabel.scale = 0
-        bLabel.name = "B"
+        bLabel.name = "🔷"
         bLabel.sizeToFit()
         bLabel.center = CGPointMake(self.view.bounds.size.width - 60, 250)
         
@@ -118,7 +118,7 @@ class IntroViewController: UIViewController {
         let cConnector = Connector()
         let cLabel = ConnectorLabel(connector: cConnector)
         cLabel.scale = 0
-        cLabel.name = "C"
+        cLabel.name = "🔶"
         cLabel.sizeToFit()
         cLabel.center = CGPointMake(self.view.bounds.size.width / 2, self.view.bounds.size.height - 300)
         
