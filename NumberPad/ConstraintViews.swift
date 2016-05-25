@@ -30,7 +30,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
 
     init(connector: Connector) {
         self.connector = connector
-        super.init(frame: CGRectZero)
+        super.init(frame: CGRect.zero)
         connectorLabelInitialize()
     }
     
@@ -99,7 +99,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
                 let latestWidth = rectValues[0]
                 let latestHeight = rectValues[1]
                 
-                let newSize = CGSizeMake(latestWidth + widthDelta, latestHeight + heightDelta)
+                let newSize = CGSize(width: latestWidth + widthDelta, height: latestHeight + heightDelta)
                 if let oldSize = self.equationViewSize {
                     // It was at 5, so we chose 8. Now we only pick a new size if the latest width is > 8 or < 2
                     let minWidth = oldSize.width - widthDelta * 2
@@ -115,7 +115,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
                 }
                 
                 if let equationView = self.equationView {
-                    equationView.frame.size = CGSizeMake(latestWidth, latestHeight)
+                    equationView.frame.size = CGSize(width: latestWidth, height: latestHeight)
                 }
                 resizeAndLayout()
                 return
@@ -226,17 +226,17 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
             
             let valueSize = self.valueLabel.frame.size
             let nameSize = nameView.frame.size
-            nameAndValueSize = CGSizeMake(valueSize.width + nameSize.width,
+            nameAndValueSize = CGSize(width: valueSize.width + nameSize.width, height:
                 max(valueSize.height, nameSize.height))
             
             // Lay out |[nameView][valueLabel]|
             self.nameAndValueView.frame.size = nameAndValueSize
-            nameView.frame.origin = CGPointZero
+            nameView.frame.origin = CGPoint.zero
             valueLabel.frame.origin = CGPointMake(nameSize.width, 0)
         } else {
             nameAndValueSize = self.valueLabel.frame.size
             self.nameAndValueView.frame.size = nameAndValueSize
-            self.valueLabel.frame.origin = CGPointZero
+            self.valueLabel.frame.origin = CGPoint.zero
         }
         
         var newSize = nameAndValueSize
@@ -279,7 +279,7 @@ class InternalConnectorPort: NSObject, ConnectorPort {
     var color: UIColor = UIColor.whiteColor()
     var connector = Connector()
     let isOutput: Bool
-    var center: CGPoint = CGPointZero
+    var center: CGPoint = CGPoint.zero
     init(isOutput: Bool) {
         self.isOutput = isOutput
     }
@@ -430,7 +430,7 @@ class MultiInputOutputConstraintView: ConstraintView {
     let outputColoredLayer: CAShapeLayer = CAShapeLayer()
     init(constraint: MultiInputOutputConstraint) {
         self.innerConstraint = constraint
-        super.init(frame: CGRectZero)
+        super.init(frame: CGRect.zero)
         
         for inputPort in self.inputPorts {
             inputPort.color = self.inputColor
@@ -583,7 +583,7 @@ class MultiplierView: MultiInputOutputConstraintView {
     }
     
     override func sizeThatFits(size: CGSize) -> CGSize {
-        return CGSizeMake(inputSize + outputOverhang, inputSize + outputOverhang)
+        return CGSize(width: inputSize + outputOverhang, height: inputSize + outputOverhang)
     }
 }
 
@@ -658,7 +658,7 @@ class AdderView: MultiInputOutputConstraintView {
     }
     
     override func sizeThatFits(size: CGSize) -> CGSize {
-        return CGSizeMake(inputSize + outputOverhang, inputSize + outputOverhang)
+        return CGSize(width: inputSize + outputOverhang, height: inputSize + outputOverhang)
     }
 }
 
@@ -737,7 +737,7 @@ class ExponentView: ConstraintView {
     let label = UILabel()
     init(exponent: Exponent) {
         self.exponent = exponent
-        super.init(frame: CGRectZero)
+        super.init(frame: CGRect.zero)
         addSentinelConnectorToPort(self.exponentInput)
         addSentinelConnectorToPort(self.baseInput)
         addSentinelConnectorToPort(self.resultOutput)
@@ -798,7 +798,7 @@ class ExponentView: ConstraintView {
     
     override func idealAngleForNewConnectorLabel(connector: Connector, positions: [Connector: CGPoint]) -> CGFloat {
         var offset: CGPoint?
-        var allCenters = CGPointZero
+        var allCenters = CGPoint.zero
         
         // We find where this connector is in relation to the average center of all our ports. This way, if it
         // is visually in the top-right of the other connectors then the new connector will appear in the top-right
@@ -820,7 +820,7 @@ class ExponentView: ConstraintView {
     }
     
     override func sizeThatFits(size: CGSize) -> CGSize {
-        return CGSizeMake(baseSize + portSize / 2 + portOverhang.x, baseSize + portSize / 2 + portOverhang.y)
+        return CGSize(width: baseSize + portSize / 2 + portOverhang.x, height: baseSize + portSize / 2 + portOverhang.y)
     }
     
     override func setConnectorPort(port: ConnectorPort, isHighlighted: Bool) {

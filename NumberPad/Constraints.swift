@@ -27,7 +27,7 @@ class SimulationContext {
         } else {
             var rewrittenValue = value
             if rewriteExpressions {
-                if let rewrittenExpression = DDExpressionRewriter.defaultRewriter().expressionByRewritingExpression(value.Expression, withEvaluator: mathEvaluator) {
+                if let rewrittenExpression = DDExpressionRewriter.default().expression(byRewriting: value.Expression, with: mathEvaluator) {
                     rewrittenValue = (value.DoubleValue, rewrittenExpression, value.WasDependent, value.Informant)
                 } else {
                     print("Error rewriting expression \(value.Expression)")
@@ -37,7 +37,7 @@ class SimulationContext {
             connectorResolvedCallback(connector, rewrittenValue)
             for constraint in connector.constraints {
                 if constraint != value.Informant {
-                    if !constraint.processNewValues(self) {
+                    if !constraint.processNewValues(context: self) {
                         self.connectorConflictCallback(connector, rewrittenValue)
                     }
                 }
@@ -53,7 +53,7 @@ class SimulationContext {
 
 func functionExpression(functionName: String, arguments: [DDExpression]) -> DDExpression {
     do {
-        return try DDExpression.functionExpressionWithFunction(functionName, arguments: arguments)
+        return try DDExpression.functionExpression(withFunction: functionName, arguments: arguments)
     } catch let error as NSError {
         fatalError("Unable to make function expression \(functionName). Error \(error)");
     }
@@ -85,10 +85,10 @@ class MultiInputOutputConstraint : Constraint {
         super.init()
         
         for input in inputs {
-            addInput(input)
+            addInput(connector: input)
         }
         for output in outputs {
-            addOutput(output)
+            addOutput(connector: output)
         }
     }
     
@@ -98,24 +98,24 @@ class MultiInputOutputConstraint : Constraint {
     
     func addInput(connector: Connector) {
         inputs.append(connector)
-        connector.connect(self)
+        connector.connect(constraint: self)
     }
     func removeInput(connector: Connector) {
-        if let index = inputs.indexOf(connector) {
-            inputs.removeAtIndex(index)
-            connector.disconnect(self)
+        if let index = inputs.index(of: connector) {
+            inputs.remove(at: index)
+            connector.disconnect(constraint: self)
         } else {
             print("Unable to remove input connector!")
         }
     }
     func addOutput(connector: Connector) {
         outputs.append(connector)
-        connector.connect(self)
+        connector.connect(constraint: self)
     }
     func removeOutput(connector: Connector) {
-        if let index = outputs.indexOf(connector) {
-            outputs.removeAtIndex(index)
-            connector.disconnect(self)
+        if let index = outputs.index(of: connector) {
+            outputs.remove(at: index)
+            connector.disconnect(constraint: self)
         } else {
             print("Unable to remove output connector!")
         }
@@ -130,8 +130,8 @@ class Connector {
         constraints.append(constraint)
     }
     func disconnect(constraint: Constraint) {
-        if let index = constraints.indexOf(constraint) {
-            constraints.removeAtIndex(index)
+        if let index = constraints.index(of: constraint) {
+            constraints.remove(at: index)
         } else {
             print("Unable to remove constraint")
         }
@@ -167,7 +167,7 @@ class Adder : MultiInputOutputConstraint {
                 anyValueWasDependent = anyValueWasDependent || value.WasDependent
                 
                 if inputsExpression != nil {
-                    inputsExpression = functionExpression(DDMathOperatorAdd, arguments: [inputsExpression!, value.Expression])
+                    inputsExpression = functionExpression(functionName: DDMathOperatorAdd, arguments: [inputsExpression!, value.Expression])
                 } else {
                     inputsExpression = value.Expression
                 }
@@ -181,7 +181,7 @@ class Adder : MultiInputOutputConstraint {
                 anyValueWasDependent = anyValueWasDependent || value.WasDependent
                 
                 if outputsExpression != nil {
-                    outputsExpression = functionExpression(DDMathOperatorAdd, arguments: [outputsExpression!, value.Expression])
+                    outputsExpression = functionExpression(functionName: DDMathOperatorAdd, arguments: [outputsExpression!, value.Expression])
                 } else {
                     outputsExpression = value.Expression
                 }
@@ -195,18 +195,18 @@ class Adder : MultiInputOutputConstraint {
             // D = (A + B + C) - (E + F)
             if inputs.count > 0 {
                 let expression = outputsExpression != nil
-                    ? functionExpression(DDMathOperatorMinus, arguments: [inputsExpression!, outputsExpression!])
+                    ? functionExpression(functionName: DDMathOperatorMinus, arguments: [inputsExpression!, outputsExpression!])
                     : inputsExpression!
-                context.setConnectorValue(noValueOutputs[0], value: (inputsAdded - outputsAdded, expression, anyValueWasDependent, self))
+                context.setConnectorValue(connector: noValueOutputs[0], value: (inputsAdded - outputsAdded, expression, anyValueWasDependent, self))
             }
         } else if noValueOutputs.count == 0 && noValueInputs.count == 1 {
             // A + B + C = D + E + F. We know all except A
             // A = (D + E + F) - (B + C)
             if outputs.count > 0 {
                 let expression = (inputsExpression != nil
-                    ? functionExpression(DDMathOperatorMinus, arguments: [outputsExpression!, inputsExpression!])
+                    ? functionExpression(functionName: DDMathOperatorMinus, arguments: [outputsExpression!, inputsExpression!])
                     : outputsExpression!)
-                context.setConnectorValue(noValueInputs[0], value: (outputsAdded - inputsAdded, expression, anyValueWasDependent, self))
+                context.setConnectorValue(connector: noValueInputs[0], value: (outputsAdded - inputsAdded, expression, anyValueWasDependent, self))
             }
         } else if noValueInputs.count == 0 && noValueOutputs.count == 0 {
             
@@ -245,7 +245,7 @@ class Multiplier : MultiInputOutputConstraint {
                 anyValueWasDependent = anyValueWasDependent || value.WasDependent
                 
                 if inputsExpression != nil {
-                    inputsExpression = functionExpression(DDMathOperatorMultiply, arguments: [inputsExpression!, value.Expression])
+                    inputsExpression = functionExpression(functionName: DDMathOperatorMultiply, arguments: [inputsExpression!, value.Expression])
                 } else {
                     inputsExpression = value.Expression
                 }
@@ -262,7 +262,7 @@ class Multiplier : MultiInputOutputConstraint {
                 anyValueWasDependent = anyValueWasDependent || value.WasDependent
                 
                 if outputsExpression != nil {
-                    outputsExpression = functionExpression(DDMathOperatorMultiply, arguments: [outputsExpression!, value.Expression])
+                    outputsExpression = functionExpression(functionName: DDMathOperatorMultiply, arguments: [outputsExpression!, value.Expression])
                 } else {
                     outputsExpression = value.Expression
                 }
@@ -275,33 +275,33 @@ class Multiplier : MultiInputOutputConstraint {
             // If one of the inputs was 0, and we know all of the outputs except 1 and none of them were zero, then the last output must be zero
             // A * B * 0 = D * E * F. We know all outputs except F, and they are nonzero
             // F = 0
-            context.setConnectorValue(noValueOutputs[0], value: (0, constantExpression(0), zeroInputWasDependent!, self))
+            context.setConnectorValue(connector: noValueOutputs[0], value: (0, constantExpression(number: 0), zeroInputWasDependent!, self))
             
         } else if zeroOutputWasDependent != nil && zeroOutputWasDependent == nil && noValueInputs.count == 1 {
             // If one of the outputs was 0, and we know all of the inputs except 1 and none of them were zero, then the last input must be zero
             // A * B * C = D * E * 0. We know all inputs except A, and they are nonzero
             // A = 0
-            context.setConnectorValue(noValueInputs[0], value: (0, constantExpression(0), zeroOutputWasDependent!, self))
+            context.setConnectorValue(connector: noValueInputs[0], value: (0, constantExpression(number: 0), zeroOutputWasDependent!, self))
             
         } else if noValueOutputs.count == 1 && noValueInputs.count == 0 {
             // A * B * C = D * E * F. We know all except D
             // D = (A * B * C) / (E * F)
             if inputs.count > 0 && outputsMultiplied != 0 {
                 let expression = (outputsExpression != nil
-                    ? functionExpression(DDMathOperatorDivide, arguments: [inputsExpression!, outputsExpression!])
+                    ? functionExpression(functionName: DDMathOperatorDivide, arguments: [inputsExpression!, outputsExpression!])
                     : inputsExpression!)
                 let value: SimulationContext.ResolvedValue = (inputsMultiplied / outputsMultiplied, expression, anyValueWasDependent, self)
-                context.setConnectorValue(noValueOutputs[0], value: value)
+                context.setConnectorValue(connector: noValueOutputs[0], value: value)
             }
         } else if noValueOutputs.count == 0 && noValueInputs.count == 1 {
             // A * B * C = D * E * F. We know all except A
             // A = (D * E * F) / (B * C)
             if outputs.count > 0 && inputsMultiplied != 0 {
                 let expression = (inputsExpression != nil
-                    ? functionExpression(DDMathOperatorDivide, arguments: [outputsExpression!, inputsExpression!])
+                    ? functionExpression(functionName: DDMathOperatorDivide, arguments: [outputsExpression!, inputsExpression!])
                     : outputsExpression!)
                 let value: SimulationContext.ResolvedValue = (outputsMultiplied / inputsMultiplied, expression, anyValueWasDependent, self)
-                context.setConnectorValue(noValueInputs[0], value: value)
+                context.setConnectorValue(connector: noValueInputs[0], value: value)
             }
             
         } else if noValueInputs.count == 0 && noValueOutputs.count == 0 {
@@ -323,25 +323,25 @@ class Exponent : Constraint {
     var base: Connector! {
         didSet {
             if let oldValue = oldValue {
-                oldValue.disconnect(self)
+                oldValue.disconnect(constraint: self)
             }
-            self.base.connect(self)
+            self.base.connect(constraint: self)
         }
     }
     var exponent: Connector! {
         didSet {
             if let oldValue = oldValue {
-                oldValue.disconnect(self)
+                oldValue.disconnect(constraint: self)
             }
-            self.exponent.connect(self)
+            self.exponent.connect(constraint: self)
         }
     }
     var result: Connector! {
         didSet {
             if let oldValue = oldValue {
-                oldValue.disconnect(self)
+                oldValue.disconnect(constraint: self)
             }
-            self.result.connect(self)
+            self.result.connect(constraint: self)
         }
     }
     
@@ -360,19 +360,19 @@ class Exponent : Constraint {
                 if baseValue != nil && baseValue!.DoubleValue == 0 {
                     print("Unable to determine result if exponent and base are 0", terminator: "")
                 } else {
-                    context.setConnectorValue(result, value: (1.0, constantExpression(1.0), exponentValue!.WasDependent, self))
+                    context.setConnectorValue(connector: result, value: (1.0, constantExpression(number: 1.0), exponentValue!.WasDependent, self))
                 }
                 
             } else if baseValue != nil && baseValue!.DoubleValue == 0 {
                 // If base is 0, then result is 0 (unless exponent is also zero)
-                context.setConnectorValue(result, value: (0.0, constantExpression(0.0), baseValue!.WasDependent, self))
+                context.setConnectorValue(connector: result, value: (0.0, constantExpression(number: 0.0), baseValue!.WasDependent, self))
                 
             } else if baseValue != nil && exponentValue != nil {
                 //result = base ^ exponent
                 let doubleValue = pow(baseValue!.DoubleValue, exponentValue!.DoubleValue)
                 let isDependent = baseValue!.WasDependent || exponentValue!.WasDependent
-                let expression = functionExpression(DDMathOperatorPower, arguments: [baseValue!.Expression, exponentValue!.Expression])
-                context.setConnectorValue(result, value: (doubleValue, expression, isDependent, self))
+                let expression = functionExpression(functionName: DDMathOperatorPower, arguments: [baseValue!.Expression, exponentValue!.Expression])
+                context.setConnectorValue(connector: result, value: (doubleValue, expression, isDependent, self))
             }
             
         } else {
@@ -383,15 +383,15 @@ class Exponent : Constraint {
                 // base = result ^ (1/exponent)
                 let doubleValue = pow(resultValue!.DoubleValue, 1.0 / exponentValue!.DoubleValue)
                 let isDependent = resultValue!.WasDependent || exponentValue!.WasDependent
-                let expression = functionExpression("nthroot", arguments: [resultValue!.Expression, exponentValue!.Expression])
-                context.setConnectorValue(base, value: (doubleValue, expression, isDependent, self))
+                let expression = functionExpression(functionName: "nthroot", arguments: [resultValue!.Expression, exponentValue!.Expression])
+                context.setConnectorValue(connector: base, value: (doubleValue, expression, isDependent, self))
                 
             } else if baseValue != nil && exponentValue == nil {
                 // exponent = log_base(result) = ln(result) / ln(base)
                 let doubleValue = log(resultValue!.DoubleValue) / log(baseValue!.DoubleValue)
                 let isDependent = resultValue!.WasDependent || baseValue!.WasDependent
-                let expression = functionExpression(DDMathOperatorLogBase, arguments: [baseValue!.Expression, resultValue!.Expression])
-                context.setConnectorValue(exponent, value: (doubleValue, expression, isDependent, self))
+                let expression = functionExpression(functionName: DDMathOperatorLogBase, arguments: [baseValue!.Expression, resultValue!.Expression])
+                context.setConnectorValue(connector: exponent, value: (doubleValue, expression, isDependent, self))
                 
             } else if baseValue != nil && exponentValue != nil {
                 // Sanity check

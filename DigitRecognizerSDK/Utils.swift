@@ -23,8 +23,9 @@ public func optimizeAngles(angles: [(ChangeableAngle: CGFloat, TargetAngle: CGFl
         let possibleFlips = angles.count > 1 ? [false, true] : [false]
         
         for flip in possibleFlips {
-            for var testAngle: CGFloat = 0; testAngle < CGFloat(2 * M_PI); testAngle += angleStep {
-                
+            var testAngle: CGFloat = 0
+            
+            while testAngle < CGFloat(2 * M_PI) {
                 var error: Double = 0.0
                 for angleSet in angles {
                     let angleDifference = (flip
@@ -37,6 +38,8 @@ public func optimizeAngles(angles: [(ChangeableAngle: CGFloat, TargetAngle: CGFl
                     minAngle = flip ? -testAngle : testAngle
                     minFlip = flip
                 }
+                
+                testAngle += angleStep
             }
         }
         
@@ -49,32 +52,34 @@ public func shortestDistanceSquaredToLineSegmentFromPoint(segmentStart: CGPoint,
     let segmentVector = (segmentEnd - segmentStart)
     let segmentSizeSquared = segmentVector.lengthSquared()
     if segmentSizeSquared == 0.0 {
-        return segmentStart.distanceSquaredTo(testPoint)
+        return segmentStart.distanceSquaredTo(point: testPoint)
     }
     
     // Consider the line extending the segment, parameterized as v + t (w - v).
     // We find projection of point p onto the line.
     // It falls where t = [(test-start) . (end-start)] / |end-start|^2
-    let t = (testPoint - segmentStart).dot(segmentVector) / segmentSizeSquared
+    let t = (testPoint - segmentStart).dot(point: segmentVector) / segmentSizeSquared
     if (t < 0.0) {
-        return segmentStart.distanceSquaredTo(testPoint) // Beyond the start of the segment
+        return segmentStart.distanceSquaredTo(point: testPoint) // Beyond the start of the segment
     } else if (t > 1.0) {
-        return segmentEnd.distanceSquaredTo(testPoint) // Beyond the end of the segment
+        return segmentEnd.distanceSquaredTo(point: testPoint) // Beyond the end of the segment
     } else {
         // Projection falls on the segment
         let projection = segmentStart + (segmentVector * t)
-        return projection.distanceSquaredTo(testPoint)
+        return projection.distanceSquaredTo(point: testPoint)
     }
 }
 
 public func visualizeNormalizedStrokes(strokes: DTWDigitClassifier.DigitStrokes, imageSize: CGSize) -> UIImage {
     
     UIGraphicsBeginImageContextWithOptions(imageSize, true, 0)
-    let ctx = UIGraphicsGetCurrentContext()
+    guard let ctx = UIGraphicsGetCurrentContext() else {
+        return UIImage()
+    }
     
     let transformPointLambda: (CGPoint) -> CGPoint = { point -> CGPoint in
-        return CGPointMake((point.x * 0.9 + 0.5) * imageSize.width,
-            (point.y * 0.9 + 0.5) * imageSize.height)
+        return CGPoint(x: (point.x * 0.9 + 0.5) * imageSize.width,
+                       y: (point.y * 0.9 + 0.5) * imageSize.height)
     }
     for stroke in strokes {
         var firstPoint = true
@@ -83,25 +88,25 @@ public func visualizeNormalizedStrokes(strokes: DTWDigitClassifier.DigitStrokes,
             
             if firstPoint {
                 firstPoint = false
-                CGContextMoveToPoint(ctx, transformedPoint.x, transformedPoint.y)
+                ctx.moveTo(x: transformedPoint.x, y: transformedPoint.y)
             } else {
-                CGContextAddLineToPoint(ctx, transformedPoint.x, transformedPoint.y)
+                ctx.addLineTo(x: transformedPoint.x, y: transformedPoint.y)
             }
         }
-        CGContextSetStrokeColorWithColor(ctx, UIColor.whiteColor().CGColor)
-        CGContextSetLineWidth(ctx, 2)
-        CGContextStrokePath(ctx)
+        ctx.setStrokeColor(UIColor.white().cgColor)
+        ctx.setLineWidth(2)
+        ctx.strokePath()
         
-        for (index, point) in stroke.enumerate() {
+        for (index, point) in stroke.enumerated() {
             let transformedPoint = transformPointLambda(point)
             let indexRatio = CGFloat(index) / 32.0
             let color = UIColor(red: indexRatio, green: 0, blue: (1.0 - indexRatio), alpha: 1)
-            CGContextSetFillColorWithColor(ctx, color.CGColor)
-            CGContextFillEllipseInRect(ctx, CGRectMake(transformedPoint.x-2, transformedPoint.y-2, 4, 4))
+            ctx.setFillColor(color.cgColor)
+            ctx.fillEllipse(in: CGRect(x: transformedPoint.x-2, y: transformedPoint.y-2, width: 4, height: 4))
         }
     }
     
-    let image = UIGraphicsGetImageFromCurrentImageContext()
+    let image = UIGraphicsGetImageFromCurrentImageContext()!
     UIGraphicsEndImageContext()
     
     return image

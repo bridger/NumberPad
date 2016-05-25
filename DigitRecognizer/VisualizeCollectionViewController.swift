@@ -59,7 +59,7 @@ class VisualizeCollectionViewController: UICollectionViewController {
         self.collectionView!.registerClass(ImageCell.self, forCellWithReuseIdentifier: reuseIdentifier)
     }
     
-    let prototypeSize = CGSizeMake(140, 140)
+    let prototypeSize = CGSize(width: 140, height: 140)
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
