@@ -11,37 +11,37 @@ import UIKit
 
 public class StrokeGestureRecognizer: UIGestureRecognizer {
     
-    public override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent) {
-        super.touchesBegan(touches, withEvent: event)
+    public override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
+        super.touchesBegan(touches, with: event)
         
         if (self.numberOfTouches() != 1) {
-            if (self.state == UIGestureRecognizerState.Possible) {
-                self.state = UIGestureRecognizerState.Failed
+            if (self.state == UIGestureRecognizerState.possible) {
+                self.state = UIGestureRecognizerState.failed
             } else {
                 for touch in touches {
                     let touch = touch as UITouch
-                    self.ignoreTouch(touch, forEvent: event)
+                    self.ignore(touch, for: event)
                 }
             }
         }
     }
     
-    public override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent) {
-        super.touchesMoved(touches, withEvent: event)
-        if self.state == UIGestureRecognizerState.Possible {
-            self.state = UIGestureRecognizerState.Began
+    public override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent) {
+        super.touchesMoved(touches, with: event)
+        if self.state == UIGestureRecognizerState.possible {
+            self.state = UIGestureRecognizerState.began
         }
     }
     
-    public override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent) {
-        super.touchesEnded(touches, withEvent: event)
-        if (self.state == UIGestureRecognizerState.Possible || self.state == UIGestureRecognizerState.Began || self.state == UIGestureRecognizerState.Changed) {
-            self.state = UIGestureRecognizerState.Ended
+    public override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent) {
+        super.touchesEnded(touches, with: event)
+        if (self.state == UIGestureRecognizerState.possible || self.state == UIGestureRecognizerState.began || self.state == UIGestureRecognizerState.changed) {
+            self.state = UIGestureRecognizerState.ended
         }
     }
     
-    public override func touchesCancelled(touches: Set<UITouch>, withEvent event: UIEvent) {
-        super.touchesCancelled(touches, withEvent: event)
-        self.state = UIGestureRecognizerState.Cancelled
+    public override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent) {
+        super.touchesCancelled(touches, with: event)
+        self.state = UIGestureRecognizerState.cancelled
     }
 }

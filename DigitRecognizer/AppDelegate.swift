@@ -108,7 +108,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         } catch _ {
         }
 
-        let imageSize = CGSizeMake(200, 200)
+        let imageSize = CGSize(width: 200, height: 200)
         
         for (testLabel, trainLabel, testIndex, trainIndex) in [("3", "5", 17, 22), ("3", "5", 28, 12), ("7", "+", 8, 24), ("9", "4", 7, 29), ("9", "0", 13, 21), ("5", "1", 1, 3)] {
             

@@ -10,7 +10,7 @@ import CoreGraphics
 import Foundation
 
 public func euclidianDistance(a: CGPoint, b: CGPoint) -> CGFloat {
-    return sqrt( euclidianDistanceSquared(a, b: b) )
+    return sqrt( euclidianDistanceSquared(a: a, b: b) )
 }
 
 public func euclidianDistanceSquared(a: CGPoint, b: CGPoint) -> CGFloat {
@@ -32,9 +32,9 @@ public class DTWDigitClassifier {
     }
     
     public func learnDigit(label: DigitLabel, digit: DigitStrokes) {
-        addToLibrary(&self.rawPrototypeLibrary, label: label, digit: digit)
-        if let normalizedDigit = normalizeDigit(digit) {
-            addToLibrary(&self.normalizedPrototypeLibrary, label: label, digit: normalizedDigit)
+        addToLibrary(library: &self.rawPrototypeLibrary, label: label, digit: digit)
+        if let normalizedDigit = normalizeDigit(inputDigit: digit) {
+            addToLibrary(library: &self.normalizedPrototypeLibrary, label: label, digit: normalizedDigit)
         }
     }
     
@@ -61,7 +61,7 @@ public class DTWDigitClassifier {
         
         // TODO: This could be done in parallel
         let singleStrokeClassifications: [DTWDigitClassifier.Classification?] = strokes.map { singleStrokeDigit in
-            return self.classifyDigit([singleStrokeDigit])
+            return self.classifyDigit(digit: [singleStrokeDigit])
         }
         let strokeRanges: [MinAndMax?] = strokes.map(minAndMaxX)
         
@@ -74,10 +74,10 @@ public class DTWDigitClassifier {
             if index + 1 < strokes.count {
                 // Check to see if this stroke and the next stroke touched each other x-wise
                 if let strokeRange = strokeRanges[index], let nextStrokeRange = strokeRanges[index + 1] {
-                    if isWithin(nextStrokeRange.min, range: strokeRange) || isWithin(nextStrokeRange.max, range: strokeRange) || isWithin(strokeRange.min, range: nextStrokeRange) {
+                    if isWithin(test: nextStrokeRange.min, range: strokeRange) || isWithin(test: nextStrokeRange.max, range: strokeRange) || isWithin(test: strokeRange.min, range: nextStrokeRange) {
                         
                         // These two strokes intersected x-wise, so we try to classify them as one digit
-                        if let twoStrokeClassification = self.classifyDigit([strokes[index], strokes[index + 1]]) {
+                        if let twoStrokeClassification = self.classifyDigit(digit: [strokes[index], strokes[index + 1]]) {
                             let nextStrokeClassification = singleStrokeClassifications[index + 1]
                             
                             let mustMatch = thisStrokeClassification == nil || nextStrokeClassification == nil;
@@ -111,10 +111,10 @@ public class DTWDigitClassifier {
     // Can be called from the background
     public typealias Classification = (Label: DigitLabel, Confidence: CGFloat, BestPrototypeIndex: Int)
     public func classifyDigit(digit: DigitStrokes, votesCounted: Int = 5, scoreCutoff: CGFloat = 0.8) -> Classification? {
-        if let normalizedDigit = normalizeDigit(digit) {
-            let serviceGroup = dispatch_group_create()
-            let queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0)
-            let serialResultsQueue = dispatch_queue_create("collect_results", nil)
+        if let normalizedDigit = normalizeDigit(inputDigit: digit) {
+            let serviceGroup = dispatch_group_create()!
+            let queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0)!
+            let serialResultsQueue = dispatch_queue_create("collect_results", nil)!
             
             var bestMatches = SortedMinArray<CGFloat, (DigitLabel, Int)>(capacity: votesCounted)
             for (label, prototypes) in self.normalizedPrototypeLibrary {
@@ -124,16 +124,16 @@ public class DTWDigitClassifier {
                     var index = 0
                     for prototype in prototypes {
                         if prototype.count == digit.count {
-                            let score = self.classificationScore(normalizedDigit, prototype: prototype)
+                            let score = self.classificationScore(sample: normalizedDigit, prototype: prototype)
                             //if score < scoreCutoff {
-                            localBestMatches.add(score, element: (label, index))
+                            localBestMatches.add(value: score, element: (label, index))
                             //}
                         }
-                        index++
+                        index += 1
                     }
                     dispatch_group_async(serviceGroup, serialResultsQueue) {
                         for (score, bestMatch) in localBestMatches {
-                            bestMatches.add(score, element: bestMatch)
+                            bestMatches.add(value: score, element: bestMatch)
                         }
                     }
                 }
@@ -193,10 +193,10 @@ public class DTWDigitClassifier {
         
         var dictionary: [String: JSONCompatibleLibrary] = [:]
         if (saveRawData) {
-            dictionary["rawData"] = libraryToJson(self.rawPrototypeLibrary)
+            dictionary["rawData"] = libraryToJson(library: self.rawPrototypeLibrary)
         }
         if (saveNormalizedData) {
-            dictionary["normalizedData"] = libraryToJson(self.normalizedPrototypeLibrary)
+            dictionary["normalizedData"] = libraryToJson(library: self.normalizedPrototypeLibrary)
         }
         
         return dictionary
@@ -206,7 +206,7 @@ public class DTWDigitClassifier {
         let filename = NSURL(fileURLWithPath: path).lastPathComponent
         if let data = NSData(contentsOfFile: path) {
             do {
-                let json: AnyObject = try NSJSONSerialization.JSONObjectWithData(data, options: [])
+                let json: AnyObject = try NSJSONSerialization.jsonObject(with: data, options: [])
                 if let jsonLibrary = json as? [String: JSONCompatibleLibrary] {
                     return jsonLibrary
                 } else {
@@ -228,7 +228,7 @@ public class DTWDigitClassifier {
             newLibrary[label] = prototypes.map { (prototype: [[JSONCompatiblePoint]]) -> DigitStrokes in
                 return prototype.map { (points: [JSONCompatiblePoint]) -> [CGPoint] in
                     return points.map { (point: JSONCompatiblePoint) -> CGPoint in
-                        return CGPointMake(point[0], point[1])
+                        return CGPoint(x: point[0], y: point[1])
                     }
                 }
                 }.filter { (prototype: DigitStrokes) -> Bool in
@@ -251,24 +251,24 @@ public class DTWDigitClassifier {
         var loadedNormalizedData = false
         
         if let jsonData = jsonData["rawData"] {
-            self.rawPrototypeLibrary = DTWDigitClassifier.jsonToLibrary(jsonData)
+            self.rawPrototypeLibrary = DTWDigitClassifier.jsonToLibrary(json: jsonData)
         }
         if loadNormalizedData {
             if let jsonData = jsonData["normalizedData"] {
-                self.normalizedPrototypeLibrary = DTWDigitClassifier.jsonToLibrary(jsonData)
+                self.normalizedPrototypeLibrary = DTWDigitClassifier.jsonToLibrary(json: jsonData)
                 loadedNormalizedData = true
             }
         }
         
         if !loadedNormalizedData {
             for (label, prototypes) in self.rawPrototypeLibrary {
-                for (_, prototype) in prototypes.enumerate() {
-                    if let normalizedDigit = normalizeDigit(prototype) {
+                for (_, prototype) in prototypes.enumerated() {
+                    if let normalizedDigit = normalizeDigit(inputDigit: prototype) {
 //                        let totalPoints = normalizedDigit.reduce(0) {(total, stroke) -> Int in
 //                            return total + stroke.count
 //                        }
 //                        println("Normalized digit \(label) to \(totalPoints) points")
-                        addToLibrary(&self.normalizedPrototypeLibrary, label: label, digit: normalizedDigit)
+                        addToLibrary(library: &self.normalizedPrototypeLibrary, label: label, digit: normalizedDigit)
                     }
                 }
             }
@@ -276,7 +276,7 @@ public class DTWDigitClassifier {
     }
     
     
-    public func addToLibrary(inout library: PrototypeLibrary, label: DigitLabel, digit: DigitStrokes) {
+    public func addToLibrary(library: inout PrototypeLibrary, label: DigitLabel, digit: DigitStrokes) {
         if library[label] != nil {
             library[label]!.append(digit)
         } else {
@@ -288,8 +288,8 @@ public class DTWDigitClassifier {
     func classificationScore(sample: DigitStrokes, prototype: DigitStrokes) -> CGFloat {
         assert(sample.count == prototype.count, "To compare two digits, they must have the same number of strokes")
         var result: CGFloat = 0
-        for (index, stroke) in sample.enumerate() {
-            result += self.greedyDynamicTimeWarp(stroke, prototype: prototype[index])
+        for (index, stroke) in sample.enumerated() {
+            result += self.greedyDynamicTimeWarp(sample: stroke, prototype: prototype[index])
         }
         return result / CGFloat(sample.count)
     }
@@ -336,7 +336,7 @@ public class DTWDigitClassifier {
         while sampleIndex + 1 < sample.count - minNeighborSize && prototypeIndex + 1 < prototype.count - minNeighborSize {
             
             // We want to use the same window size to compare all options, so it must be safe for all cases
-            let safeNeighborSize = calculateSafeNeighborSize(sampleIndex, prototypeIndex: prototypeIndex)
+            let safeNeighborSize = calculateSafeNeighborSize(sampleIndex: sampleIndex, prototypeIndex: prototypeIndex)
             
             // For a pairing (sampleIndex, prototypeIndex) to be made, it must meet the boundary condition:
             // sampleIndex < (slope * CGFloat(prototypeIndex) + windowWidth
@@ -344,60 +344,60 @@ public class DTWDigitClassifier {
             // You can think of slope * CGFloat(prototypeIndex) as being the perfectly diagonal pairing
             var up = CGFloat.max
             if CGFloat(sampleIndex + 1) < slope * CGFloat(prototypeIndex) + windowWidth {
-                up = hHalfMetricForPoints(sampleIndex + 1, prototypeIndex: prototypeIndex, neighborsRange: safeNeighborSize)
+                up = hHalfMetricForPoints(sampleIndex: sampleIndex + 1, prototypeIndex: prototypeIndex, neighborsRange: safeNeighborSize)
             }
             var right = CGFloat.max
             if CGFloat(sampleIndex) < slope * CGFloat(prototypeIndex + 1) + windowWidth {
-                right = hHalfMetricForPoints(sampleIndex, prototypeIndex: prototypeIndex + 1, neighborsRange: safeNeighborSize)
+                right = hHalfMetricForPoints(sampleIndex: sampleIndex, prototypeIndex: prototypeIndex + 1, neighborsRange: safeNeighborSize)
             }
             var diagonal = CGFloat.max
             if (CGFloat(sampleIndex + 1) < slope * CGFloat(prototypeIndex + 1) + windowWidth &&
                 CGFloat(sampleIndex + 1) > slope * CGFloat(prototypeIndex + 1) - windowWidth) {
-                    diagonal = hHalfMetricForPoints(sampleIndex + 1, prototypeIndex: prototypeIndex + 1, neighborsRange: safeNeighborSize)
+                    diagonal = hHalfMetricForPoints(sampleIndex: sampleIndex + 1, prototypeIndex: prototypeIndex + 1, neighborsRange: safeNeighborSize)
             }
             
             // TODO: The right is the least case is repeated twice. Any way to fix that?
             if up < diagonal {
                 if up < right {
                     // up is the least
-                    sampleIndex++
+                    sampleIndex += 1
                     result += up
                 } else {
                     // right is the least
-                    prototypeIndex++
+                    prototypeIndex += 1
                     result += right
                 }
             } else {
                 // diagonal or right is the least
                 if diagonal < right {
                     // diagonal is the least
-                    sampleIndex++
-                    prototypeIndex++
+                    sampleIndex += 1
+                    prototypeIndex += 1
                     result += diagonal
                 } else {
                     // right is the least
-                    prototypeIndex++
+                    prototypeIndex += 1
                     result += right
                 }
             }
 
-            pathLength++;
+            pathLength += 1
         }
         
         // At most one of the following while loops will execute, finishing the path with a vertical or horizontal line along the boundary
         while sampleIndex + 1 < sample.count - minNeighborSize {
-            sampleIndex++
-            pathLength++;
+            sampleIndex += 1
+            pathLength += 1
             
-            let safeNeighborSize = calculateSafeNeighborSize(sampleIndex, prototypeIndex: prototypeIndex)
-            result += hHalfMetricForPoints(sampleIndex, prototypeIndex: prototypeIndex, neighborsRange: safeNeighborSize)
+            let safeNeighborSize = calculateSafeNeighborSize(sampleIndex: sampleIndex, prototypeIndex: prototypeIndex)
+            result += hHalfMetricForPoints(sampleIndex: sampleIndex, prototypeIndex: prototypeIndex, neighborsRange: safeNeighborSize)
         }
         while prototypeIndex + 1 < prototype.count - minNeighborSize {
-            prototypeIndex++
-            pathLength++;
+            prototypeIndex += 1
+            pathLength += 1
             
-            let safeNeighborSize = calculateSafeNeighborSize(sampleIndex, prototypeIndex: prototypeIndex)
-            result += hHalfMetricForPoints(sampleIndex, prototypeIndex: prototypeIndex, neighborsRange: safeNeighborSize)
+            let safeNeighborSize = calculateSafeNeighborSize(sampleIndex: sampleIndex, prototypeIndex: prototypeIndex)
+            result += hHalfMetricForPoints(sampleIndex: sampleIndex, prototypeIndex: prototypeIndex, neighborsRange: safeNeighborSize)
         }
         
         return result / CGFloat(pathLength)
@@ -413,7 +413,7 @@ public class DTWDigitClassifier {
             var totalDistance: CGFloat = 0
             for point in stroke {
                 if let lastPoint = lastPoint {
-                    totalDistance += euclidianDistance(lastPoint, b: point)
+                    totalDistance += euclidianDistance(a: lastPoint, b: point)
                 }
                 lastPoint = point
             }
@@ -430,7 +430,7 @@ public class DTWDigitClassifier {
             totalDistance = 0
             for point in stroke {
                 if let lastPoint = lastPoint {
-                    let nextDistance = euclidianDistance(lastPoint, b: point)
+                    let nextDistance = euclidianDistance(a: lastPoint, b: point)
                     let newTotalDistance = totalDistance + nextDistance
                     while distanceCovered + distancePerPoint < newTotalDistance {
                         distanceCovered += distancePerPoint
@@ -440,7 +440,7 @@ public class DTWDigitClassifier {
                         }
                         let newPointX: CGFloat = point.x * ratio + lastPoint.x * (1.0 - ratio)
                         let newPointY: CGFloat = point.y * ratio + lastPoint.y * (1.0 - ratio)
-                        newPoints.append(CGPointMake(newPointX, newPointY))
+                        newPoints.append(CGPoint(x: newPointX, y: newPointY))
                     }
                     totalDistance = newTotalDistance
                 }
@@ -459,12 +459,12 @@ public class DTWDigitClassifier {
         for stroke in inputDigit {
             for point in stroke {
                 if let capturedTopLeft = topLeft {
-                    topLeft = CGPointMake(min(capturedTopLeft.x, point.x), min(capturedTopLeft.y, point.y));
+                    topLeft = CGPoint(x: min(capturedTopLeft.x, point.x), y: min(capturedTopLeft.y, point.y));
                 } else {
                     topLeft = point
                 }
                 if let capturedBottomRight = bottomRight {
-                    bottomRight = CGPointMake(max(capturedBottomRight.x, point.x), max(capturedBottomRight.y, point.y));
+                    bottomRight = CGPoint(x: max(capturedBottomRight.x, point.x), y: max(capturedBottomRight.y, point.y));
                 } else {
                     bottomRight = point
                 }
@@ -489,7 +489,7 @@ public class DTWDigitClassifier {
             return subPath.map({ point in
                 let x = (point.x - xTranslate) * scale
                 let y = (point.y - yTranslate) * scale
-                return CGPointMake(x, y)
+                return CGPoint(x: x, y: y)
             })
         }
     }

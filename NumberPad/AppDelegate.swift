@@ -12,9 +12,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
-    func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
+    func application(_: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Set up a few more rewrite rules
-        let expressionRewriter = DDExpressionRewriter.defaultRewriter()
+        let expressionRewriter = DDExpressionRewriter.default()!
         
         // A + A*B = A(1 + B)
         expressionRewriter.addRewriteRule("__exp1 * (1 - __exp2)", forExpressionsMatchingTemplate:"__exp1 - __exp1 * __exp2", condition:nil)
