@@ -40,7 +40,7 @@ class NameCanvasAnimator: NSObject, UIViewControllerAnimatedTransitioning {
             
             containerView.layoutIfNeeded()
             containerView.backgroundColor = UIColor.clear()
-            UIView.animate(self.transitionDuration(transitionContext), animations: {
+            UIView.animate(withDuration: self.transitionDuration(transitionContext), animations: {
                 containerView.removeConstraint(hideConstraint)
                 containerView.layoutIfNeeded()
                 containerView.backgroundColor = UIColor(white: 1.0, alpha: 0.7)
@@ -51,10 +51,10 @@ class NameCanvasAnimator: NSObject, UIViewControllerAnimatedTransitioning {
         } else {
             let hideConstraint = fromViewController.view.al_left == containerView.al_right
             
-            UIView.animateWithDuration(self.transitionDuration(transitionContext), animations: {
+            UIView.animate(withDuration: self.transitionDuration(transitionContext), animations: {
                 containerView.addConstraint(hideConstraint)
                 containerView.layoutIfNeeded()
-                containerView.backgroundColor = UIColor.clearColor()
+                containerView.backgroundColor = UIColor.clear()
                 
                 }, completion: { (bool) in
                     fromViewController.view.removeFromSuperview()
@@ -91,9 +91,9 @@ class NameCanvasViewController: UIViewController {
         self.doneButton.setContentHuggingPriority(UILayoutPriorityDefaultHigh, for: .horizontal)
         self.doneButton.addTarget(self, action: #selector(NameCanvasViewController.doneButtonPressed), for: [.touchUpInside])
         
-        self.view.addVerticalConstraints( constraintAble: |[self.label]-0-[self.canvasView]| )
+        self.view.addVerticalConstraints( |[self.label]-0-[self.canvasView]| )
         
-        self.view.addHorizontalConstraints( constraintAble: |[self.label]-0-[self.doneButton]| )
+        self.view.addHorizontalConstraints( |[self.label]-0-[self.doneButton]| )
         self.view.addConstraint(self.label.al_baseline == self.doneButton.al_baseline)
         self.view.addConstraint( self.label.al_leading == self.canvasView.al_leading )
         self.view.addConstraint( self.doneButton.al_trailing == self.canvasView.al_trailing )
@@ -118,7 +118,7 @@ class NameCanvasViewController: UIViewController {
                 activeStrokes[touchID] = stroke
                 
                 stroke.addPoint(point: point)
-                self.boundingRect = self.boundingRect.union(CGRectMake(point.x, point.y, 0, 0))
+                self.boundingRect = self.boundingRect.union(CGRect(x: point.x, y:  point.y, width:  0, height: 0))
                 self.canvasView.layer.addSublayer(stroke.layer)
                 stroke.layer.strokeColor = UIColor.selectedTextColor().cgColor
             }
@@ -132,7 +132,7 @@ class NameCanvasViewController: UIViewController {
             if let stroke = activeStrokes[touchID] {
                 let point = touch.location(in: self.canvasView)
                 
-                self.boundingRect = self.boundingRect.union(CGRectMake(point.x, point.y, 0, 0))
+                self.boundingRect = self.boundingRect.union(CGRect(x: point.x, y:  point.y, width:  0, height: 0))
                 stroke.addPoint(point: point)
                 stroke.updateLayer()
             }
@@ -175,7 +175,7 @@ class NameCanvasViewController: UIViewController {
     // The image will be tightly fitting on the x axis, but on the y axis it will be positioned just
     // like it is within the canvas view itself. This way, all drawings will be a consistent height.
     // This returns nil if the user didn't draw anything
-    func renderedImage(pointHeight: CGFloat, scale: CGFloat, color: CGColorRef) -> UIImage? {
+    func renderedImage(pointHeight: CGFloat, scale: CGFloat, color: CGColor) -> UIImage? {
         if completedStrokes.count == 0 {
             return nil
         }

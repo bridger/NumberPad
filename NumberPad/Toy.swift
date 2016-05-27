@@ -188,16 +188,16 @@ class CircleLayer {
             let roundedSize = round(cgDiameter)
             
             self.mainLayer.frame = CGRect(x: 0, y: 0, width: roundedSize, height: roundedSize)
-            self.mainLayer.path = CGPathRef(ellipseIn: self.mainLayer.bounds, transform: nil)
+            self.mainLayer.path = CGPath(ellipseIn: self.mainLayer.bounds, transform: nil)
             self.mainLayer.position = position
             
-            let diameterPath = CGMutablePathRef()
+            let diameterPath = CGMutablePath()
             diameterPath.moveTo(nil, x: 0, y: cgRadius)
             diameterPath.addLineTo(nil, x: cgDiameter, y: cgRadius)
             self.diameterLayer.path = diameterPath
         }
         
-        let circumferencePath = CGMutablePathRef()
+        let circumferencePath = CGMutablePath()
         let angle = -CGFloat(self.circumference) / cgRadius
         let clockwise = angle < 0
         circumferencePath.addArc(nil, x: cgRadius, y: cgRadius, radius: cgRadius, startAngle: 0, endAngle: angle, clockwise: clockwise)
@@ -249,8 +249,8 @@ class CirclesToy : UIView, Toy {
         // No ghosts, currently
     }
     
-    override func layoutSublayersOfLayer(_ layer: CALayer) {
-        self.mainCircle.position = CGPointMake(layer.bounds.size.width / 2, layer.bounds.size.height / 3)
+    override func layoutSublayers(of layer: CALayer) {
+        self.mainCircle.position = CGPoint(x: layer.bounds.size.width / 2, y: layer.bounds.size.height / 3)
     }
     
     func update(values: [Connector : SimulationContext.ResolvedValue]) {
@@ -320,90 +320,90 @@ class PythagorasToy : UIView, Toy {
     
     var spacing: CGFloat = 25
     var topMargin: CGFloat = 80
-    override func drawRect(_ rect: CGRect) {
+    override func draw(_ rect: CGRect) {
         
         let a = CGFloat(self.a)
         let b = CGFloat(self.b)
         let c = CGFloat(self.c)
         
-        let context = UIGraphicsGetCurrentContext()
-        context?.clear(rect)
+        let context = UIGraphicsGetCurrentContext()!
+        context.clear(rect)
         let lineWidth: CGFloat = 4
-        func drawLine(startPoint: CGPoint, delta: CGPoint, color: CGColorRef) -> CGPoint {
-            let endPoint = CGPointMake(startPoint.x + delta.x, startPoint.y + delta.y)
-            context?.moveTo(x: startPoint.x, y: startPoint.y)
-            context?.addLineTo(x: endPoint.x, y: endPoint.y)
-            context?.setLineWidth(lineWidth)
+        func drawLine(startPoint: CGPoint, delta: CGPoint, color: CGColor) -> CGPoint {
+            let endPoint = CGPoint(x: startPoint.x + delta.x, y: startPoint.y + delta.y)
+            context.moveTo(x: startPoint.x, y: startPoint.y)
+            context.addLineTo(x: endPoint.x, y: endPoint.y)
+            context.setLineWidth(lineWidth)
             context.setLineCap(.round)
-            CGContextSetStrokeColorWithColor(context, color)
-            context?.strokePath()
+            context.setStrokeColor(color)
+            context.strokePath()
             return endPoint
         }
         
-        func fillSquare(corner: CGPoint, size: CGSize, color: CGColorRef) -> CGPoint {
-            let rect = CGRectMake(corner.x, corner.y, size.width, size.height)
+        func fillSquare(corner: CGPoint, size: CGSize, color: CGColor) -> CGPoint {
+            let rect = CGRect(x: corner.x, y:  corner.y, width:  size.width, height: size.height)
             
-            CGContextSetFillColorWithColor(context, color)
+            context.setFillColor(color)
             context.fill(rect.insetBy(dx: -lineWidth/2, dy: -lineWidth/2))
             
-            return CGPointMake(corner.x + size.width, corner.y + size.height)
+            return CGPoint(x: corner.x + size.width, y: corner.y + size.height)
         }
         
         let lightness: CGFloat = 0.25
         let aColor = UIColor.multiplierInputColor().cgColor
-        let aColorLight = CGColorRef(copyWithAlphaColor: aColor, alpha: lightness)!
+        let aColorLight = CGColor(copyWithAlphaColor: aColor, alpha: lightness)!
         let bColor = UIColor.adderInputColor().cgColor
-        let bColorLight = CGColorRef(copyWithAlphaColor: bColor, alpha: lightness)!
+        let bColorLight = CGColor(copyWithAlphaColor: bColor, alpha: lightness)!
         let cColor = UIColor.exponentBaseColor().cgColor
-        let cColorLight = CGColorRef(copyWithAlphaColor: cColor, alpha: lightness)!
+        let cColorLight = CGColor(copyWithAlphaColor: cColor, alpha: lightness)!
         
-        let squareSide = CGFloat(a + b)
+        let squareSide = a + b
         let totalWidth = squareSide * 2 + spacing
         let minX = (self.bounds.size.width - totalWidth) / 2
         
         
         /* --- Left square --- */
-        var currentPoint = CGPointMake(minX, topMargin + a)
+        var currentPoint = CGPoint(x: minX, y: topMargin + a)
         // Bottom-left square
-        currentPoint = fillSquare(currentPoint, size: CGSize(width: b, height: b), color: bColorLight)
+        currentPoint = fillSquare(corner: currentPoint, size: CGSize(width: b, height: b), color: bColorLight)
         
         // Bottom-right triangles
-        drawLine(currentPoint, delta: CGPointMake(a, -b), color: cColor)
-        currentPoint = drawLine(currentPoint, delta: CGPointMake(a, 0), color: aColor)
-        currentPoint = drawLine(currentPoint, delta: CGPointMake(0, -b), color: bColor)
+        drawLine(startPoint: currentPoint, delta: CGPoint(x: a, y: -b), color: cColor)
+        currentPoint = drawLine(startPoint: currentPoint, delta: CGPoint(x: a, y: 0), color: aColor)
+        currentPoint = drawLine(startPoint: currentPoint, delta: CGPoint(x: 0, y: -b), color: bColor)
         
         // Top-right square
-        currentPoint = fillSquare(currentPoint, size: CGSize(width: -a, height: -a), color: aColorLight)
+        currentPoint = fillSquare(corner: currentPoint, size: CGSize(width: -a, height: -a), color: aColorLight)
         
         // Top-left triangles
-        drawLine(currentPoint, delta: CGPointMake(-b, a), color: cColor)
-        drawLine(currentPoint, delta: CGPointMake(0, a), color: aColor)
-        currentPoint = drawLine(currentPoint, delta: CGPointMake(-b, 0), color: bColorLight)
-        currentPoint = drawLine(currentPoint, delta: CGPointMake(0, a), color: aColorLight)
-        drawLine(currentPoint, delta: CGPointMake(b, 0), color: bColor)
+        drawLine(startPoint: currentPoint, delta: CGPoint(x: -b, y: a), color: cColor)
+        drawLine(startPoint: currentPoint, delta: CGPoint(x: 0, y: a), color: aColor)
+        currentPoint = drawLine(startPoint: currentPoint, delta: CGPoint(x: -b, y: 0), color: bColorLight)
+        currentPoint = drawLine(startPoint: currentPoint, delta: CGPoint(x: 0, y: a), color: aColorLight)
+        drawLine(startPoint: currentPoint, delta: CGPoint(x: b, y: 0), color: bColor)
         
         
         /* --- Right square --- */
         // Top-left
-        currentPoint = CGPointMake( (self.bounds.size.width + spacing) / 2 + b, topMargin)
-        currentPoint = drawLine(currentPoint, delta: CGPointMake(-b, 0), color: bColorLight)
-        currentPoint = drawLine(currentPoint, delta: CGPointMake(0, a), color: aColorLight)
-        drawLine(currentPoint, delta: CGPointMake(b, -a), color: cColorLight)
+        currentPoint = CGPoint(x:  (self.bounds.size.width + spacing) / 2 + b, y: topMargin)
+        currentPoint = drawLine(startPoint: currentPoint, delta: CGPoint(x: -b, y: 0), color: bColorLight)
+        currentPoint = drawLine(startPoint: currentPoint, delta: CGPoint(x: 0, y: a), color: aColorLight)
+        drawLine(startPoint: currentPoint, delta: CGPoint(x: b, y: -a), color: cColorLight)
         
         // Bottom-left
-        currentPoint = drawLine(currentPoint, delta: CGPointMake(0, b), color: bColor)
-        currentPoint = drawLine(currentPoint, delta: CGPointMake(a, 0), color: aColor)
-        drawLine(currentPoint, delta: CGPointMake(-a, -b), color: cColor)
+        currentPoint = drawLine(startPoint: currentPoint, delta: CGPoint(x: 0, y: b), color: bColor)
+        currentPoint = drawLine(startPoint: currentPoint, delta: CGPoint(x: a, y: 0), color: aColor)
+        drawLine(startPoint: currentPoint, delta: CGPoint(x: -a, y: -b), color: cColor)
         
         // Bottom-right
-        currentPoint = drawLine(currentPoint, delta: CGPointMake(b, 0), color: bColorLight)
-        currentPoint = drawLine(currentPoint, delta: CGPointMake(0, -a), color: aColorLight)
-        drawLine(currentPoint, delta: CGPointMake(-b, a), color: cColorLight)
+        currentPoint = drawLine(startPoint: currentPoint, delta: CGPoint(x: b, y: 0), color: bColorLight)
+        currentPoint = drawLine(startPoint: currentPoint, delta: CGPoint(x: 0, y: -a), color: aColorLight)
+        drawLine(startPoint: currentPoint, delta: CGPoint(x: -b, y: a), color: cColorLight)
         
         // Top-right
-        currentPoint = drawLine(currentPoint, delta: CGPointMake(0, -b), color: bColor)
-        currentPoint = drawLine(currentPoint, delta: CGPointMake(-a, 0), color: aColor)
-        drawLine(currentPoint, delta: CGPointMake(a, b), color: cColor)
+        currentPoint = drawLine(startPoint: currentPoint, delta: CGPoint(x: 0, y: -b), color: bColor)
+        currentPoint = drawLine(startPoint: currentPoint, delta: CGPoint(x: -a, y: 0), color: aColor)
+        drawLine(startPoint: currentPoint, delta: CGPoint(x: a, y: b), color: cColor)
         
         
         // Draw the square for the current value of C
@@ -418,26 +418,26 @@ class PythagorasToy : UIView, Toy {
         } else {
             cOpacity = minOpacity
         }
-        let cColorResult = CGColorRef(copyWithAlphaColor: cColor, alpha: cOpacity)!
+        let cColorResult = CGColor(copyWithAlphaColor: cColor, alpha: cOpacity)!
         
-        context?.saveGState()
+        context.saveGState()
         // Translate to the center of the right square, and rotate to match the hyp sides
-        CGContextTranslateCTM(context, (self.bounds.size.width + spacing + squareSide) / 2, topMargin + squareSide / 2)
-        context?.rotate(byAngle: -atan2(a, b))
+        context.translate(x: (self.bounds.size.width + spacing + squareSide) / 2, y: topMargin + squareSide / 2)
+        context.rotate(byAngle: -atan2(a, b))
         
         context.setFillColor(cColorResult)
-        let cRect = CGRectMake(-c/2, -c/2, c, c)
+        let cRect = CGRect(x: -c/2, y:  -c/2, width:  c, height: c)
         context.fill(cRect.insetBy(dx: -lineWidth/2, dy: -lineWidth/2))
         
         let darkCSegments = [
-            CGPointMake(-c/2, c/2), CGPointMake(c/2, c/2),
-            CGPointMake(-c/2, -c/2), CGPointMake(c/2, -c/2)
+            CGPoint(x: -c/2, y: c/2), CGPoint(x: c/2, y: c/2),
+            CGPoint(x: -c/2, y: -c/2), CGPoint(x: c/2, y: -c/2)
             ]
-        context?.setStrokeColor(cColor)
-        context?.strokeLineSegments(between: darkCSegments, count: darkCSegments.count)
+        context.setStrokeColor(cColor)
+        context.strokeLineSegments(between: darkCSegments, count: darkCSegments.count)
         
         
-        context?.restoreGState()
+        context.restoreGState()
     }
     
 }

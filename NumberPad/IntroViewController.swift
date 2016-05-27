@@ -16,19 +16,19 @@ class IntroViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        if let path = NSBundle.mainBundle().pathForResource("bridger_normalized", ofType: "json") {
-            loadData(path)
+        if let path = NSBundle.main().pathForResource("bridger_normalized", ofType: "json") {
+            loadData(path: path)
         }
         
-        let pairingView = FTPenManager.sharedInstance().pairingButtonWithStyle(.Debug);
-        self.view.addAutoLayoutSubview(pairingView)
+        let pairingView = FTPenManager.sharedInstance().pairingButton(with: .debug);
+        self.view.addAutoLayoutSubview(subview: pairingView!)
         self.view.addVerticalConstraints(|-15-[pairingView])
         self.view.addHorizontalConstraints(|-15-[pairingView])
     }
     
     func loadData(path: String) {
-        if let jsonLibrary = DTWDigitClassifier.jsonLibraryFromFile(path) {
-            self.digitClassifier.loadData(jsonLibrary, loadNormalizedData: true)
+        if let jsonLibrary = DTWDigitClassifier.jsonLibraryFromFile(path: path) {
+            self.digitClassifier.loadData(jsonData: jsonLibrary, loadNormalizedData: true)
         }
     }
 
@@ -36,19 +36,19 @@ class IntroViewController: UIViewController {
         let canvas = CanvasViewController(digitClassifier: self.digitClassifier)
         
         let backButton = UIButton()
-        backButton.setTitle("< Back", forState: .Normal)
-        backButton.titleLabel?.font = UIFont.boldSystemFontOfSize(18)
-        backButton.setTitleColor(UIColor.blueColor(), forState: .Normal)
-        canvas.view.addAutoLayoutSubview(backButton)
+        backButton.setTitle("< Back", for: [])
+        backButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 18)
+        backButton.setTitleColor(UIColor.blue(), for: [])
+        canvas.view.addAutoLayoutSubview(subview: backButton)
         canvas.view.addHorizontalConstraints(|-6-[backButton])
         canvas.view.addVerticalConstraints(|-15-[backButton])
-        backButton.addTarget(self, action: "backPressed", forControlEvents: .TouchUpInside)
+        backButton.addTarget(self, action: #selector(IntroViewController.backPressed), for: .touchUpInside)
         
         return canvas
     }
     
     func backPressed() {
-        self.navigationController?.popViewControllerAnimated(true)
+        self.navigationController?.popViewController(animated: true)
     }
     
     @IBAction func startSandbox(sender: AnyObject) {
@@ -65,28 +65,28 @@ class IntroViewController: UIViewController {
         diameterLabel.scale = 0
         diameterLabel.name = "diameter"
         diameterLabel.sizeToFit()
-        diameterLabel.center = CGPointMake(200, self.view.frame.size.height - 300)
+        diameterLabel.center = CGPoint(x: 200, y: self.view.frame.size.height - 300)
         
         let circumferenceConnector = Connector()
         let circumferenceLabel = ConnectorLabel(connector: circumferenceConnector)
         circumferenceLabel.scale = 0
         circumferenceLabel.name = "circumference"
         circumferenceLabel.sizeToFit()
-        circumferenceLabel.center = CGPointMake(200, self.view.frame.size.height - 180)
+        circumferenceLabel.center = CGPoint(x: 200, y: self.view.frame.size.height - 180)
         
         let initialDiameter: Double = 160
         
-        canvas.addConnectorLabel(circumferenceLabel, topPriority: false, automaticallyConnect: false)
-        canvas.selectConnectorLabelAndSetToValue(circumferenceLabel, value: initialDiameter * M_PI_4)
+        canvas.addConnectorLabel(label: circumferenceLabel, topPriority: false, automaticallyConnect: false)
+        canvas.selectConnectorLabelAndSetToValue(connectorLabel: circumferenceLabel, value: initialDiameter * M_PI_4)
         
         let newToy = CirclesToy(diameterConnector: diameterConnector, circumferenceConnector: circumferenceConnector)
         canvas.view.addSubview(newToy)
         newToy.frame = self.view.bounds
-        newToy.autoresizingMask = [.FlexibleWidth, .FlexibleHeight]
+        newToy.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         canvas.toys.append(newToy)
         
-        canvas.addConnectorLabel(diameterLabel, topPriority: false, automaticallyConnect: false)
-        canvas.selectConnectorLabelAndSetToValue(diameterLabel, value: initialDiameter)
+        canvas.addConnectorLabel(label: diameterLabel, topPriority: false, automaticallyConnect: false)
+        canvas.selectConnectorLabelAndSetToValue(connectorLabel: diameterLabel, value: initialDiameter)
         
         self.navigationController?.pushViewController(canvas, animated: true)
     }
@@ -100,36 +100,36 @@ class IntroViewController: UIViewController {
         aLabel.scale = 0
         aLabel.name = "📗"
         aLabel.sizeToFit()
-        aLabel.center = CGPointMake(60, 250)
+        aLabel.center = CGPoint(x: 60, y: 250)
         
         let bConnector = Connector()
         let bLabel = ConnectorLabel(connector: bConnector)
         bLabel.scale = 0
         bLabel.name = "🔷"
         bLabel.sizeToFit()
-        bLabel.center = CGPointMake(self.view.bounds.size.width - 60, 250)
+        bLabel.center = CGPoint(x: self.view.bounds.size.width - 60, y: 250)
         
-        canvas.addConnectorLabel(bLabel, topPriority: false, automaticallyConnect: false)
-        canvas.selectConnectorLabelAndSetToValue(bLabel, value: 150)
+        canvas.addConnectorLabel(label: bLabel, topPriority: false, automaticallyConnect: false)
+        canvas.selectConnectorLabelAndSetToValue(connectorLabel: bLabel, value: 150)
         
-        canvas.addConnectorLabel(aLabel, topPriority: false, automaticallyConnect: false)
-        canvas.selectConnectorLabelAndSetToValue(aLabel, value: 50)
+        canvas.addConnectorLabel(label: aLabel, topPriority: false, automaticallyConnect: false)
+        canvas.selectConnectorLabelAndSetToValue(connectorLabel: aLabel, value: 50)
         
         let cConnector = Connector()
         let cLabel = ConnectorLabel(connector: cConnector)
         cLabel.scale = 0
         cLabel.name = "🔶"
         cLabel.sizeToFit()
-        cLabel.center = CGPointMake(self.view.bounds.size.width / 2, self.view.bounds.size.height - 300)
+        cLabel.center = CGPoint(x: self.view.bounds.size.width / 2, y: self.view.bounds.size.height - 300)
         
         let newToy = PythagorasToy(aConnector: aConnector, bConnector: bConnector, cConnector: cConnector)
         canvas.view.addSubview(newToy)
         newToy.frame = self.view.bounds
-        newToy.autoresizingMask = [.FlexibleWidth, .FlexibleHeight]
+        newToy.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         canvas.toys.append(newToy)
         
-        canvas.addConnectorLabel(cLabel, topPriority: false, automaticallyConnect: false)
-        canvas.selectConnectorLabelAndSetToValue(cLabel, value: 120)
+        canvas.addConnectorLabel(label: cLabel, topPriority: false, automaticallyConnect: false)
+        canvas.selectConnectorLabelAndSetToValue(connectorLabel: cLabel, value: 120)
         
         self.navigationController?.pushViewController(canvas, animated: true)
     }
@@ -142,33 +142,33 @@ class IntroViewController: UIViewController {
         xLabel.scale = 0
         xLabel.name = "X"
         xLabel.sizeToFit()
-        xLabel.center = CGPointMake(60, 250)
+        xLabel.center = CGPoint(x: 60, y: 250)
         
         let yConnector = Connector()
         let yLabel = ConnectorLabel(connector: yConnector)
         yLabel.scale = 0
         yLabel.name = "Y"
         yLabel.sizeToFit()
-        yLabel.center = CGPointMake(self.view.bounds.size.width - 60, 250)
+        yLabel.center = CGPoint(x: self.view.bounds.size.width - 60, y: 250)
         
-        canvas.addConnectorLabel(yLabel, topPriority: false, automaticallyConnect: false)
-        canvas.selectConnectorLabelAndSetToValue(yLabel, value: 350)
+        canvas.addConnectorLabel(label: yLabel, topPriority: false, automaticallyConnect: false)
+        canvas.selectConnectorLabelAndSetToValue(connectorLabel: yLabel, value: 350)
         
-        canvas.addConnectorLabel(xLabel, topPriority: false, automaticallyConnect: false)
-        canvas.selectConnectorLabelAndSetToValue(xLabel, value: 200)
+        canvas.addConnectorLabel(label: xLabel, topPriority: false, automaticallyConnect: false)
+        canvas.selectConnectorLabelAndSetToValue(connectorLabel: xLabel, value: 200)
         
         let timeConnector = Connector()
         let timeLabel = ConnectorLabel(connector: timeConnector)
         timeLabel.name = "time"
         timeLabel.sizeToFit()
-        timeLabel.center = CGPointMake(self.view.bounds.size.width / 2, 40)
+        timeLabel.center = CGPoint(x: self.view.bounds.size.width / 2, y: 40)
         
         let newToy = MotionToy(image: UIImage(named: "football")!, xConnector: xConnector, yConnector: yConnector, driverConnector: timeConnector)
         canvas.scrollView.addSubview(newToy)
         canvas.toys.append(newToy)
         
-        canvas.addConnectorLabel(timeLabel, topPriority: true, automaticallyConnect: false)
-        canvas.selectConnectorLabelAndSetToValue(timeLabel, value: 5)
+        canvas.addConnectorLabel(label: timeLabel, topPriority: true, automaticallyConnect: false)
+        canvas.selectConnectorLabelAndSetToValue(connectorLabel: timeLabel, value: 5)
         
         self.navigationController?.pushViewController(canvas, animated: true)
     }

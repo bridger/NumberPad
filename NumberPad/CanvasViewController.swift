@@ -40,7 +40,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         self.view.insertSubview(self.scrollView, at: 0)
         
         let valuePickerHeight: CGFloat = 85.0
-        valuePicker = NumberSlideView(frame: CGRectMake(0, self.view.bounds.size.height - valuePickerHeight, self.view.bounds.size.width, valuePickerHeight))
+        valuePicker = NumberSlideView(frame: CGRect(x: 0, y:  self.view.bounds.size.height - valuePickerHeight, width:  self.view.bounds.size.width, height: valuePickerHeight))
         valuePicker.delegate = self
         valuePicker.autoresizingMask = [.flexibleWidth, .flexibleTopMargin]
         self.view.addSubview(valuePicker)
@@ -982,12 +982,12 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                     for stroke in allStrokes {
                         for point in stroke {
                             if let capturedTopLeft = topLeft {
-                                topLeft = CGPointMake(min(capturedTopLeft.x, point.x), min(capturedTopLeft.y, point.y));
+                                topLeft = CGPoint(x: min(capturedTopLeft.x, point.x), y: min(capturedTopLeft.y, point.y));
                             } else {
                                 topLeft = point
                             }
                             if let capturedBottomRight = bottomRight {
-                                bottomRight = CGPointMake(max(capturedBottomRight.x, point.x), max(capturedBottomRight.y, point.y));
+                                bottomRight = CGPoint(x: max(capturedBottomRight.x, point.x), y: max(capturedBottomRight.y, point.y));
                             } else {
                                 bottomRight = point
                             }
@@ -997,7 +997,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                     var centerPoint = self.scrollView.convert(self.view.center, from: self.view)
                     if let topLeft = topLeft {
                         if let bottomRight = bottomRight {
-                            centerPoint = CGPointMake((topLeft.x + bottomRight.x) / 2.0, (topLeft.y + bottomRight.y) / 2.0)
+                            centerPoint = CGPoint(x: (topLeft.x + bottomRight.x) / 2.0, y: (topLeft.y + bottomRight.y) / 2.0)
                         }
                     }
                     
@@ -1232,7 +1232,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                         
                         let angle = connectTo.constraintView.idealAngleForNewConnectorLabel(connector: connector, positions: connectorPositions)
                         let distance: CGFloat = 70 + max(connectTo.constraintView.bounds.width, connectTo.constraintView.bounds.height)
-                        let newDisplacement = CGPointMake(cos(angle), sin(angle)) * distance
+                        let newDisplacement = CGPoint(x: cos(angle), y: sin(angle)) * distance
                         
                         // Make sure the new point is somewhat on the screen
                         var newPoint = connectTo.constraintView.frame.center() + newDisplacement
@@ -1459,7 +1459,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         dragLine.lineCap = kCALineCapRound
         dragLine.strokeColor = color?.cgColor ?? UIColor.textColor().cgColor
         
-        dragLine.path = createPointingLine(startPoint, endPoint: endPoint, dash: isDependent, arrowHead: drawArrow)
+        dragLine.path = createPointingLine(startPoint: startPoint, endPoint: endPoint, dash: isDependent, arrowHead: drawArrow)
         return dragLine
     }
     
@@ -1518,8 +1518,8 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             let scale = UIScreen.main().scale
             let height = selectedConnectorLabel.valueLabel.frame.size.height
             
-            if let nameImage = canvasViewController.renderedImage(height, scale: scale, color: UIColor.textColor().CGColor),
-                let selectedNameImage = canvasViewController.renderedImage(height, scale: scale, color: UIColor.selectedTextColor().CGColor) {
+            if let nameImage = canvasViewController.renderedImage(pointHeight: height, scale: scale, color: UIColor.textColor().cgColor),
+                let selectedNameImage = canvasViewController.renderedImage(pointHeight: height, scale: scale, color: UIColor.selectedTextColor().cgColor) {
                     
                     selectedConnectorLabel.nameImages = (image: nameImage, selectedImage: selectedNameImage)
             } else {
