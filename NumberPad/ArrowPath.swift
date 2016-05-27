@@ -10,20 +10,20 @@ import Foundation
 import CoreGraphics
 import DigitRecognizerSDK
 
-func createPointingLine(startPoint: CGPoint, endPoint: CGPoint, dash: Bool, arrowHead: Bool) -> CGPathRef {
+func createPointingLine(startPoint: CGPoint, endPoint: CGPoint, dash: Bool, arrowHead: Bool) -> CGPath {
     let length = (endPoint - startPoint).length()
     let headWidth: CGFloat = 10
     let headLength: CGFloat = 10
     
     // We draw a straight line along going from the origin over to the right
-    var path = CGPathCreateMutable()
-    CGPathMoveToPoint(path, nil, 0, 0)
-    CGPathAddLineToPoint(path, nil, length, 0)
+    var path = CGMutablePath()
+    path.moveTo(nil, x: 0, y: 0)
+    path.addLineTo(nil, x: length, y: 0)
     
     if dash {
         let dashPattern: [CGFloat] = [4, 6]
-        if let dashedPath = CGPathCreateMutableCopy(CGPathCreateCopyByDashingPath(path, nil, 0, dashPattern, dashPattern.count)) {
-            path = dashedPath
+        if let dashedPath = CGPath(copyByDashingPath: path, transform: nil, phase: 0, lengths: dashPattern, count: dashPattern.count) {
+            path = dashedPath.mutableCopy()
         }
     }
     
@@ -37,14 +37,14 @@ func createPointingLine(startPoint: CGPoint, endPoint: CGPoint, dash: Bool, arro
         *
         */
         let arrowStartX = length / 2
-        CGPathMoveToPoint(path, nil, arrowStartX - headLength, headWidth / 2) // top
-        CGPathAddLineToPoint(path, nil, arrowStartX, 0) // middle
-        CGPathAddLineToPoint(path, nil, arrowStartX - headLength, -headWidth / 2) // bottom
+        path.moveTo(nil, x: arrowStartX - headLength, y: headWidth / 2) // top
+        path.addLineTo(nil, x: arrowStartX, y: 0) // middle
+        path.addLineTo(nil, x: arrowStartX - headLength, y: -headWidth / 2) // bottom
     }
     
     // Now transform it so that it starts and ends at the right points
     let angle = (endPoint - startPoint).angle
     
-    var transform = CGAffineTransformRotate(CGAffineTransformMakeTranslation(startPoint.x, startPoint.y), angle)
-    return CGPathCreateCopyByTransformingPath(path, &transform)!
+    var transform = CGAffineTransform(translationX: startPoint.x, y: startPoint.y).rotate(angle)
+    return path.copy(using: &transform)!
 }

@@ -15,13 +15,13 @@
 #endif
 
 extension ALVFView {
-    public func addVerticalConstraints(constraintAble: [ConstraintAble]) -> [NSLayoutConstraint] {
+    public func addVerticalConstraints(_ constraintAble: [ConstraintAble]) -> [NSLayoutConstraint] {
         let constraints = verticalConstraints(constraintAble)
         self.addConstraints(constraints)
         return constraints
     }
     
-    public func addHorizontalConstraints(constraintAble: [ConstraintAble]) -> [NSLayoutConstraint] {
+    public func addHorizontalConstraints(_ constraintAble: [ConstraintAble]) -> [NSLayoutConstraint] {
         let constraints = horizontalConstraints(constraintAble)
         self.addConstraints(constraints)
         return constraints
@@ -38,15 +38,15 @@ extension ALVFView {
 }
 
 public func constraints(axis: UILayoutConstraintAxis, constraintAble: [ConstraintAble]) -> [NSLayoutConstraint] {
-    return constraintAble[0].toConstraints(axis)
+    return constraintAble[0].toConstraints(axis: axis)
 }
 
-public func horizontalConstraints(constraintAble: [ConstraintAble]) -> [NSLayoutConstraint] {
-    return constraints(.Horizontal, constraintAble: constraintAble)
+public func horizontalConstraints(_ constraintAble: [ConstraintAble]) -> [NSLayoutConstraint] {
+    return constraints(axis: .horizontal, constraintAble: constraintAble)
 }
 
-public func verticalConstraints(constraintAble: [ConstraintAble]) -> [NSLayoutConstraint] {
-    return constraints(.Vertical, constraintAble: constraintAble)
+public func verticalConstraints(_ constraintAble: [ConstraintAble]) -> [NSLayoutConstraint] {
+    return constraints(axis: .vertical, constraintAble: constraintAble)
 }
 
 
@@ -119,22 +119,22 @@ class SpacedViewsConstraintToken: NSObject, ConstraintAble, ViewContainingToken 
                 
                 var leadingAttribute: NSLayoutAttribute!
                 var trailingAttribute: NSLayoutAttribute!
-                if (axis == .Horizontal) {
-                    leadingAttribute = .Leading
-                    trailingAttribute = .Trailing
+                if (axis == .horizontal) {
+                    leadingAttribute = .leading
+                    trailingAttribute = .trailing
                 } else {
-                    leadingAttribute = .Top
-                    trailingAttribute = .Bottom
+                    leadingAttribute = .top
+                    trailingAttribute = .bottom
                 }
                 
                 var constraints = [NSLayoutConstraint(
                     item: trailingView, attribute: leadingAttribute,
-                    relatedBy: .Equal,
+                    relatedBy: .equal,
                     toItem: leadingView, attribute: trailingAttribute,
                     multiplier: 1.0, constant: space)]
                 
-                constraints += self.leadingView.toConstraints(axis)
-                constraints += self.trailingView.toConstraints(axis)
+                constraints += self.leadingView.toConstraints(axis: axis)
+                constraints += self.trailingView.toConstraints(axis: axis)
                 
                 return constraints
             }
@@ -171,15 +171,15 @@ class SizeConstantConstraintToken: NSObject, ConstraintAble, ViewContainingToken
         let constant = self.size.ALConstant
         
         var attribute: NSLayoutAttribute!
-        if (axis == .Horizontal) {
-            attribute = .Width
+        if (axis == .horizontal) {
+            attribute = .width
         } else {
-            attribute = .Height
+            attribute = .height
         }
         let constraint = NSLayoutConstraint(
             item: self.view, attribute: attribute,
             relatedBy: self.relation,
-            toItem: nil, attribute: .NotAnAttribute,
+            toItem: nil, attribute: .notAnAttribute,
             multiplier: 1.0, constant: constant)
         
         return [constraint]
@@ -211,10 +211,10 @@ class SizeRelationConstraintToken: NSObject, ConstraintAble, ViewContainingToken
     
     func toConstraints(axis: UILayoutConstraintAxis) -> [NSLayoutConstraint] {
         var attribute: NSLayoutAttribute!
-        if (axis == .Horizontal) {
-            attribute = .Width
+        if (axis == .horizontal) {
+            attribute = .width
         } else {
-            attribute = .Height
+            attribute = .height
         }
         return [ NSLayoutConstraint(
             item: self.view, attribute: attribute,
@@ -250,21 +250,21 @@ public class LeadingSuperviewConstraintToken: NSObject, ConstraintAble, ViewCont
             if let superview = view.superview {
                 var constraint: NSLayoutConstraint!
                 
-                if (axis == .Horizontal) {
+                if (axis == .horizontal) {
                     constraint = NSLayoutConstraint(
-                        item: view, attribute: .Leading,
-                        relatedBy: .Equal,
-                        toItem: superview, attribute: .Leading,
+                        item: view, attribute: .leading,
+                        relatedBy: .equal,
+                        toItem: superview, attribute: .leading,
                         multiplier: 1.0, constant: constant)
                 } else {
                     constraint = NSLayoutConstraint(
-                        item: view, attribute: .Top,
-                        relatedBy: .Equal,
-                        toItem: superview, attribute: .Top,
+                        item: view, attribute: .top,
+                        relatedBy: .equal,
+                        toItem: superview, attribute: .top,
                         multiplier: 1.0, constant: constant)
                 }
                 
-                return viewContainer.toConstraints(axis) + [constraint]
+                return viewContainer.toConstraints(axis: axis) + [constraint]
             }
             NSException(name: NSInvalidArgumentException, reason: "You tried to create a constraint to \(view)'s superview, but it has no superview yet!", userInfo: nil).raise()
         }
@@ -299,21 +299,21 @@ public class TrailingSuperviewConstraintToken: NSObject, ConstraintAble, ViewCon
             if let superview = view.superview {
                 var constraint: NSLayoutConstraint!
                 
-                if (axis == .Horizontal) {
+                if (axis == .horizontal) {
                     constraint = NSLayoutConstraint(
-                        item: superview, attribute: .Trailing,
-                        relatedBy: .Equal,
-                        toItem: view, attribute: .Trailing,
+                        item: superview, attribute: .trailing,
+                        relatedBy: .equal,
+                        toItem: view, attribute: .trailing,
                         multiplier: 1.0, constant: constant)
                 } else {
                     constraint = NSLayoutConstraint(
-                        item: superview, attribute: .Bottom,
-                        relatedBy: .Equal,
-                        toItem: view, attribute: .Bottom,
+                        item: superview, attribute: .bottom,
+                        relatedBy: .equal,
+                        toItem: view, attribute: .bottom,
                         multiplier: 1.0, constant: constant)
                 }
                 
-                return viewContainer.toConstraints(axis) + [constraint]
+                return viewContainer.toConstraints(axis: axis) + [constraint]
             }
             NSException(name: NSInvalidArgumentException, reason: "You tried to create a constraint to \(view)'s superview, but it has no superview yet!", userInfo: nil).raise()
         }
@@ -339,34 +339,34 @@ postfix public func | (tokenArray: [ViewContainingToken]) -> [TrailingSuperviewC
 
 func >= (left: ALVFView, right: ConstantToken) -> SizeConstantConstraintToken {
     // [view >= 50]
-    return SizeConstantConstraintToken(view: left, size: right, relation: .GreaterThanOrEqual)
+    return SizeConstantConstraintToken(view: left, size: right, relation: .greaterThanOrEqual)
 }
 func >= (left: ALVFView, right: ALVFView) -> SizeRelationConstraintToken {
     // [view >= view2]
-    return SizeRelationConstraintToken(view: left, relatedView: right, relation: .GreaterThanOrEqual)
+    return SizeRelationConstraintToken(view: left, relatedView: right, relation: .greaterThanOrEqual)
 }
 
 func <= (left: ALVFView, right: ConstantToken) -> SizeConstantConstraintToken {
     // [view <= 50]
-    return SizeConstantConstraintToken(view: left, size: right, relation: .LessThanOrEqual)
+    return SizeConstantConstraintToken(view: left, size: right, relation: .lessThanOrEqual)
 }
 func <= (left: ALVFView, right: ALVFView) -> SizeRelationConstraintToken {
     // [view <= view2]
-    return SizeRelationConstraintToken(view: left, relatedView: right, relation: .LessThanOrEqual)
+    return SizeRelationConstraintToken(view: left, relatedView: right, relation: .lessThanOrEqual)
 }
 
 func == (left: ALVFView, right: ConstantToken) -> SizeConstantConstraintToken {
     // [view == 50]
-    return SizeConstantConstraintToken(view: left, size: right, relation: .Equal)
+    return SizeConstantConstraintToken(view: left, size: right, relation: .equal)
 }
 func == (left: ALVFView, right: ALVFView) -> SizeRelationConstraintToken {
     // [view == view2]
-    return SizeRelationConstraintToken(view: left, relatedView: right, relation: .Equal)
+    return SizeRelationConstraintToken(view: left, relatedView: right, relation: .equal)
 }
 
 func - (left: [ViewContainingToken], right: ConstantToken) -> ViewAndSpaceToken {
     // [view]-5
-    return ViewAndSpaceToken(view: left[0], space: right, relation: .Equal)
+    return ViewAndSpaceToken(view: left[0], space: right, relation: .equal)
 }
 
 func - (left: ViewAndSpaceToken, right: [ViewContainingToken]) -> [SpacedViewsConstraintToken] {
@@ -393,7 +393,7 @@ postfix func -| (constant: ConstantToken) -> TrailingSuperviewAndSpaceToken {
 prefix operator |- {}
 prefix func |- (constant: ConstantToken) -> LeadingSuperviewAndSpaceToken {
     // |-5
-    return LeadingSuperviewAndSpaceToken(space: constant, relation: .Equal)
+    return LeadingSuperviewAndSpaceToken(space: constant, relation: .equal)
 }
 
 

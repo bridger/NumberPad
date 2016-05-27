@@ -32,7 +32,7 @@ class ImageCell: UICollectionViewCell {
         
         indexLabel.text = "Mj"
         indexLabel.sizeToFit()
-        indexLabel.frame = CGRectMake(0, self.contentView.bounds.height  - indexLabel.frame.size.height, self.contentView.bounds.width, indexLabel.frame.height)
+        indexLabel.frame = CGRect(x: 0, y:  self.contentView.bounds.height  - indexLabel.frame.size.height, width:  self.contentView.bounds.width, height: indexLabel.frame.height)
         self.contentView.addSubview(indexLabel)
         indexLabel.textColor = UIColor.grayColor()
     }

@@ -93,7 +93,7 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
         self.addSubview(centerMarker)
         
         self.addAutoLayoutSubview(subview: scrollView)
-        self.addHorizontalConstraints( constraintAble: |-0-[scrollView]-0-| )
+        self.addHorizontalConstraints( |-0-[scrollView]-0-| )
         scrollView.delegate = self
         self.scrollView.showsHorizontalScrollIndicator = false
         
@@ -108,28 +108,28 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
             let button = ScaleButton()
             button.translatesAutoresizingMaskIntoConstraints = false
             button.scale = Int16(scale)
-            button.setTitle(label, for: .normal)
+            button.setTitle(label, for: [])
             self.addSubview(button)
             
             // The following broke in swift 2.0, so they are expressed more explicity directly below
-            self.addVerticalConstraints( constraintAble: [button]-0-| )
+            self.addVerticalConstraints( [button]-0-| )
             self.addConstraint(button.al_bottom == self.al_bottom)
             if let previousButton = self.scaleButtons.last {
-                self.addHorizontalConstraints( constraintAble: [previousButton]-0-[button == previousButton] )
+                self.addHorizontalConstraints( [previousButton]-0-[button == previousButton] )
                 
                 self.addConstraint( previousButton.al_height == button.al_height )
             } else {
                 // The first button!
-                self.addConstraints(horizontalConstraints( constraintAble: |-0-[button] ))
+                self.addConstraints(horizontalConstraints( |-0-[button] ))
             }
-            button.addTarget(self, action: Selector(("scaleButtonTapped:")), forControlEvents: .touchUpInside)
+            button.addTarget(self, action: Selector(("scaleButtonTapped:")), for: .touchUpInside)
             
             self.scaleButtons.append(button)
         }
         
         let lastScaleButton = self.scaleButtons.last!
-        self.addHorizontalConstraints( constraintAble: [lastScaleButton]-0-| )
-        self.addVerticalConstraints( constraintAble: |-0-[scrollView]-0-[lastScaleButton]-0-| )
+        self.addHorizontalConstraints( [lastScaleButton]-0-| )
+        self.addVerticalConstraints( |-0-[scrollView]-0-[lastScaleButton]-0-| )
         
         self.addConstraint(centerMarker.al_height == scrollView.al_height)
         self.addConstraint(centerMarker.al_bottom == scrollView.al_bottom)
@@ -142,7 +142,7 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
     public override func layoutSubviews() {
         super.layoutSubviews()
         scrollView.contentSize = CGSize(width: 5000, height: scrollView.frame.size.height)
-        scrollingContentContainer.frame = CGRectMake(0, 0, self.scrollView.contentSize.width, self.scrollView.contentSize.height)
+        scrollingContentContainer.frame = CGRect(x: 0, y:  0, width:  self.scrollView.contentSize.width, height: self.scrollView.contentSize.height)
         
         let yPosition = scrollingContentContainer.bounds.size.height / 2.0
         for label in visibleLabels {
@@ -177,7 +177,7 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
         
         if distanceFromCenter > contentWidth / 4.0 {
             let moveAmount = centerOffsetX - currentOffset.x
-            scrollView.contentOffset = CGPointMake(centerOffsetX, currentOffset.y)
+            scrollView.contentOffset = CGPoint(x: centerOffsetX, y: currentOffset.y)
             
             for label in self.visibleLabels {
                 var center = scrollingContentContainer.convert(label.center, to: scrollView)
