@@ -329,7 +329,7 @@ class PythagorasToy : UIView, Toy {
         let context = UIGraphicsGetCurrentContext()!
         context.clear(rect)
         let lineWidth: CGFloat = 4
-        func drawLine(startPoint: CGPoint, delta: CGPoint, color: CGColor) -> CGPoint {
+        @discardableResult func drawLine(startPoint: CGPoint, delta: CGPoint, color: CGColor) -> CGPoint {
             let endPoint = CGPoint(x: startPoint.x + delta.x, y: startPoint.y + delta.y)
             context.moveTo(x: startPoint.x, y: startPoint.y)
             context.addLineTo(x: endPoint.x, y: endPoint.y)
