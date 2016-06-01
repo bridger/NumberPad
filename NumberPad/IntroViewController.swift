@@ -49,7 +49,7 @@ class IntroViewController: UIViewController {
     }
     
     func backPressed() {
-        self.navigationController?.popViewController(animated: true)
+        _ = self.navigationController?.popViewController(animated: true)
     }
     
     @IBAction func startSandbox(sender: AnyObject) {

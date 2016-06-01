@@ -150,7 +150,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
     }
     
     // Returns whether it changed size
-    func displayValue(value: Double?) -> Bool {
+    @discardableResult func displayValue(value: Double?) -> Bool {
         
         let namePrefix = self.name != nil ? self.name! + " : " : ""
         if var value = value {
@@ -207,7 +207,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
         resizeAndLayout()
     }
     
-    func resizeAndLayout() -> Bool {
+    @discardableResult func resizeAndLayout() -> Bool {
         let center = self.center
         let size = self.bounds.size
         sizeToFit()

@@ -106,7 +106,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             print("Tried to move connector to bottom priority, but couldn't find it!")
         }
     }
-    func removeConnectorLabel(label: ConnectorLabel) -> [(ConstraintView, ConnectorPort)] {
+    @discardableResult func removeConnectorLabel(label: ConnectorLabel) -> [(ConstraintView, ConnectorPort)] {
         var oldPorts: [(ConstraintView, ConnectorPort)] = []
         if let index = connectorLabels.index(of: label) {
             if label == selectedConnectorLabel {
@@ -890,7 +890,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         self.needsLayout = true
     }
     
-    func connectConstraintViews(firstConstraintView: ConstraintView, firstConnectorPort: ConnectorPort, secondConstraintView: ConstraintView, secondConnectorPort: ConnectorPort) -> ConnectorLabel {
+    @discardableResult func connectConstraintViews(firstConstraintView: ConstraintView, firstConnectorPort: ConnectorPort, secondConstraintView: ConstraintView, secondConnectorPort: ConnectorPort) -> ConnectorLabel {
         // We are dragging from one constraint directly to another constraint. To accomodate, we create a connector in-between and make two connections
         let midPoint = (firstConstraintView.center + secondConstraintView.center) / 2.0
         

@@ -15,13 +15,13 @@
 #endif
 
 extension ALVFView {
-    public func addVerticalConstraints(_ constraintAble: [ConstraintAble]) -> [NSLayoutConstraint] {
+    @discardableResult public func addVerticalConstraints(_ constraintAble: [ConstraintAble]) -> [NSLayoutConstraint] {
         let constraints = verticalConstraints(constraintAble)
         self.addConstraints(constraints)
         return constraints
     }
     
-    public func addHorizontalConstraints(_ constraintAble: [ConstraintAble]) -> [NSLayoutConstraint] {
+    @discardableResult public func addHorizontalConstraints(_ constraintAble: [ConstraintAble]) -> [NSLayoutConstraint] {
         let constraints = horizontalConstraints(constraintAble)
         self.addConstraints(constraints)
         return constraints
