@@ -1,11 +1,11 @@
 What is NumberPad
 ---
 
-NumberPad is an experimental prototype to explore how we write, visualize, and manipulate math equations. Handwriting recognition and a constraint solver let the iPad do the rote algorithms of algebra so you can work at a higher level. It is inspired by the constraint solver in [Structure and Interpretation of Computer Programs](https://mitpress.mit.edu/sicp/full-text/book/book.html).
+NumberPad is an experimental prototype to explore how we write, visualize, and manipulate math equations. [This post](http://bridgermaxwell.com/blog/numberpad-notation/) highlights some of the interesting features.
 
-A longer blog post will be needed to explain some of the ideas in NumberPad, but until then [here is a video that shows the setup of a compound interest rate](https://www.dropbox.com/s/jekhexap01sh9pn/NumberPad%20Compound%20Interest.mov?dl=0). You can adjust the "inputs" like principal investment, years, or interest rate or you can adjust the "output" amount and solve for one of those variables.
+Handwriting recognition and a constraint solver let the iPad do the rote algorithms of algebra so you can work at a higher level. It is inspired by the constraint solver in [Structure and Interpretation of Computer Programs](https://mitpress.mit.edu/sicp/full-text/book/book.html).
 
-Here is another [video showing a visualization of the pythagorean theorem](https://www.dropbox.com/s/on998j6t3muu27j/NumberPadPythagorean.mov?dl=0).
+After reading [the post that explains the notation](http://bridgermaxwell.com/blog/numberpad-notation/), watch this [video showing a visualization of the pythagorean theorem](https://www.dropbox.com/s/on998j6t3muu27j/NumberPadPythagorean.mov?dl=0).
 
 Using NumberPad
 ---
