@@ -60,7 +60,7 @@ func functionExpression(functionName: String, arguments: [DDExpression]) -> DDEx
 }
 
 func constantExpression(number: Double) -> DDExpression {
-    return DDExpression.numberExpressionWithNumber(number)!
+    return DDExpression.number(with: number)!
 }
 
 class Constraint {

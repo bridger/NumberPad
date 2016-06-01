@@ -122,7 +122,7 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
                 // The first button!
                 self.addConstraints(horizontalConstraints( |-0-[button] ))
             }
-            button.addTarget(self, action: Selector(("scaleButtonTapped:")), for: .touchUpInside)
+            button.addTarget(self, action: #selector(NumberSlideView.scaleButtonTapped(button:)), for: .touchUpInside)
             
             self.scaleButtons.append(button)
         }

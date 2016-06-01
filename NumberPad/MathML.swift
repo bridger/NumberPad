@@ -13,7 +13,7 @@ let DDMathOperatorLogBase = "logbase"
 
 func mathMLForExpression(expression: DDExpression, formattedValues: [DDExpression : String]) -> String? {
     switch expression.expressionType() {
-    case .Function:
+    case .function:
         if let functionName = expression.function {
             if let values = expression.arguments as? [DDExpression] {
                 func subExpressionInParenthesisIfNecessary(subExpression: DDExpression, subExpressionMathML: String, onlyForAddition: Bool = false) -> String {
@@ -67,12 +67,12 @@ func mathMLForExpression(expression: DDExpression, formattedValues: [DDExpressio
             }
         }
         
-    case .Variable:
+    case .variable:
         if let variableName = expression.variable {
             return "<mi>\(variableName)</mi>"
         }
         
-    case .Number:
+    case .number:
         if let formattedValues = formattedValues[expression] {
             return "<mn>\(formattedValues)</mn>"
         } else if let numberValue = expression.number {

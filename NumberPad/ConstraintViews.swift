@@ -89,7 +89,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
         }
     }
     
-    func userContentController(_ userContentController: WKUserContentController, didReceiveScriptMessage message: WKScriptMessage) {
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         if let rectValues = message.body as? [CGFloat] {
             if rectValues.count == 2 {
                 
@@ -469,7 +469,7 @@ class MultiInputOutputConstraintView: ConstraintView {
         }
         allAngles.sort()
         
-        var bestAngle: (angle: CGFloat, score: CGFloat) = (0, CGFloat.min)
+        var bestAngle: (angle: CGFloat, score: CGFloat) = (0, CGFloat.leastNormalMagnitude)
         for index in 0..<allAngles.count {
             // We grab this angle and the next angle (looping around to the first angle, if necessary)
             let angle1 = allAngles[index]
