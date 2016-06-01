@@ -28,7 +28,7 @@ class Stroke {
     
     func updateLayer() {
         if layerNeedsUpdate {
-            let path = CGMutablePathRef()
+            let path = CGMutablePath()
             for (index, point) in points.enumerated() {
                 if index == 0 {
                     path.moveTo(nil, x: point.x, y: point.y)

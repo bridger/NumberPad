@@ -298,7 +298,7 @@ public class DTWDigitClassifier {
         let minNeighborSize = 2
         let maxNeighborSize = 10
         if sample.count < minNeighborSize * 4 || prototype.count < minNeighborSize * 4 {
-            return CGFloat.max
+            return CGFloat.greatestFiniteMagnitude
         }
         
         let windowWidth: CGFloat = 6.0
@@ -342,15 +342,15 @@ public class DTWDigitClassifier {
             // sampleIndex < (slope * CGFloat(prototypeIndex) + windowWidth
             // sampleIndex < (slope * CGFloat(prototypeIndex) - windowWidth
             // You can think of slope * CGFloat(prototypeIndex) as being the perfectly diagonal pairing
-            var up = CGFloat.max
+            var up = CGFloat.greatestFiniteMagnitude
             if CGFloat(sampleIndex + 1) < slope * CGFloat(prototypeIndex) + windowWidth {
                 up = hHalfMetricForPoints(sampleIndex: sampleIndex + 1, prototypeIndex: prototypeIndex, neighborsRange: safeNeighborSize)
             }
-            var right = CGFloat.max
+            var right = CGFloat.greatestFiniteMagnitude
             if CGFloat(sampleIndex) < slope * CGFloat(prototypeIndex + 1) + windowWidth {
                 right = hHalfMetricForPoints(sampleIndex: sampleIndex, prototypeIndex: prototypeIndex + 1, neighborsRange: safeNeighborSize)
             }
-            var diagonal = CGFloat.max
+            var diagonal = CGFloat.greatestFiniteMagnitude
             if (CGFloat(sampleIndex + 1) < slope * CGFloat(prototypeIndex + 1) + windowWidth &&
                 CGFloat(sampleIndex + 1) > slope * CGFloat(prototypeIndex + 1) - windowWidth) {
                     diagonal = hHalfMetricForPoints(sampleIndex: sampleIndex + 1, prototypeIndex: prototypeIndex + 1, neighborsRange: safeNeighborSize)
@@ -477,10 +477,10 @@ public class DTWDigitClassifier {
         
         var xScale = 1.0 / xDistance;
         var yScale = 1.0 / yDistance;
-        if !isfinite(xScale) {
+        if !xScale.isFinite {
             xScale = 1
         }
-        if !isfinite(yScale) {
+        if !yScale.isFinite {
              yScale = 1
         }
         let scale = min(xScale, yScale)

@@ -190,7 +190,7 @@ class NameCanvasViewController: UIViewController {
         }
         
         let colorSpace = CGColorSpaceCreateDeviceRGB()
-        let graphicsContext = CGBitmapContextCreate(nil, width, height, 8, 0, colorSpace, CGImageAlphaInfo.PremultipliedLast.rawValue)
+        let graphicsContext = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0, space: colorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
         
         // Flip the y axis
         var transform = CGAffineTransform(scaleX: 1, y: -1)
@@ -199,28 +199,28 @@ class NameCanvasViewController: UIViewController {
         // Scale the points down to fit into the image
         transform = transform.scaleBy(x: ratio, y: ratio)
         transform = transform.translateBy(x: -self.boundingRect.origin.x + strokeWidth, y: 0)
-        CGContextConcatCTM(graphicsContext, transform)
+        graphicsContext.concatCTM(transform)
         
         for stroke in completedStrokes {
             var firstPoint = true
             for point in stroke.points {
                 
                 if firstPoint {
-                    CGContextMoveToPoint(graphicsContext, point.x, point.y)
+                    graphicsContext.moveTo(x: point.x, y: point.y)
                     firstPoint = false
                 } else {
-                    CGContextAddLineToPoint(graphicsContext, point.x, point.y)
+                    graphicsContext.addLineTo(x: point.x, y: point.y)
                 }
             }
             
-            CGContextSetLineCap(graphicsContext, .Round)
-            CGContextSetStrokeColorWithColor(graphicsContext, color)
-            CGContextSetLineWidth(graphicsContext, strokeWidth)
-            CGContextStrokePath(graphicsContext)
+            graphicsContext.setLineCap(.round)
+            graphicsContext.setStrokeColor(color)
+            graphicsContext.setLineWidth(strokeWidth)
+            graphicsContext.strokePath()
         }
         
-        if let cgImage = CGBitmapContextCreateImage(graphicsContext) {
-            return UIImage(CGImage: cgImage, scale: scale, orientation: .Up)
+        if let cgImage = graphicsContext.makeImage() {
+            return UIImage(cgImage: cgImage, scale: scale, orientation: .up)
         }
         return nil
     }

@@ -28,10 +28,10 @@ extension FTTouchClassification : CustomStringConvertible {
     public
     var description : String {
         switch self {
-        case .UnknownDisconnected: return "UnkownDisconnected"
-        case .Palm: return "Palm"
-        case .Finger: return "Finger"
-        case .Eraser: return "Eraser"
+        case .unknownDisconnected: return "UnkownDisconnected"
+        case .palm: return "Palm"
+        case .finger: return "Finger"
+        case .eraser: return "Eraser"
         default: return "Unknown"
         }
     }

@@ -156,10 +156,10 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 let selectedValue = selectedConnectorLabelValueOverride ?? self.lastValueForConnector(connector: connectorLabel.connector)
                 var valueToDisplay = selectedValue ?? 0.0
                 selectedConnectorLabelValueOverride = nil
-                if !isfinite(valueToDisplay) {
+                if !valueToDisplay.isFinite {
                     valueToDisplay = 0.0
                 }
-                valuePicker.resetToValue( value: NSDecimalNumber(double: Double(valueToDisplay)), scale: connectorLabel.scale)
+                valuePicker.resetToValue( value: NSDecimalNumber(value: Double(valueToDisplay)), scale: connectorLabel.scale)
                 
                 // If this is the input of a toy, make sure the outputs are low priority
                 for toy in self.toys {
@@ -294,7 +294,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         }
     }
     
-    @objc(classificationsDidChangeForTouches:) func classificationsDidChangeForTouches(_ touches: Set<NSObject>) {
+    func classificationsDidChange(forTouches touches: Set<NSObject>) {
         if usePenClassifications() {
             for object in touches {
                 if let classificationInfo = object as? FTTouchClassificationInfo {
@@ -1004,7 +1004,8 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                     var combinedLabels = classifiedLabels.reduce("", combine: +)
                     var isPercent = false
                     if classifiedLabels.count > 1 && combinedLabels.hasSuffix("/") {
-                        combinedLabels = combinedLabels.substringToIndex(combinedLabels.endIndex.predecessor())
+                        // TODO: Fix in swift3
+//                        combinedLabels = combinedLabels.substringToIndex( combinedLabels.endIndex.predecessor())
                         isPercent = true
                     }
                     var writtenValue: Double?
@@ -1463,8 +1464,8 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         return dragLine
     }
     
-    override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
-        super.viewWillTransitionToSize(size, withTransitionCoordinator: coordinator)
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
         coordinator.animate(alongsideTransition: nil, completion: { context in
             self.updateScrollableSize()
         })

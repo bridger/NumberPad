@@ -20,10 +20,11 @@ class IntroViewController: UIViewController {
             loadData(path: path)
         }
         
-        let pairingView = FTPenManager.sharedInstance().pairingButton(with: .debug);
-        self.view.addAutoLayoutSubview(subview: pairingView!)
-        self.view.addVerticalConstraints(|-15-[pairingView])
-        self.view.addHorizontalConstraints(|-15-[pairingView])
+        // TODO: Fix in swift3
+//        let pairingView = FTPenManager.sharedInstance().pairingButton(with: .debug);
+//        self.view.addAutoLayoutSubview(subview: pairingView!)
+//        self.view.addVerticalConstraints(|-15-[pairingView])
+//        self.view.addHorizontalConstraints(|-15-[pairingView])
     }
     
     func loadData(path: String) {
