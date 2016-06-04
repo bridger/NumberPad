@@ -77,7 +77,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         if automaticallyConnect {
             if let (lastConstraint, inputPort) = self.selectedConnectorPort {
                 if label.connector.constraints.count == 0 {
-                    lastConstraint.connectPort(port: inputPort, connector: label.connector)
+                    lastConstraint.connect(inputPort, to: label.connector)
                     self.needsLayout = true
                     self.needsSolving = true
                 }
@@ -120,7 +120,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             for constraintView in self.constraintViews {
                 for port in constraintView.connectorPorts() {
                     if port.connector === deleteConnector {
-                        constraintView.removeConnectorAtPort(port: port)
+                        constraintView.removeConnector(at: port)
                         oldPorts.append((constraintView, port))
                     }
                 }
@@ -203,7 +203,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         }
         
         if let firstInputPort = firstInputPort, selectedConnector = self.selectedConnectorLabel {
-            constraintView.connectPort(port: firstInputPort, connector: selectedConnector.connector)
+            constraintView.connect(firstInputPort, to: selectedConnector.connector)
             self.needsLayout = true
             self.needsSolving = true
         }
@@ -216,11 +216,11 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
     var selectedConnectorPort: (ConstraintView: ConstraintView, ConnectorPort: ConnectorPort)? {
         didSet {
             if let (oldConstraintView, oldConnectorPort) = oldValue {
-                oldConstraintView.setConnectorPort(port: oldConnectorPort, isHighlighted: false)
+                oldConstraintView.setConnector(port: oldConnectorPort, isHighlighted: false)
             }
             
             if let (newConstraintView, newConnectorPort) = self.selectedConnectorPort {
-                newConstraintView.setConnectorPort(port: newConnectorPort, isHighlighted: true)
+                newConstraintView.setConnector(port: newConnectorPort, isHighlighted: true)
                 
                 if self.selectedConnectorLabel != nil {
                     self.selectedConnectorLabel = nil
@@ -234,7 +234,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
     func unhighlightConnectorPortIfNotSelected(constraintView: ConstraintView?, connectorPort: ConnectorPort?) {
         if let constraintView = constraintView, connectorPort = connectorPort {
             if selectedConnectorPort?.ConnectorPort !== connectorPort {
-                constraintView.setConnectorPort(port: connectorPort, isHighlighted: false)
+                constraintView.setConnector(port: connectorPort, isHighlighted: false)
             }
         }
     }
@@ -244,7 +244,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             constraintViews.remove(at: index)
             constraintView.removeFromSuperview()
             for port in constraintView.connectorPorts() {
-                constraintView.removeConnectorAtPort(port: port)
+                constraintView.removeConnector(at: port)
             }
             if self.selectedConnectorPort?.ConstraintView == constraintView {
                 self.selectedConnectorPort = nil
@@ -728,7 +728,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             } else if let constraintView = self.constraintViewAtPoint(point: point) {
                 self.removeConstraintView(constraintView: constraintView)
             } else if let (_, constraintView, connectorPort) = self.connectionLineAtPoint(point: point, distanceCutoff: 2.0) {
-                constraintView.removeConnectorAtPort(port: connectorPort)
+                constraintView.removeConnector(at: connectorPort)
                 self.needsSolving = true
                 self.needsLayout = true
             }
@@ -766,7 +766,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             
             touchInfo.highlightedConnectorPort = targetConstraint
             if let (constraintView, connectorPort) = targetConstraint {
-                constraintView.setConnectorPort(port: connectorPort, isHighlighted: true)
+                constraintView.setConnector(port: connectorPort, isHighlighted: true)
             }
             
         } else if let (constraintView, _, connectorPort) = touchInfo.constraintView {
@@ -781,11 +781,11 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 let targetConstraint = connectorPortAtLocation(location: point)
                 touchInfo.highlightedConnectorPort = targetConstraint
                 if let (constraintView, connectorPort) = targetConstraint {
-                    constraintView.setConnectorPort(port: connectorPort, isHighlighted: true)
+                    constraintView.setConnector(port: connectorPort, isHighlighted: true)
                 }
             }
             dragLine = createConnectionLayer(startPoint: startPoint, endPoint: endPoint, color: connectorPort!.color, isDependent: dependent, drawArrow: false)
-            constraintView.setConnectorPort(port: connectorPort!, isHighlighted: true)
+            constraintView.setConnector(port: connectorPort!, isHighlighted: true)
             
         } else {
             fatalError("A touchInfo was classified as MakeConnection, but didn't have a connectorLabel or connectorPort.")
@@ -881,11 +881,11 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         for connectorPort in constraintView.connectorPorts() {
             if connectorPort.connector === connectorLabel.connector {
                 // This connector is already hooked up to this constraintView. The user is probably trying to change the connection, so we remove the old one
-                constraintView.removeConnectorAtPort(port: connectorPort)
+                constraintView.removeConnector(at: connectorPort)
             }
         }
         
-        constraintView.connectPort(port: connectorPort, connector: connectorLabel.connector)
+        constraintView.connect(connectorPort, to: connectorLabel.connector)
         self.needsSolving = true
         self.needsLayout = true
     }
@@ -900,8 +900,8 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         newLabel.center = midPoint
         self.addConnectorLabel(label: newLabel, topPriority: false, automaticallyConnect: false)
         
-        firstConstraintView.connectPort(port: firstConnectorPort, connector: newConnector)
-        secondConstraintView.connectPort(port: secondConnectorPort, connector: newConnector)
+        firstConstraintView.connect(firstConnectorPort, to: newConnector)
+        secondConstraintView.connect(secondConnectorPort, to: newConnector)
         self.needsSolving = true
         self.needsLayout = true
         
@@ -929,7 +929,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
     func connectorPortAtLocation(location: CGPoint) -> (ConstraintView: ConstraintView, ConnectorPort: ConnectorPort)? {
         for constraintView in constraintViews {
             let point = constraintView.convert(location, from: self.scrollView)
-            if let port = constraintView.connectorPortForDragAtLocation(location: point, connectorIsVisible: { self.connectorToLabel[$0] != nil}) {
+            if let port = constraintView.connectorPortForDrag(at: point, connectorIsVisible: { self.connectorToLabel[$0] != nil}) {
                 return (constraintView, port)
             }
         }
@@ -1030,7 +1030,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                         // We recognized a multiply or divide!
                         let newMultiplier = Multiplier()
                         let newView = MultiplierView(multiplier: newMultiplier)
-                        newView.layoutWithConnectorPositions(positions: [:])
+                        newView.layout(withConnectorPositions: [:])
                         newView.center = centerPoint
                         let inputs = newView.inputConnectorPorts()
                         let outputs = newView.outputConnectorPorts()
@@ -1047,7 +1047,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                         // We recognized an add or subtract!
                         let newAdder = Adder()
                         let newView = AdderView(adder: newAdder)
-                        newView.layoutWithConnectorPositions(positions: [:])
+                        newView.layout(withConnectorPositions: [:])
                         newView.center = centerPoint
                         let inputs = newView.inputConnectorPorts()
                         let outputs = newView.outputConnectorPorts()
@@ -1064,7 +1064,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                     } else if combinedLabels == "^" {
                         let newExponent = Exponent()
                         let newView = ExponentView(exponent: newExponent)
-                        newView.layoutWithConnectorPositions(positions: [:])
+                        newView.layout(withConnectorPositions: [:])
                         newView.center = centerPoint
                         
                         self.addConstraintView(constraintView: newView, firstInputPort: newView.basePort, secondInputPort: newView.exponentPort, outputPort: newView.resultPort)
@@ -1185,7 +1185,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 connectorPositions[connectorLabel.connector] = connectorLabel.center
             }
             for constraintView in self.constraintViews {
-                constraintView.layoutWithConnectorPositions(positions: connectorPositions)
+                constraintView.layout(withConnectorPositions: connectorPositions)
             }
             self.needsLayout = false
             self.needsRebuildConnectionLayers = true

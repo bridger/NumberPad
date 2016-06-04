@@ -295,28 +295,28 @@ class ConstraintView: UIView {
     func connectorPorts() -> [ConnectorPort] {
         fatalError("This method must be overriden")
     }
-    func connectorPortForDragAtLocation(location: CGPoint, connectorIsVisible: @noescape(Connector) -> Bool) -> ConnectorPort? {
+    func connectorPortForDrag(at location: CGPoint, connectorIsVisible: @noescape(Connector) -> Bool) -> ConnectorPort? {
         fatalError("This method must be overriden")
     }
-    func connectPort(port: ConnectorPort, connector: Connector) {
+    func connect(_ port: ConnectorPort, to target: Connector) {
         fatalError("This method must be overriden")
     }
-    func layoutWithConnectorPositions(positions: [Connector: CGPoint]) {
+    func layout(withConnectorPositions positions: [Connector: CGPoint]) {
         fatalError("This method must be overriden")
     }
-    func removeConnectorAtPort(port: ConnectorPort) {
+    func removeConnector(at target: ConnectorPort) {
         fatalError("This method must be overriden")
     }
     
-    private func addSentinelConnectorToPort(connectorPort: InternalConnectorPort) {
-        self.connectPort(port: connectorPort, connector: Connector())
+    private func addSentinelConnector(to target: InternalConnectorPort) {
+        self.connect(target, to: Connector())
     }
     
     func idealAngleForNewConnectorLabel(connector: Connector, positions: [Connector: CGPoint]) -> CGFloat {
         fatalError("This method must be overriden")
     }
     
-    func setConnectorPort(port: ConnectorPort, isHighlighted: Bool) {
+    func setConnector(port: ConnectorPort, isHighlighted: Bool) {
         fatalError("This method must be overriden")
     }
     
@@ -362,7 +362,7 @@ class MultiInputOutputConstraintView: ConstraintView {
         return [outputPort as ConnectorPort]
     }
     
-    override func connectorPortForDragAtLocation(location: CGPoint, connectorIsVisible: @noescape(Connector) -> Bool) -> ConnectorPort? {
+    override func connectorPortForDrag(at location: CGPoint, connectorIsVisible: @noescape(Connector) -> Bool) -> ConnectorPort? {
         if euclidianDistanceSquared(a: outputPort.center, b: location) < 18*18 {
             return outputPort
         } else if euclidianDistanceSquared(a: inputPorts[0].center, b: location) < 18*18 {
@@ -383,7 +383,7 @@ class MultiInputOutputConstraintView: ConstraintView {
         return nil
     }
     
-    override func connectPort(port: ConnectorPort, connector: Connector) {
+    override func connect(_ port: ConnectorPort, to target: Connector) {
         guard let port = port as? InternalConnectorPort else {
             return
         }
@@ -398,31 +398,31 @@ class MultiInputOutputConstraintView: ConstraintView {
         }
         
         if port.isOutput {
-            innerConstraint.addOutput(connector: connector)
+            innerConstraint.addOutput(connector: target)
         } else {
-            innerConstraint.addInput(connector: connector)
+            innerConstraint.addInput(connector: target)
             if inputPorts.index(of: port) == nil {
                 inputPorts.append(port)
             }
         }
-        port.connector = connector
+        port.connector = target
     }
     
-    override func removeConnectorAtPort(port: ConnectorPort) {
-        guard let port = port as? InternalConnectorPort else {
+    override func removeConnector(at target: ConnectorPort) {
+        guard let target = target as? InternalConnectorPort else {
             return
         }
         
-        if !port.isOutput && inputPorts.count > 2 {
+        if !target.isOutput && inputPorts.count > 2 {
             // We kill this port forever
-            guard let inputIndex = inputPorts.index(of: port) else {
+            guard let inputIndex = inputPorts.index(of: target) else {
                 print("couldn't find a connectorPort. Maybe it was already removed?")
                 return
             }
             inputPorts.remove(at: inputIndex)
-            innerConstraint.removeInput(connector: port.connector)
+            innerConstraint.removeInput(connector: target.connector)
         } else {
-            addSentinelConnectorToPort(connectorPort: port) // This will remove the old connector
+            addSentinelConnector(to: target) // This will remove the old connector
         }
         
         return
@@ -436,10 +436,10 @@ class MultiInputOutputConstraintView: ConstraintView {
         
         for inputPort in self.inputPorts {
             inputPort.color = self.inputColor
-            addSentinelConnectorToPort(connectorPort: inputPort)
+            addSentinelConnector(to: inputPort)
         }
         self.outputPort.color = self.outputColor
-        addSentinelConnectorToPort(connectorPort: self.outputPort)
+        addSentinelConnector(to: self.outputPort)
         
         self.layer.cornerRadius = 5
         let borderWidth: CGFloat = 2.0
@@ -492,7 +492,7 @@ class MultiInputOutputConstraintView: ConstraintView {
         return bestAngle.angle
     }
     
-    override func setConnectorPort(port: ConnectorPort, isHighlighted: Bool) {
+    override func setConnector(port: ConnectorPort, isHighlighted: Bool) {
         guard let port = port as? InternalConnectorPort else {
             return
         }
@@ -558,7 +558,7 @@ class MultiplierView: MultiInputOutputConstraintView {
     let inputSize: CGFloat = 32.0
     let outputSize: CGFloat = 16.0
     let outputOverhang: CGFloat = 7.0
-    override func layoutWithConnectorPositions(positions: [Connector: CGPoint]) {
+    override func layout(withConnectorPositions positions: [Connector: CGPoint]) {
         self.sizeToFit()
         
         self.inputColoredLayer.frame = CGRect(x: outputOverhang, y:  outputOverhang, width:  inputSize, height: inputSize)
@@ -634,7 +634,7 @@ class AdderView: MultiInputOutputConstraintView {
     let inputSize: CGFloat = 35.0
     let outputSize: CGFloat = 18.0
     let outputOverhang: CGFloat = 3.0
-    override func layoutWithConnectorPositions(positions: [Connector: CGPoint]) {
+    override func layout(withConnectorPositions positions: [Connector: CGPoint]) {
         self.sizeToFit()
         
         self.inputColoredLayer.frame = CGRect(x: outputOverhang, y:  outputOverhang, width:  inputSize, height: inputSize)
@@ -703,7 +703,7 @@ class ExponentView: ConstraintView {
         return [exponentInput, resultOutput, baseInput]
     }
     
-    override func connectorPortForDragAtLocation(location: CGPoint, connectorIsVisible: @noescape(Connector) -> Bool) -> ConnectorPort? {
+    override func connectorPortForDrag(at location: CGPoint, connectorIsVisible: @noescape(Connector) -> Bool) -> ConnectorPort? {
         for internalPort in internalConnectorPorts() {
             let cutoffSquared: CGFloat = (internalPort === basePort) ? 900 : 400
             if euclidianDistanceSquared(a: internalPort.center, b: location) < cutoffSquared {
@@ -713,23 +713,23 @@ class ExponentView: ConstraintView {
         return nil
     }
     
-    override func connectPort(port: ConnectorPort, connector: Connector) {
+    override func connect(_ port: ConnectorPort, to target: Connector) {
         if port === baseInput {
-            exponent.base = connector
-            baseInput.connector = connector
+            exponent.base = target
+            baseInput.connector = target
         } else if port === exponentInput {
-            exponent.exponent = connector
-            exponentInput.connector = connector
+            exponent.exponent = target
+            exponentInput.connector = target
         } else if port === resultOutput {
-            exponent.result = connector
-            resultOutput.connector = connector
+            exponent.result = target
+            resultOutput.connector = target
         }
     }
     
-    override func removeConnectorAtPort(port: ConnectorPort) {
+    override func removeConnector(at target: ConnectorPort) {
         for internalPort in internalConnectorPorts() {
-            if internalPort === port {
-                addSentinelConnectorToPort(connectorPort: internalPort) // This will remove the old connector
+            if internalPort === target {
+                addSentinelConnector(to: internalPort) // This will remove the old connector
                 return
             }
         }
@@ -755,9 +755,9 @@ class ExponentView: ConstraintView {
     init(exponent: Exponent) {
         self.exponent = exponent
         super.init(frame: CGRect.zero)
-        addSentinelConnectorToPort(connectorPort: self.exponentInput)
-        addSentinelConnectorToPort(connectorPort: self.baseInput)
-        addSentinelConnectorToPort(connectorPort: self.resultOutput)
+        addSentinelConnector(to: self.exponentInput)
+        addSentinelConnector(to: self.baseInput)
+        addSentinelConnector(to: self.resultOutput)
         self.baseInput.color = UIColor.exponentBaseColor()
         self.exponentInput.color = UIColor.exponentExponentColor()
         self.resultOutput.color = UIColor.exponentResultColor()
@@ -793,7 +793,7 @@ class ExponentView: ConstraintView {
     let baseSize: CGFloat = 35
     let portSize: CGFloat = 18
     let portOverhang = CGPoint(x: 0, y: 0)
-    override func layoutWithConnectorPositions(positions: [Connector: CGPoint]) {
+    override func layout(withConnectorPositions positions: [Connector: CGPoint]) {
         self.sizeToFit()
         
         self.baseLayer.frame = CGRect(x: 0, y:  0, width:  baseSize, height: baseSize)
@@ -840,7 +840,7 @@ class ExponentView: ConstraintView {
         return CGSize(width: baseSize + portSize / 2 + portOverhang.x, height: baseSize + portSize / 2 + portOverhang.y)
     }
     
-    override func setConnectorPort(port: ConnectorPort, isHighlighted: Bool) {
+    override func setConnector(port: ConnectorPort, isHighlighted: Bool) {
         let color: UIColor
         let layer: CALayer
         if port === baseInput {
