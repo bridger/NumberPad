@@ -20,7 +20,7 @@ class Stroke {
         layer.fillColor = nil
     }
     
-    func addPoint(point: CGPoint)
+    func append( CGPoint)
     {
         points.append(point)
         
@@ -70,17 +70,18 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
     
     func handleStroke(recognizer: StrokeGestureRecognizer) {
         if recognizer.state == UIGestureRecognizerState.began {
-            self.currentStroke = Stroke()
+            let currentStroke = Stroke()
+            self.currentStroke = currentStroke
             self.scrollView.layer.addSublayer(self.currentStroke!.layer)
             
             let point = recognizer.location(in: self.scrollView)
-            self.currentStroke!.addPoint(point: point)
+            currentStroke.append( point)
             self.resultLabel.text = ""
             
         } else if recognizer.state == UIGestureRecognizerState.changed {
             if let currentStroke = self.currentStroke {
                 let point = recognizer.location(in: self.scrollView)
-                currentStroke.addPoint(point: point)
+                currentStroke.append( point)
             }
         } else if recognizer.state == UIGestureRecognizerState.ended {
             if let currentStroke = self.currentStroke {

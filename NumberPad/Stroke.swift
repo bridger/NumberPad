@@ -20,7 +20,7 @@ class Stroke {
     }
     
     var layerNeedsUpdate = false
-    func addPoint(point: CGPoint)
+    func append(_ point: CGPoint)
     {
         points.append(point)
         layerNeedsUpdate = true

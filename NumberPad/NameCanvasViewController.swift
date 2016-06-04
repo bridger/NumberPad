@@ -117,7 +117,7 @@ class NameCanvasViewController: UIViewController {
                 let stroke = Stroke()
                 activeStrokes[touchID] = stroke
                 
-                stroke.addPoint(point: point)
+                stroke.append( point)
                 self.boundingRect = self.boundingRect.union(CGRect(x: point.x, y:  point.y, width:  0, height: 0))
                 self.canvasView.layer.addSublayer(stroke.layer)
                 stroke.layer.strokeColor = UIColor.selectedTextColor().cgColor
@@ -133,7 +133,7 @@ class NameCanvasViewController: UIViewController {
                 let point = touch.location(in: self.canvasView)
                 
                 self.boundingRect = self.boundingRect.union(CGRect(x: point.x, y:  point.y, width:  0, height: 0))
-                stroke.addPoint(point: point)
+                stroke.append( point)
                 stroke.updateLayer()
             }
         }

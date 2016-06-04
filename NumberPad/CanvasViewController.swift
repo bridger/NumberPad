@@ -358,7 +358,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             self.initialPoint = initialPoint
             self.initialTime = initialTime
             
-            currentStroke.addPoint(point: initialPoint)
+            currentStroke.append( initialPoint)
         }
         
         func pickedUpView() -> (View: UIView, Offset: CGPoint)? {
@@ -433,7 +433,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             if let touchInfo = self.touches[touchID] {
                 let point = touch.location(in: self.scrollView)
                 
-                touchInfo.currentStroke.addPoint(point: point)
+                touchInfo.currentStroke.append( point)
                 touchInfo.phase = .moved
                 
                 if (usePenClassifications()) {
@@ -475,7 +475,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             if let touchInfo = self.touches[touchID] {
                 let point = touch.location(in: self.scrollView)
                 
-                touchInfo.currentStroke.addPoint(point: point)
+                touchInfo.currentStroke.append( point)
                 touchInfo.phase = .ended
                 
                 // See if this was a tap
