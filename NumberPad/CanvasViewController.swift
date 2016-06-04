@@ -1004,8 +1004,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                     var combinedLabels = classifiedLabels.reduce("", combine: +)
                     var isPercent = false
                     if classifiedLabels.count > 1 && combinedLabels.hasSuffix("/") {
-                        // TODO: Fix in swift3
-//                        combinedLabels = combinedLabels.substringToIndex( combinedLabels.endIndex.predecessor())
+                        combinedLabels = combinedLabels.substring(to: combinedLabels.index(before: combinedLabels.endIndex))
                         isPercent = true
                     }
                     var writtenValue: Double?
