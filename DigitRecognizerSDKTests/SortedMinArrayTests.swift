@@ -24,28 +24,28 @@ class SortedMinArrayTests: XCTestCase {
     func testInsertion() {
         var minArray = SortedMinArray<Double, Int>(capacity: 3)
         
-        minArray.add(4.2, element: 4)
-        minArray.add(7.2, element: 7)
-        minArray.add(3.14, element: 3)
-        minArray.add(-3.5, element: -3)
+        minArray.add(value: 4.2, element: 4)
+        minArray.add(value: 7.2, element: 7)
+        minArray.add(value: 3.14, element: 3)
+        minArray.add(value: -3.5, element: -3)
         
         XCTAssert(minArray.count == 3, "Only 3 elements should be in array")
         
-        minArray.add(1.4, element: 1)
-        minArray.add(25.3, element: 25)
+        minArray.add(value: 1.4, element: 1)
+        minArray.add(value: 25.3, element: 25)
         
-        XCTAssert(getElementsAndValues(minArray).elements == [-3, 1, 3], "Elements are wrong")
+        XCTAssert(getElementsAndValues(minArray: minArray).elements == [-3, 1, 3], "Elements are wrong")
         
-        minArray.add(2.5, element: 2)
+        minArray.add(value: 2.5, element: 2)
         
-        let results = getElementsAndValues(minArray)
+        let results = getElementsAndValues(minArray: minArray)
         XCTAssert(results.elements == [-3, 1, 2], "Elements are wrong")
         XCTAssert(results.values == [-3.5, 1.4, 2.5], "Values are wrong")
     }
     
     func testEmpty() {
         var noCapacity = SortedMinArray<Double, Int>(capacity: 0)
-        noCapacity.add(3.14, element: 3)
+        noCapacity.add(value: 3.14, element: 3)
         XCTAssert(noCapacity.count == 0, "No element should be added")
         
         for (_, _) in noCapacity {

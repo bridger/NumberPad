@@ -15,7 +15,7 @@ class Stroke {
     
     init(){
         layer = CAShapeLayer()
-        layer.strokeColor = UIColor.blackColor().CGColor
+        layer.strokeColor = UIColor.black().cgColor
         layer.lineWidth = 2
         layer.fillColor = nil
     }
@@ -24,12 +24,12 @@ class Stroke {
     {
         points.append(point)
         
-        let path = CGPathCreateMutable()
-        for (index, point) in points.enumerate() {
+        let path = CGMutablePath()
+        for (index, point) in points.enumerated() {
             if index == 0 {
-                CGPathMoveToPoint(path, nil, point.x, point.y)
+                path.moveTo(nil, x: point.x, y: point.y)
             } else {
-                CGPathAddLineToPoint(path, nil, point.x, point.y)
+                path.addLineTo(nil, x: point.x, y: point.y)
             }
         }
         layer.path = path;
@@ -54,14 +54,14 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
         self.digitClassifier = AppDelegate.sharedAppDelegate().digitClassifier
         self.scrollView = UIScrollView(frame: self.view.bounds)
         self.scrollView.panGestureRecognizer.minimumNumberOfTouches = 2
-        self.view.insertSubview(self.scrollView, atIndex: 0)
+        self.view.insertSubview(self.scrollView, at: 0)
         
         let strokeRecognizer = StrokeGestureRecognizer()
         self.scrollView.addGestureRecognizer(strokeRecognizer)
-        strokeRecognizer.addTarget(self, action: "handleStroke:")
+        strokeRecognizer.addTarget(self, action: Selector("handleStroke:"))
         
         for index in 0..<self.labelSelector.numberOfSegments {
-            if self.labelSelector.titleForSegmentAtIndex(index) == "Test" {
+            if self.labelSelector.titleForSegment(at: index) == "Test" {
                 self.labelSelector.selectedSegmentIndex = index
                 break;
             }
@@ -69,27 +69,27 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
     }
     
     func handleStroke(recognizer: StrokeGestureRecognizer) {
-        if recognizer.state == UIGestureRecognizerState.Began {
+        if recognizer.state == UIGestureRecognizerState.began {
             self.currentStroke = Stroke()
             self.scrollView.layer.addSublayer(self.currentStroke!.layer)
             
-            let point = recognizer.locationInView(self.scrollView)
-            self.currentStroke!.addPoint(point)
+            let point = recognizer.location(in: self.scrollView)
+            self.currentStroke!.addPoint(point: point)
             self.resultLabel.text = ""
             
-        } else if recognizer.state == UIGestureRecognizerState.Changed {
+        } else if recognizer.state == UIGestureRecognizerState.changed {
             if let currentStroke = self.currentStroke {
-                let point = recognizer.locationInView(self.scrollView)
-                currentStroke.addPoint(point)
+                let point = recognizer.location(in: self.scrollView)
+                currentStroke.addPoint(point: point)
             }
-        } else if recognizer.state == UIGestureRecognizerState.Ended {
+        } else if recognizer.state == UIGestureRecognizerState.ended {
             if let currentStroke = self.currentStroke {
                 
                 var wasFarAway = false
                 if let lastStroke = self.previousStrokes.last {
                     if let lastStrokeLastPoint = lastStroke.points.last {
-                        let point = recognizer.locationInView(self.scrollView)
-                        if euclidianDistance(lastStrokeLastPoint, b: point) > 150 {
+                        let point = recognizer.location(in: self.scrollView)
+                        if euclidianDistance(a: lastStrokeLastPoint, b: point) > 150 {
                             wasFarAway = true
                         }
                     }
@@ -97,7 +97,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
                 
                 let selectedSegment = self.labelSelector.selectedSegmentIndex
                 if selectedSegment != UISegmentedControlNoSegment {
-                    if let currentLabel = self.labelSelector.titleForSegmentAtIndex(selectedSegment) {
+                    if let currentLabel = self.labelSelector.titleForSegment(at: selectedSegment) {
                         
                         if currentLabel == "Test" {
                             var allStrokes: DTWDigitClassifier.DigitStrokes = []
@@ -108,13 +108,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
                             }
                             allStrokes.append(currentStroke.points)
                             
-                            if let writtenNumber = self.readStringFromStrokes(allStrokes) {
+                            if let writtenNumber = self.readStringFromStrokes(strokes: allStrokes) {
                                 self.resultLabel.text = writtenNumber
                             } else {
                                 self.resultLabel.text = "Unknown"
                             }
                             if wasFarAway {
-                                self.clearStrokes(nil)
+                                self.clearStrokes(sender: nil)
                             }
                             
                         } else {
@@ -123,10 +123,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
                                 for previousStroke in self.previousStrokes {
                                     lastDigit.append(previousStroke.points)
                                 }
-                                self.clearStrokes(nil)
+                                self.clearStrokes(sender: nil)
                                 
-                                self.digitClassifier.learnDigit(currentLabel, digit: lastDigit)
-                                if let classification = self.digitClassifier.classifyDigit(lastDigit) {
+                                self.digitClassifier.learnDigit(label: currentLabel, digit: lastDigit)
+                                if let classification = self.digitClassifier.classifyDigit(digit: lastDigit) {
                                     self.resultLabel.text = classification.Label
                                 } else {
                                     self.resultLabel.text = "Unknown"
@@ -143,7 +143,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
     
     // If any one stroke can't be classified, this will return nil
     func readStringFromStrokes(strokes: [[CGPoint]]) -> String? {
-        if let classifiedLabels = self.digitClassifier.classifyMultipleDigits(strokes) {
+        if let classifiedLabels = self.digitClassifier.classifyMultipleDigits(strokes: strokes) {
             return classifiedLabels.reduce("", combine: +)
         } else {
             return nil
@@ -155,7 +155,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
         for previousStroke in self.previousStrokes {
             previousStroke.layer.removeFromSuperlayer()
         }
-        self.previousStrokes.removeAll(keepCapacity: false)
+        self.previousStrokes.removeAll(keepingCapacity: false)
     }
 }
 
