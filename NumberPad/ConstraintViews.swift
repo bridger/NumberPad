@@ -319,6 +319,10 @@ class ConstraintView: UIView {
     func setConnectorPort(port: ConnectorPort, isHighlighted: Bool) {
         fatalError("This method must be overriden")
     }
+    
+    func showOperatorFor(output port: ConnectorPort) {
+        fatalError("This method must be overriden")
+    }
 }
 
 class MultiInputOutputConstraintView: ConstraintView {
@@ -339,8 +343,6 @@ class MultiInputOutputConstraintView: ConstraintView {
             return UIColor.adderOutputColor()
         }
     }
-    
-    var showInverseOperator: Bool = false
     
     var inputPorts = [InternalConnectorPort(isOutput: false), InternalConnectorPort(isOutput: false)]
     let outputPort = InternalConnectorPort(isOutput: true)
@@ -524,17 +526,18 @@ class MultiplierView: MultiInputOutputConstraintView {
         self.addSubview(self.label)
     }
     
-    override var showInverseOperator: Bool {
-        didSet {
-            let labelCenter = self.label.center
-            if showInverseOperator {
-                self.label.text = "÷"
-            } else {
-                self.label.text = "x"
-            }
-            self.label.sizeToFit()
-            self.label.center = labelCenter
+    override func showOperatorFor(output port: ConnectorPort) {
+        guard let port = port as? InternalConnectorPort else {
+            return
         }
+        let labelCenter = self.label.center
+        if port.isOutput {
+            self.label.text = "x"
+        } else {
+            self.label.text = "÷"
+        }
+        self.label.sizeToFit()
+        self.label.center = labelCenter
     }
     
     override var inputColor: UIColor {
@@ -610,17 +613,18 @@ class AdderView: MultiInputOutputConstraintView {
         }
     }
     
-    override var showInverseOperator: Bool {
-        didSet {
-            let labelCenter = self.label.center
-            if showInverseOperator {
-                self.label.text = "—"
-            } else {
-                self.label.text = "+"
-            }
-            self.label.sizeToFit()
-            self.label.center = labelCenter
+    override func showOperatorFor(output port: ConnectorPort) {
+        guard let port = port as? InternalConnectorPort else {
+            return
         }
+        let labelCenter = self.label.center
+        if port.isOutput {
+            self.label.text = "+"
+        } else {
+            self.label.text = "-"
+        }
+        self.label.sizeToFit()
+        self.label.center = labelCenter
     }
 
     required init(coder aDecoder: NSCoder) {
@@ -729,6 +733,19 @@ class ExponentView: ConstraintView {
                 return
             }
         }
+    }
+    
+    override func showOperatorFor(output port: ConnectorPort) {
+        let labelCenter = self.label.center
+        if port === baseInput {
+            self.label.text = "√"
+        } else if port === exponentInput {
+            self.label.text = "ˡᵒᵍ"
+        } else if port === resultOutput {
+            self.label.text = "^"
+        }
+        self.label.sizeToFit()
+        self.label.center = labelCenter
     }
     
     let baseLayer = CALayer()
