@@ -25,15 +25,15 @@ class DTWDigitClassifierTests: XCTestCase {
     
     func testParameters() {
         let digitClassifier = DTWDigitClassifier()
-        let bundle = NSBundle(forClass: self.dynamicType)
+        let bundle = NSBundle(for: self.dynamicType)
         
-        let trainingJsonData = DTWDigitClassifier.jsonLibraryFromFile(bundle.pathForResource("bridger_train", ofType: "json")!)
-        digitClassifier.loadData(trainingJsonData!, loadNormalizedData: false)
+        let trainingJsonData = DTWDigitClassifier.jsonLibraryFromFile(path: bundle.pathForResource("bridger_train", ofType: "json")!)
+        digitClassifier.loadData(jsonData: trainingJsonData!, loadNormalizedData: false)
 //        trainingJsonData = DTWDigitClassifier.jsonLibraryFromFile(bundle.pathForResource("ujipenchars2", ofType: "json")!)
 //        digitClassifier.loadData(trainingJsonData!, loadNormalizedData: false)
         
-        let testJsonData = DTWDigitClassifier.jsonLibraryFromFile(bundle.pathForResource("bridger_test", ofType: "json")!)
-        let testData = DTWDigitClassifier.jsonToLibrary(testJsonData!["rawData"]!)
+        let testJsonData = DTWDigitClassifier.jsonLibraryFromFile(path: bundle.pathForResource("bridger_test", ofType: "json")!)
+        let testData = DTWDigitClassifier.jsonToLibrary(json: testJsonData!["rawData"]!)
         
         
         for (votesCounted, scoreCutoff): (Int, CGFloat) in [(5, 0.8)] {
@@ -54,9 +54,9 @@ class DTWDigitClassifierTests: XCTestCase {
                 
                 var index = 0
                 for testDigit in testDigits {
-                    labelTotal++
+                    labelTotal += 1
                     
-                    let classification = digitClassifier.classifyDigit(testDigit, votesCounted: votesCounted, scoreCutoff: scoreCutoff)
+                    let classification = digitClassifier.classifyDigit(digit: testDigit, votesCounted: votesCounted, scoreCutoff: scoreCutoff)
                     if classification?.Label == label {
                         labelCorrect += 1
                     } else if classification == nil {
@@ -66,11 +66,11 @@ class DTWDigitClassifierTests: XCTestCase {
                         print("! Misclassified \(label) as \(classification!.Label). Strokes \(testDigit.count) Indexes \(index) \(classification!.BestPrototypeIndex)")
                         labelWrong += 1
                     }
-                    index++
+                    index += 1
                 }
                 
                 let accuracy = Double(labelCorrect) / Double(labelTotal)
-                let elapsedTime = NSDate().timeIntervalSinceDate(startDigitTime)
+                let elapsedTime = NSDate().timeIntervalSince(startDigitTime)
                 print(String(format: "Accuracy score for %@ is %.3f%% (%d/%d). %d wrong. %d unknown. Took %d seconds", label, accuracy, labelCorrect, labelTotal, labelWrong, labelUnclassified, Int(elapsedTime)))
                 
                 
@@ -86,7 +86,7 @@ class DTWDigitClassifierTests: XCTestCase {
             print("")
             
             let accuracy = Double(aggregateCorrect) / Double(aggregateTotal)
-            let elapsedTime = NSDate().timeIntervalSinceDate(startTime)
+            let elapsedTime = NSDate().timeIntervalSince(startTime)
             print("Accuracy score for (\(votesCounted), \(scoreCutoff)) is \(accuracy)% (\(aggregateCorrect)/\(aggregateTotal)). All tests took \(elapsedTime) seconds.")
         }
     }
@@ -94,16 +94,16 @@ class DTWDigitClassifierTests: XCTestCase {
     func testPerformanceAndAccuracy() {
         let digitClassifier = DTWDigitClassifier()
         
-        let bundle = NSBundle(forClass: self.dynamicType)
-        let trainingJsonData = DTWDigitClassifier.jsonLibraryFromFile(bundle.pathForResource("bridger_train", ofType: "json")!)
+        let bundle = NSBundle(for: self.dynamicType)
+        let trainingJsonData = DTWDigitClassifier.jsonLibraryFromFile(path: bundle.pathForResource("bridger_train", ofType: "json")!)
         XCTAssertNotNil(trainingJsonData,  "Could not load training data")
         
-        let testJsonData = DTWDigitClassifier.jsonLibraryFromFile(bundle.pathForResource("bridger_test", ofType: "json")!)
+        let testJsonData = DTWDigitClassifier.jsonLibraryFromFile(path: bundle.pathForResource("bridger_test", ofType: "json")!)
         XCTAssertNotNil(testJsonData,  "Could not load test data")
-        let testData = DTWDigitClassifier.jsonToLibrary(testJsonData!["rawData"]!)
+        let testData = DTWDigitClassifier.jsonToLibrary(json: testJsonData!["rawData"]!)
         
-        digitClassifier.loadData(trainingJsonData!, loadNormalizedData: false)
-        self.measureBlock {
+        digitClassifier.loadData(jsonData: trainingJsonData!, loadNormalizedData: false)
+        self.measure {
             let startTime = NSDate()
             var aggregateCorrect = 0
             var aggregateTotal = 0
@@ -115,9 +115,9 @@ class DTWDigitClassifierTests: XCTestCase {
                 var labelWrong = 0
 
                 for testDigit in testDigits {
-                    labelTotal++
+                    labelTotal += 1
                     
-                    let classification = digitClassifier.classifyDigit(testDigit)?.Label
+                    let classification = digitClassifier.classifyDigit(digit: testDigit)?.Label
                     if classification == label {
                         labelCorrect += 1
                     } else if classification == nil {
@@ -135,7 +135,7 @@ class DTWDigitClassifierTests: XCTestCase {
             }
             
             let accuracy = Double(aggregateCorrect) / Double(aggregateTotal)
-            let elapsedTime = NSDate().timeIntervalSinceDate(startTime)
+            let elapsedTime = NSDate().timeIntervalSince(startTime)
             print("Accuracy score for all training data is \(accuracy)% (\(aggregateCorrect)/\(aggregateTotal)). All tests took \(elapsedTime) seconds.")
         }
     }
