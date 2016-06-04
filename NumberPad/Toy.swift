@@ -82,16 +82,19 @@ class MotionToy : UIView, Toy {
             
             let ghostValues = resolver(inputValues: [self.driverConnector: offsetDriverValue])
             
-            if let xPosition = ghostValues[self.xConnector]?.DoubleValue,
-                let yPosition = ghostValues[self.yConnector]?.DoubleValue {
-
-                    let percent = Double(offset) / Double(range)
-                    let ghost = self.createNewGhost(percent: percent)
-                    self.superview?.insertSubview(ghost, belowSubview: self)
-                    ghost.center.x = CGFloat(xPosition)
-                    let toyYZero = self.superview?.frame.size.height ?? 0
-                    ghost.center.y = toyYZero - CGFloat(yPosition)
+            guard let xPosition = ghostValues[self.xConnector]?.DoubleValue,
+                let yPosition = ghostValues[self.yConnector]?.DoubleValue
+                where xPosition.isFinite && yPosition.isFinite else {
+                    continue
             }
+            
+            let percent = Double(offset) / Double(range)
+            let ghost = self.createNewGhost(percent: percent)
+            self.superview?.insertSubview(ghost, belowSubview: self)
+            ghost.center.x = CGFloat(xPosition)
+            let toyYZero = self.superview?.frame.size.height ?? 0
+        
+            ghost.center.y = toyYZero - CGFloat(yPosition)
         }
     }
     
@@ -99,10 +102,10 @@ class MotionToy : UIView, Toy {
     func update(values: [Connector : SimulationContext.ResolvedValue]) {
         removeAllGhosts()
         
-        if let xPosition = values[self.xConnector]?.DoubleValue {
+        if let xPosition = values[self.xConnector]?.DoubleValue where xPosition.isFinite {
             self.center.x = CGFloat(xPosition)
         }
-        if let yPosition = values[self.yConnector]?.DoubleValue {
+        if let yPosition = values[self.yConnector]?.DoubleValue where yPosition.isFinite {
             let toyYZero = self.superview?.frame.size.height ?? 0
             self.center.y = toyYZero - CGFloat(yPosition)
         }
@@ -254,10 +257,10 @@ class CirclesToy : UIView, Toy {
     }
     
     func update(values: [Connector : SimulationContext.ResolvedValue]) {
-        if let diameter = values[self.diameterConnector]?.DoubleValue {
+        if let diameter = values[self.diameterConnector]?.DoubleValue where diameter.isFinite {
             self.mainCircle.diameter = diameter
         }
-        if let circumference = values[self.circumferenceConnector]?.DoubleValue {
+        if let circumference = values[self.circumferenceConnector]?.DoubleValue where circumference.isFinite {
             self.mainCircle.circumference = circumference
         }
     }
@@ -303,14 +306,14 @@ class PythagorasToy : UIView, Toy {
     var b: Double = 0
     var c: Double = 0
     func update(values: [Connector : SimulationContext.ResolvedValue]) {
-        if let a = values[self.aConnector]?.DoubleValue, let b = values[self.bConnector]?.DoubleValue {
+        if let a = values[self.aConnector]?.DoubleValue, let b = values[self.bConnector]?.DoubleValue where a.isFinite && b.isFinite {
             if self.a != a || self.b != b {
                 self.a = max(a, 0)
                 self.b = max(b, 0)
                 self.setNeedsDisplay()
             }
         }
-        if let c = values[self.cConnector]?.DoubleValue {
+        if let c = values[self.cConnector]?.DoubleValue where c.isFinite {
             if self.c != c {
                 self.c = max(c, 0)
                 self.setNeedsDisplay()
