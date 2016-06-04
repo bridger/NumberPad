@@ -16,9 +16,9 @@ public protocol NumberSlideViewDelegate: NSObjectProtocol {
 class ScaleButton: UIButton {
     var scale: Int16 = 0
     
-    override var selected: Bool {
+    override var isSelected: Bool {
         didSet {
-            if self.selected {
+            if self.isSelected {
                 self.backgroundColor = UIColor.textColor()
             } else {
                 self.backgroundColor = UIColor.selectedBackgroundColor()
@@ -39,13 +39,13 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
         for label in visibleLabels {
             label.removeFromSuperview()
         }
-        visibleLabels.removeAll(keepCapacity: true)
+        visibleLabels.removeAll(keepingCapacity: true)
         
         // Stop the scrolling
         scrollView.setContentOffset(scrollView.contentOffset, animated: false)
         
         self.scale = scale
-        let center = self.convertPoint(scrollView.center, toView: scrollingContentContainer)
+        let center = self.convert(scrollView.center, to: scrollingContentContainer)
         valueAnchor = (Value: value, Offset: center.x)
         
         fixScrollableContent()
@@ -54,21 +54,21 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
     
     public func selectedValue() -> NSDecimalNumber? {
         if let valueAnchor = valueAnchor {
-            let offsetFromAnchor = self.scrollView.contentOffset.x + CGRectGetMidX(self.bounds) - valueAnchor.Offset
+            let offsetFromAnchor = self.scrollView.contentOffset.x + self.bounds.midX - valueAnchor.Offset
             
             let spacePerTick = spacingBetweenLabels / 10.0
             let ticks = Int(round(offsetFromAnchor / spacePerTick))
             
             let valuePerTick = NSDecimalNumber(mantissa: 1, exponent: self.scale, isNegative: false)
-            return valueAnchor.Value.decimalNumberByAdding( NSDecimalNumber(integer: ticks).decimalNumberByMultiplyingBy(valuePerTick) )
+            return valueAnchor.Value.adding( NSDecimalNumber(value: ticks).multiplying(by: valuePerTick) )
         }
         return nil
     }
     
     public func roundedSelectedValue() -> NSDecimalNumber? {
         if let value = self.selectedValue() {
-            let roundBehavior = NSDecimalNumberHandler(roundingMode: .RoundDown, scale: -scale, raiseOnExactness: false, raiseOnOverflow: false, raiseOnUnderflow: false, raiseOnDivideByZero: false)
-            return value.decimalNumberByRoundingAccordingToBehavior(roundBehavior)
+            let roundBehavior = NSDecimalNumberHandler(roundingMode: .roundDown, scale: -scale, raiseOnExactness: false, raiseOnOverflow: false, raiseOnUnderflow: false, raiseOnDivideByZero: false)
+            return value.rounding(accordingToBehavior: roundBehavior)
         }
         return nil
     }
@@ -92,23 +92,23 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
         centerMarker.backgroundColor = UIColor.textColor()
         self.addSubview(centerMarker)
         
-        self.addAutoLayoutSubview(scrollView)
+        self.addAutoLayoutSubview(subview: scrollView)
         self.addHorizontalConstraints( |-0-[scrollView]-0-| )
         scrollView.delegate = self
         self.scrollView.showsHorizontalScrollIndicator = false
         
         self.scrollView.addSubview(scrollingContentContainer)
-        scrollingContentContainer.userInteractionEnabled = false
+        scrollingContentContainer.isUserInteractionEnabled = false
         
         self.layoutIfNeeded()
-        resetToValue(NSDecimalNumber.zero(), scale: 0)
+        resetToValue(value: NSDecimalNumber.zero(), scale: 0)
         
         let scales = [(-4, ".1%"), (-3, ".01"), (-2, ".1"), (-1, "1"), (0, "10"), (1, "10²")]
         for (scale, label) in scales {
             let button = ScaleButton()
             button.translatesAutoresizingMaskIntoConstraints = false
             button.scale = Int16(scale)
-            button.setTitle(label, forState: .Normal)
+            button.setTitle(label, for: [])
             self.addSubview(button)
             
             // The following broke in swift 2.0, so they are expressed more explicity directly below
@@ -122,7 +122,7 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
                 // The first button!
                 self.addConstraints(horizontalConstraints( |-0-[button] ))
             }
-            button.addTarget(self, action: "scaleButtonTapped:", forControlEvents: .TouchUpInside)
+            button.addTarget(self, action: #selector(NumberSlideView.scaleButtonTapped(button:)), for: .touchUpInside)
             
             self.scaleButtons.append(button)
         }
@@ -141,8 +141,8 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
     
     public override func layoutSubviews() {
         super.layoutSubviews()
-        scrollView.contentSize = CGSizeMake(5000, scrollView.frame.size.height)
-        scrollingContentContainer.frame = CGRectMake(0, 0, self.scrollView.contentSize.width, self.scrollView.contentSize.height)
+        scrollView.contentSize = CGSize(width: 5000, height: scrollView.frame.size.height)
+        scrollingContentContainer.frame = CGRect(x: 0, y:  0, width:  self.scrollView.contentSize.width, height: self.scrollView.contentSize.height)
         
         let yPosition = scrollingContentContainer.bounds.size.height / 2.0
         for label in visibleLabels {
@@ -154,16 +154,16 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
     
     func scaleButtonTapped(button: ScaleButton) {
         if let selectedValue = selectedValue() {
-            self.resetToValue(selectedValue, scale: button.scale)
+            self.resetToValue(value: selectedValue, scale: button.scale)
             if let delegate = delegate {
-                delegate.numberSlideView(self, didSelectNewScale: button.scale)
+                delegate.numberSlideView(numberSlideView: self, didSelectNewScale: button.scale)
             }
         }
     }
     
     func updateScaleButtons() {
         for button in self.scaleButtons {
-            button.selected = button.scale == self.scale
+            button.isSelected = button.scale == self.scale
         }
     }
     
@@ -177,12 +177,12 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
         
         if distanceFromCenter > contentWidth / 4.0 {
             let moveAmount = centerOffsetX - currentOffset.x
-            scrollView.contentOffset = CGPointMake(centerOffsetX, currentOffset.y)
+            scrollView.contentOffset = CGPoint(x: centerOffsetX, y: currentOffset.y)
             
             for label in self.visibleLabels {
-                var center = scrollingContentContainer.convertPoint(label.center, toView: scrollView)
+                var center = scrollingContentContainer.convert(label.center, to: scrollView)
                 center.x += moveAmount
-                label.center = scrollView.convertPoint(center, toView: scrollingContentContainer)
+                label.center = scrollView.convert(center, to: scrollingContentContainer)
             }
             
             if let valueAnchor = self.valueAnchor {
@@ -192,14 +192,14 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
     }
     
     var lastSelectedValue: NSDecimalNumber?
-    public func scrollViewDidScroll(scrollView: UIScrollView) {
+    public func scrollViewDidScroll(_ scrollView: UIScrollView) {
         fixScrollableContent()
         
         // Figure out which new value is selected. If it is new, pass it on to the delegate
         if let delegate = delegate {
             if let selectedValue = roundedSelectedValue() {
                 if selectedValue != lastSelectedValue {
-                    delegate.numberSlideView(self, didSelectNewValue: selectedValue, scale: self.scale)
+                    delegate.numberSlideView(numberSlideView: self, didSelectNewValue: selectedValue, scale: self.scale)
                     lastSelectedValue = selectedValue
                 }
             }
@@ -210,18 +210,18 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
     func fixScrollableContent() {
         recenterIfNecessary()
         
-        let visibleBounds = scrollView.convertRect(scrollView.bounds, toView: scrollingContentContainer)
-        let minVisibleX = CGRectGetMinX(visibleBounds)
-        let maxVisibileX = CGRectGetMaxX(visibleBounds)
+        let visibleBounds = scrollView.convert(scrollView.bounds, to: scrollingContentContainer)
+        let minVisibleX = visibleBounds.minX
+        let maxVisibileX = visibleBounds.maxX
         
-        self.tileLabelsFromMinX(minVisibleX - spacingBetweenLabels * 2, maxX: maxVisibileX + spacingBetweenLabels * 2)
+        self.tileLabelsFromMinX(minX: minVisibleX - spacingBetweenLabels * 2, maxX: maxVisibileX + spacingBetweenLabels * 2)
     }
     
     func addLabelCenteredAt(value: NSDecimalNumber, centerX: CGFloat) -> NumberLabel {
         let newLabel = NumberLabel(number: value)
-        newLabel.font = UIFont.systemFontOfSize(22)
+        newLabel.font = UIFont.systemFont(ofSize: 22)
         newLabel.sizeToFit()
-        newLabel.center = CGPointMake(centerX, CGRectGetMidY(scrollingContentContainer.bounds))
+        newLabel.center = CGPoint(x: centerX, y: scrollingContentContainer.bounds.midY)
         newLabel.textColor = UIColor.selectedTextColor()
         scrollingContentContainer.addSubview(newLabel)
         return newLabel
@@ -236,7 +236,7 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
                 let distanceFromCenter = (minX + maxX) / 2.0 - valueAnchor.Offset
                 let placesToMove = Int(distanceFromCenter / spacingBetweenLabels)
                 
-                let newValue = valueAnchor.Value.decimalNumberByAdding( NSDecimalNumber(integer: placesToMove).decimalNumberByMultiplyingBy(valueBetweenLabels) )
+                let newValue = valueAnchor.Value.adding( NSDecimalNumber(value: placesToMove).multiplying(by: valueBetweenLabels) )
                 let newOffset = valueAnchor.Offset + CGFloat(placesToMove) * spacingBetweenLabels
                 valueAnchor = (Value: newValue, Offset: newOffset)
                 self.valueAnchor = valueAnchor
@@ -246,12 +246,12 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
             // to kick off the tiling we need to make sure there's at least one label
             if visibleLabels.count == 0 {
                 // We need to add the first label! If we have a valueAnchor at 60.6 and a scale of 0, then we would place a label of 60 at (60% * spacing) to the left of the anchor.
-                let labelRoundBehavior = NSDecimalNumberHandler(roundingMode: .RoundDown, scale: -(scale + 1), raiseOnExactness: false, raiseOnOverflow: false, raiseOnUnderflow: false, raiseOnDivideByZero: false)
-                let closestLabelValue = valueAnchor.Value.decimalNumberByRoundingAccordingToBehavior(labelRoundBehavior)
+                let labelRoundBehavior = NSDecimalNumberHandler(roundingMode: .roundDown, scale: -(scale + 1), raiseOnExactness: false, raiseOnOverflow: false, raiseOnUnderflow: false, raiseOnDivideByZero: false)
+                let closestLabelValue = valueAnchor.Value.rounding(accordingToBehavior: labelRoundBehavior)
                 
                 let valueDifference = (closestLabelValue.doubleValue - valueAnchor.Value.doubleValue)
                 let offset = CGFloat(valueDifference / valueBetweenLabels.doubleValue) * spacingBetweenLabels
-                let label = addLabelCenteredAt(closestLabelValue, centerX: valueAnchor.Offset + offset)
+                let label = addLabelCenteredAt(value: closestLabelValue, centerX: valueAnchor.Offset + offset)
                 visibleLabels.append(label)
             }
             
@@ -259,9 +259,9 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
             var firstLabel = visibleLabels.first!
             while firstLabel.center.x - spacingBetweenLabels > minX {
                 let newCenter = firstLabel.center.x - spacingBetweenLabels
-                let newValue = firstLabel.number.decimalNumberBySubtracting(valueBetweenLabels)
-                let label = addLabelCenteredAt(newValue, centerX: newCenter)
-                visibleLabels.insert(label, atIndex: 0)
+                let newValue = firstLabel.number.subtracting(valueBetweenLabels)
+                let label = addLabelCenteredAt(value: newValue, centerX: newCenter)
+                visibleLabels.insert(label, at: 0)
                 firstLabel = label
             }
             
@@ -269,8 +269,8 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
             var lastLabel = visibleLabels.last!
             while lastLabel.center.x + spacingBetweenLabels < maxX {
                 let newCenter = lastLabel.center.x + spacingBetweenLabels
-                let newValue = lastLabel.number.decimalNumberByAdding(valueBetweenLabels)
-                let label = addLabelCenteredAt(newValue, centerX: newCenter)
+                let newValue = lastLabel.number.adding(valueBetweenLabels)
+                let label = addLabelCenteredAt(value: newValue, centerX: newCenter)
                 visibleLabels.append(label)
                 lastLabel = label
             }
@@ -278,8 +278,8 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
             // Remove labels that have fallen off the left edge
             while true {
                 if let firstLabel = visibleLabels.first {
-                    if CGRectGetMidX(firstLabel.frame) < minX {
-                        visibleLabels.removeAtIndex(0)
+                    if firstLabel.frame.midX < minX {
+                        visibleLabels.remove(at: 0)
                         firstLabel.removeFromSuperview()
                         continue
                     }
@@ -290,7 +290,7 @@ public class NumberSlideView: UIView, UIScrollViewDelegate {
             // Remove labels that have fallen off the right edge
             while true {
                 if let lastLabel = visibleLabels.last {
-                    if CGRectGetMidX(lastLabel.frame) > maxX {
+                    if lastLabel.frame.midX > maxX {
                         visibleLabels.removeLast()
                         lastLabel.removeFromSuperview()
                         continue
@@ -306,7 +306,7 @@ class NumberLabel: UILabel {
     let number: NSDecimalNumber
     init(number: NSDecimalNumber) {
         self.number = number
-        super.init(frame: CGRectZero)
+        super.init(frame: CGRect.zero)
         self.text = number.description
         self.textColor = UIColor.selectedTextColor()
     }

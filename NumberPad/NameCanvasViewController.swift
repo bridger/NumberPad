@@ -15,19 +15,19 @@ protocol NameCanvasDelegate {
 class NameCanvasAnimator: NSObject, UIViewControllerAnimatedTransitioning {
     var presenting = false
     
-    func transitionDuration(transitionContext: UIViewControllerContextTransitioning?) -> NSTimeInterval {
+    func transitionDuration(_ transitionContext: UIViewControllerContextTransitioning?) -> NSTimeInterval {
         return 0.2
     }
 
-    func animateTransition(transitionContext: UIViewControllerContextTransitioning) {
-        guard let toViewController = transitionContext.viewControllerForKey(UITransitionContextToViewControllerKey),
-            fromViewController = transitionContext.viewControllerForKey(UITransitionContextFromViewControllerKey),
+    @objc(animateTransition:) func animateTransition(_ transitionContext: UIViewControllerContextTransitioning) {
+        guard let toViewController = transitionContext.viewController(forKey: UITransitionContextToViewControllerKey),
+            fromViewController = transitionContext.viewController(forKey: UITransitionContextFromViewControllerKey),
             containerView = transitionContext.containerView() else {
                 return
         }
         
         if (presenting) {
-            containerView.addAutoLayoutSubview(toViewController.view)
+            containerView.addAutoLayoutSubview(subview: toViewController.view)
             
             // Slide the toViewController from the bottom
             containerView.addConstraint( toViewController.view.al_centerY == containerView.al_centerY )
@@ -39,8 +39,8 @@ class NameCanvasAnimator: NSObject, UIViewControllerAnimatedTransitioning {
             containerView.addConstraint(hideConstraint)
             
             containerView.layoutIfNeeded()
-            containerView.backgroundColor = UIColor.clearColor()
-            UIView.animateWithDuration(self.transitionDuration(transitionContext), animations: {
+            containerView.backgroundColor = UIColor.clear()
+            UIView.animate(withDuration: self.transitionDuration(transitionContext), animations: {
                 containerView.removeConstraint(hideConstraint)
                 containerView.layoutIfNeeded()
                 containerView.backgroundColor = UIColor(white: 1.0, alpha: 0.7)
@@ -51,10 +51,10 @@ class NameCanvasAnimator: NSObject, UIViewControllerAnimatedTransitioning {
         } else {
             let hideConstraint = fromViewController.view.al_left == containerView.al_right
             
-            UIView.animateWithDuration(self.transitionDuration(transitionContext), animations: {
+            UIView.animate(withDuration: self.transitionDuration(transitionContext), animations: {
                 containerView.addConstraint(hideConstraint)
                 containerView.layoutIfNeeded()
-                containerView.backgroundColor = UIColor.clearColor()
+                containerView.backgroundColor = UIColor.clear()
                 
                 }, completion: { (bool) in
                     fromViewController.view.removeFromSuperview()
@@ -74,22 +74,22 @@ class NameCanvasViewController: UIViewController {
         self.view.translatesAutoresizingMaskIntoConstraints = false
         
         self.canvasView = UIView()
-        self.view.addAutoLayoutSubview(self.canvasView)
+        self.view.addAutoLayoutSubview(subview: self.canvasView)
         self.canvasView.backgroundColor = UIColor.selectedBackgroundColor()
         self.canvasView.clipsToBounds = true
         
         self.label = UILabel()
-        self.view.addAutoLayoutSubview(self.label)
-        self.label.font = UIFont.preferredFontForTextStyle(UIFontTextStyleHeadline)
+        self.view.addAutoLayoutSubview(subview: self.label)
+        self.label.font = UIFont.preferredFont(forTextStyle: UIFontTextStyleHeadline)
         self.label.textColor = UIColor.textColor()
         self.label.text = "Draw a name"
         
         self.doneButton = UIButton()
-        self.view.addAutoLayoutSubview(self.doneButton)
-        self.doneButton.setTitle("Done", forState: .Normal)
-        self.doneButton.setTitleColor(UIColor.textColor(), forState: .Normal)
-        self.doneButton.setContentHuggingPriority(UILayoutPriorityDefaultHigh, forAxis: .Horizontal)
-        self.doneButton.addTarget(self, action: "doneButtonPressed", forControlEvents: [.TouchUpInside])
+        self.view.addAutoLayoutSubview(subview: self.doneButton)
+        self.doneButton.setTitle("Done", for: [])
+        self.doneButton.setTitleColor(UIColor.textColor(), for: [])
+        self.doneButton.setContentHuggingPriority(UILayoutPriorityDefaultHigh, for: .horizontal)
+        self.doneButton.addTarget(self, action: #selector(NameCanvasViewController.doneButtonPressed), for: [.touchUpInside])
         
         self.view.addVerticalConstraints( |[self.label]-0-[self.canvasView]| )
         
@@ -105,43 +105,43 @@ class NameCanvasViewController: UIViewController {
     typealias TouchID = NSInteger
     var activeStrokes: [TouchID: Stroke] = [:]
     var completedStrokes: [Stroke] = []
-    var boundingRect: CGRect = CGRectNull
+    var boundingRect: CGRect = CGRect.null
     
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
-            let point = touch.locationInView(self.canvasView)
+            let point = touch.location(in: self.canvasView)
             
-            if CGRectContainsPoint(self.canvasView.bounds, point) {
-                let touchID = FTPenManager.sharedInstance().classifier.idForTouch(touch)
+            if self.canvasView.bounds.contains(point) {
+                let touchID = FTPenManager.sharedInstance().classifier.id(for: touch)
                 
                 let stroke = Stroke()
                 activeStrokes[touchID] = stroke
                 
-                stroke.addPoint(point)
-                self.boundingRect = CGRectUnion(self.boundingRect,  CGRectMake(point.x, point.y, 0, 0))
+                stroke.addPoint(point: point)
+                self.boundingRect = self.boundingRect.union(CGRect(x: point.x, y:  point.y, width:  0, height: 0))
                 self.canvasView.layer.addSublayer(stroke.layer)
-                stroke.layer.strokeColor = UIColor.selectedTextColor().CGColor
+                stroke.layer.strokeColor = UIColor.selectedTextColor().cgColor
             }
         }
     }
     
-    override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
-            let touchID = FTPenManager.sharedInstance().classifier.idForTouch(touch)
+            let touchID = FTPenManager.sharedInstance().classifier.id(for: touch)
             
             if let stroke = activeStrokes[touchID] {
-                let point = touch.locationInView(self.canvasView)
+                let point = touch.location(in: self.canvasView)
                 
-                self.boundingRect = CGRectUnion(self.boundingRect,  CGRectMake(point.x, point.y, 0, 0))
-                stroke.addPoint(point)
+                self.boundingRect = self.boundingRect.union(CGRect(x: point.x, y:  point.y, width:  0, height: 0))
+                stroke.addPoint(point: point)
                 stroke.updateLayer()
             }
         }
     }
     
-    override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
-            let touchID = FTPenManager.sharedInstance().classifier.idForTouch(touch)
+            let touchID = FTPenManager.sharedInstance().classifier.id(for: touch)
             
             if let stroke = activeStrokes[touchID] {
                 completedStrokes.append(stroke)
@@ -150,12 +150,12 @@ class NameCanvasViewController: UIViewController {
         }
     }
     
-    override func touchesCancelled(touches: Set<UITouch>?, withEvent event: UIEvent?) {
+    override func touchesCancelled(_ touches: Set<UITouch>?, with event: UIEvent?) {
         guard let touches = touches else {
             return
         }
         for touch in touches {
-            let touchID = FTPenManager.sharedInstance().classifier.idForTouch(touch)
+            let touchID = FTPenManager.sharedInstance().classifier.id(for: touch)
             
             if let stroke = activeStrokes[touchID] {
                 activeStrokes[touchID] = nil
@@ -169,13 +169,13 @@ class NameCanvasViewController: UIViewController {
             return
         }
         
-        delegate.nameCanvasViewControllerDidFinish(self)
+        delegate.nameCanvasViewControllerDidFinish(nameCanvasViewController: self)
     }
     
     // The image will be tightly fitting on the x axis, but on the y axis it will be positioned just
     // like it is within the canvas view itself. This way, all drawings will be a consistent height.
     // This returns nil if the user didn't draw anything
-    func renderedImage(pointHeight: CGFloat, scale: CGFloat, color: CGColorRef) -> UIImage? {
+    func renderedImage(pointHeight: CGFloat, scale: CGFloat, color: CGColor) -> UIImage? {
         if completedStrokes.count == 0 {
             return nil
         }
@@ -190,37 +190,37 @@ class NameCanvasViewController: UIViewController {
         }
         
         let colorSpace = CGColorSpaceCreateDeviceRGB()
-        let graphicsContext = CGBitmapContextCreate(nil, width, height, 8, 0, colorSpace, CGImageAlphaInfo.PremultipliedLast.rawValue)
+        let graphicsContext = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0, space: colorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
         
         // Flip the y axis
-        var transform = CGAffineTransformMakeScale(1, -1)
-        transform = CGAffineTransformTranslate(transform, 0, CGFloat(-height))
+        var transform = CGAffineTransform(scaleX: 1, y: -1)
+        transform = transform.translateBy(x: 0, y: CGFloat(-height))
         
         // Scale the points down to fit into the image
-        transform = CGAffineTransformScale(transform, ratio, ratio)
-        transform = CGAffineTransformTranslate(transform, -self.boundingRect.origin.x + strokeWidth, 0)
-        CGContextConcatCTM(graphicsContext, transform)
+        transform = transform.scaleBy(x: ratio, y: ratio)
+        transform = transform.translateBy(x: -self.boundingRect.origin.x + strokeWidth, y: 0)
+        graphicsContext.concatCTM(transform)
         
         for stroke in completedStrokes {
             var firstPoint = true
             for point in stroke.points {
                 
                 if firstPoint {
-                    CGContextMoveToPoint(graphicsContext, point.x, point.y)
+                    graphicsContext.moveTo(x: point.x, y: point.y)
                     firstPoint = false
                 } else {
-                    CGContextAddLineToPoint(graphicsContext, point.x, point.y)
+                    graphicsContext.addLineTo(x: point.x, y: point.y)
                 }
             }
             
-            CGContextSetLineCap(graphicsContext, .Round)
-            CGContextSetStrokeColorWithColor(graphicsContext, color)
-            CGContextSetLineWidth(graphicsContext, strokeWidth)
-            CGContextStrokePath(graphicsContext)
+            graphicsContext.setLineCap(.round)
+            graphicsContext.setStrokeColor(color)
+            graphicsContext.setLineWidth(strokeWidth)
+            graphicsContext.strokePath()
         }
         
-        if let cgImage = CGBitmapContextCreateImage(graphicsContext) {
-            return UIImage(CGImage: cgImage, scale: scale, orientation: .Up)
+        if let cgImage = graphicsContext.makeImage() {
+            return UIImage(cgImage: cgImage, scale: scale, orientation: .up)
         }
         return nil
     }

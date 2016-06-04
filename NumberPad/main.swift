@@ -9,4 +9,4 @@
 import Foundation
 import UIKit
 
-UIApplicationMain(Process.argc, Process.unsafeArgv, NSStringFromClass(FTApplication), NSStringFromClass(AppDelegate))
+UIApplicationMain(Process.argc, UnsafeMutablePointer<UnsafeMutablePointer<CChar>>(Process.unsafeArgv), NSStringFromClass(FTApplication), NSStringFromClass(AppDelegate))

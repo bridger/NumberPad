@@ -14,7 +14,7 @@ class Stroke {
     
     init(){
         layer = CAShapeLayer()
-        layer.strokeColor = UIColor.textColor().CGColor
+        layer.strokeColor = UIColor.textColor().cgColor
         layer.lineWidth = 2
         layer.fillColor = nil
     }
@@ -28,12 +28,12 @@ class Stroke {
     
     func updateLayer() {
         if layerNeedsUpdate {
-            let path = CGPathCreateMutable()
-            for (index, point) in points.enumerate() {
+            let path = CGMutablePath()
+            for (index, point) in points.enumerated() {
                 if index == 0 {
-                    CGPathMoveToPoint(path, nil, point.x, point.y)
+                    path.moveTo(nil, x: point.x, y: point.y)
                 } else {
-                    CGPathAddLineToPoint(path, nil, point.x, point.y)
+                    path.addLineTo(nil, x: point.x, y: point.y)
                 }
             }
             layer.path = path;

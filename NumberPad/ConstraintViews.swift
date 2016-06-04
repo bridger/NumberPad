@@ -30,7 +30,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
 
     init(connector: Connector) {
         self.connector = connector
-        super.init(frame: CGRectZero)
+        super.init(frame: CGRect.zero)
         connectorLabelInitialize()
     }
     
@@ -44,10 +44,10 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
     private func connectorLabelInitialize() {
         self.addSubview(self.nameAndValueView)
         self.nameAndValueView.addSubview(self.valueLabel)
-        self.valueLabel.font = UIFont.boldSystemFontOfSize(18)
+        self.valueLabel.font = UIFont.boldSystemFont(ofSize: 18)
         self.layer.borderWidth = borderWidth
         self.layer.cornerRadius = 12
-        self.valueLabel.textAlignment = .Center
+        self.valueLabel.textAlignment = .center
         self.layer.masksToBounds = true
         self.hasError = false
         
@@ -57,19 +57,19 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
     func displayEquation(mathML: String) {
         if self.equationView == nil {
             let userContentController = WKUserContentController()
-            userContentController.addScriptMessageHandler(self, name: "equationRendered")
+            userContentController.add(self, name: "equationRendered")
             
             let source = "var rect = document.getElementById('math-element').getBoundingClientRect(); window.webkit.messageHandlers.equationRendered.postMessage([rect.right, rect.bottom]);"
-            userContentController.addUserScript(WKUserScript(source: source, injectionTime: .AtDocumentEnd, forMainFrameOnly: true))
+            userContentController.addUserScript(WKUserScript(source: source, injectionTime: .atDocumentEnd, forMainFrameOnly: true))
             
             let configuration = WKWebViewConfiguration()
             configuration.userContentController = userContentController
-            let equationView = WKWebView(frame: CGRectMake(10, 20, 65, 25), configuration: configuration)
+            let equationView = WKWebView(frame: CGRect(x: 10, y:  20, width:  65, height: 25), configuration: configuration)
             
             self.addSubview(equationView)
-            equationView.backgroundColor = UIColor.clearColor()
-            equationView.opaque = false
-            equationView.userInteractionEnabled = false
+            equationView.backgroundColor = UIColor.clear()
+            equationView.isOpaque = false
+            equationView.isUserInteractionEnabled = false
             self.equationView = equationView
         }
         
@@ -89,7 +89,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
         }
     }
     
-    func userContentController(userContentController: WKUserContentController, didReceiveScriptMessage message: WKScriptMessage) {
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         if let rectValues = message.body as? [CGFloat] {
             if rectValues.count == 2 {
                 
@@ -99,7 +99,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
                 let latestWidth = rectValues[0]
                 let latestHeight = rectValues[1]
                 
-                let newSize = CGSizeMake(latestWidth + widthDelta, latestHeight + heightDelta)
+                let newSize = CGSize(width: latestWidth + widthDelta, height: latestHeight + heightDelta)
                 if let oldSize = self.equationViewSize {
                     // It was at 5, so we chose 8. Now we only pick a new size if the latest width is > 8 or < 2
                     let minWidth = oldSize.width - widthDelta * 2
@@ -115,7 +115,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
                 }
                 
                 if let equationView = self.equationView {
-                    equationView.frame.size = CGSizeMake(latestWidth, latestHeight)
+                    equationView.frame.size = CGSize(width: latestWidth, height: latestHeight)
                 }
                 resizeAndLayout()
                 return
@@ -142,15 +142,15 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
     var hasError: Bool = false {
         didSet {
             if self.hasError {
-                self.layer.borderColor = UIColor.redColor().CGColor
+                self.layer.borderColor = UIColor.red().cgColor
             } else {
-                self.layer.borderColor = UIColor.textColor().CGColor
+                self.layer.borderColor = UIColor.textColor().cgColor
             }
         }
     }
     
     // Returns whether it changed size
-    func displayValue(value: Double?) -> Bool {
+    @discardableResult func displayValue(value: Double?) -> Bool {
         
         let namePrefix = self.name != nil ? self.name! + " : " : ""
         if var value = value {
@@ -207,11 +207,11 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
         resizeAndLayout()
     }
     
-    func resizeAndLayout() -> Bool {
+    @discardableResult func resizeAndLayout() -> Bool {
         let center = self.center
         let size = self.bounds.size
         sizeToFit()
-        if !CGSizeEqualToSize(size, self.bounds.size) {
+        if !size.equalTo(self.bounds.size) {
             self.center = center
             return true
         }
@@ -226,17 +226,17 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
             
             let valueSize = self.valueLabel.frame.size
             let nameSize = nameView.frame.size
-            nameAndValueSize = CGSizeMake(valueSize.width + nameSize.width,
+            nameAndValueSize = CGSize(width: valueSize.width + nameSize.width, height:
                 max(valueSize.height, nameSize.height))
             
             // Lay out |[nameView][valueLabel]|
             self.nameAndValueView.frame.size = nameAndValueSize
-            nameView.frame.origin = CGPointZero
-            valueLabel.frame.origin = CGPointMake(nameSize.width, 0)
+            nameView.frame.origin = CGPoint.zero
+            valueLabel.frame.origin = CGPoint(x: nameSize.width, y: 0)
         } else {
             nameAndValueSize = self.valueLabel.frame.size
             self.nameAndValueView.frame.size = nameAndValueSize
-            self.valueLabel.frame.origin = CGPointZero
+            self.valueLabel.frame.origin = CGPoint.zero
         }
         
         var newSize = nameAndValueSize
@@ -253,9 +253,9 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
         newSize.width += horizontalMargin * 2
         newSize.height += verticalMargin * 2
         
-        self.nameAndValueView.center = CGPointMake(newSize.width / 2, verticalMargin + nameAndValueSize.height / 2)
+        self.nameAndValueView.center = CGPoint(x: newSize.width / 2, y: verticalMargin + nameAndValueSize.height / 2)
         if let equationView = self.equationView {
-            equationView.center = CGPointMake(newSize.width / 2,
+            equationView.center = CGPoint(x: newSize.width / 2, y:
                 verticalMargin + nameAndValueSize.height + equationSpace + equationView.frame.size.height / 2)
         }
         
@@ -276,10 +276,10 @@ protocol ConnectorPort: NSObjectProtocol {
 }
 
 class InternalConnectorPort: NSObject, ConnectorPort {
-    var color: UIColor = UIColor.whiteColor()
+    var color: UIColor = UIColor.white()
     var connector = Connector()
     let isOutput: Bool
-    var center: CGPoint = CGPointZero
+    var center: CGPoint = CGPoint.zero
     init(isOutput: Bool) {
         self.isOutput = isOutput
     }
@@ -295,7 +295,7 @@ class ConstraintView: UIView {
     func connectorPorts() -> [ConnectorPort] {
         fatalError("This method must be overriden")
     }
-    func connectorPortForDragAtLocation(location: CGPoint, @noescape connectorIsVisible: (Connector) -> Bool) -> ConnectorPort? {
+    func connectorPortForDragAtLocation(location: CGPoint, connectorIsVisible: @noescape(Connector) -> Bool) -> ConnectorPort? {
         fatalError("This method must be overriden")
     }
     func connectPort(port: ConnectorPort, connector: Connector) {
@@ -309,7 +309,7 @@ class ConstraintView: UIView {
     }
     
     private func addSentinelConnectorToPort(connectorPort: InternalConnectorPort) {
-        self.connectPort(connectorPort, connector: Connector())
+        self.connectPort(port: connectorPort, connector: Connector())
     }
     
     func idealAngleForNewConnectorLabel(connector: Connector, positions: [Connector: CGPoint]) -> CGFloat {
@@ -360,10 +360,10 @@ class MultiInputOutputConstraintView: ConstraintView {
         return [outputPort as ConnectorPort]
     }
     
-    override func connectorPortForDragAtLocation(location: CGPoint, @noescape connectorIsVisible: (Connector) -> Bool) -> ConnectorPort? {
-        if euclidianDistanceSquared(outputPort.center, b: location) < 18*18 {
+    override func connectorPortForDragAtLocation(location: CGPoint, connectorIsVisible: @noescape(Connector) -> Bool) -> ConnectorPort? {
+        if euclidianDistanceSquared(a: outputPort.center, b: location) < 18*18 {
             return outputPort
-        } else if euclidianDistanceSquared(inputPorts[0].center, b: location) < 18*18 {
+        } else if euclidianDistanceSquared(a: inputPorts[0].center, b: location) < 18*18 {
             // We should give back an input port. If we have less than two that are connected then we return
             // one of them. Otherwise, we make a new one
             for input in inputPorts {
@@ -388,18 +388,18 @@ class MultiInputOutputConstraintView: ConstraintView {
         
         let oldConnector = port.connector
         if port.isOutput {
-            innerConstraint.removeOutput(oldConnector)
+            innerConstraint.removeOutput(connector: oldConnector)
         } else {
-            if inputPorts.indexOf(port) != nil {
-                innerConstraint.removeInput(oldConnector)
+            if inputPorts.index(of: port) != nil {
+                innerConstraint.removeInput(connector: oldConnector)
             }
         }
         
         if port.isOutput {
-            innerConstraint.addOutput(connector)
+            innerConstraint.addOutput(connector: connector)
         } else {
-            innerConstraint.addInput(connector)
-            if inputPorts.indexOf(port) == nil {
+            innerConstraint.addInput(connector: connector)
+            if inputPorts.index(of: port) == nil {
                 inputPorts.append(port)
             }
         }
@@ -413,14 +413,14 @@ class MultiInputOutputConstraintView: ConstraintView {
         
         if !port.isOutput && inputPorts.count > 2 {
             // We kill this port forever
-            guard let inputIndex = inputPorts.indexOf(port) else {
+            guard let inputIndex = inputPorts.index(of: port) else {
                 print("couldn't find a connectorPort. Maybe it was already removed?")
                 return
             }
-            inputPorts.removeAtIndex(inputIndex)
-            innerConstraint.removeInput(port.connector)
+            inputPorts.remove(at: inputIndex)
+            innerConstraint.removeInput(connector: port.connector)
         } else {
-            addSentinelConnectorToPort(port) // This will remove the old connector
+            addSentinelConnectorToPort(connectorPort: port) // This will remove the old connector
         }
         
         return
@@ -430,22 +430,22 @@ class MultiInputOutputConstraintView: ConstraintView {
     let outputColoredLayer: CAShapeLayer = CAShapeLayer()
     init(constraint: MultiInputOutputConstraint) {
         self.innerConstraint = constraint
-        super.init(frame: CGRectZero)
+        super.init(frame: CGRect.zero)
         
         for inputPort in self.inputPorts {
             inputPort.color = self.inputColor
-            addSentinelConnectorToPort(inputPort)
+            addSentinelConnectorToPort(connectorPort: inputPort)
         }
         self.outputPort.color = self.outputColor
-        addSentinelConnectorToPort(self.outputPort)
+        addSentinelConnectorToPort(connectorPort: self.outputPort)
         
         self.layer.cornerRadius = 5
         let borderWidth: CGFloat = 2.0
-        self.inputColoredLayer.fillColor = self.inputColor.CGColor
-        self.inputColoredLayer.strokeColor = self.inputColor.CGColor
+        self.inputColoredLayer.fillColor = self.inputColor.cgColor
+        self.inputColoredLayer.strokeColor = self.inputColor.cgColor
         self.inputColoredLayer.lineWidth = borderWidth
-        self.outputColoredLayer.fillColor = self.outputColor.CGColor
-        self.outputColoredLayer.strokeColor = self.outputColor.CGColor
+        self.outputColoredLayer.fillColor = self.outputColor.cgColor
+        self.outputColoredLayer.strokeColor = self.outputColor.cgColor
         self.outputColoredLayer.lineWidth = borderWidth
         
         for layer in [self.inputColoredLayer, self.outputColoredLayer] {
@@ -467,9 +467,9 @@ class MultiInputOutputConstraintView: ConstraintView {
                 allAngles.append(atan2(offset.y, offset.x))
             }
         }
-        allAngles.sortInPlace()
+        allAngles.sort()
         
-        var bestAngle: (angle: CGFloat, score: CGFloat) = (0, CGFloat.min)
+        var bestAngle: (angle: CGFloat, score: CGFloat) = (0, CGFloat.leastNormalMagnitude)
         for index in 0..<allAngles.count {
             // We grab this angle and the next angle (looping around to the first angle, if necessary)
             let angle1 = allAngles[index]
@@ -504,7 +504,7 @@ class MultiInputOutputConstraintView: ConstraintView {
             layer = self.inputColoredLayer
         }
         
-        layer.fillColor = isHighlighted ? color.colorWithSaturationComponent(0.25, brightness: 1.0).CGColor : color.CGColor
+        layer.fillColor = isHighlighted ? color.colorWithSaturationComponent(saturation: 0.25, brightness: 1.0).cgColor : color.cgColor
     }
     
     required init(coder aDecoder: NSCoder) {
@@ -558,10 +558,10 @@ class MultiplierView: MultiInputOutputConstraintView {
     override func layoutWithConnectorPositions(positions: [Connector: CGPoint]) {
         self.sizeToFit()
         
-        self.inputColoredLayer.frame = CGRectMake(outputOverhang, outputOverhang, inputSize, inputSize)
-        self.inputColoredLayer.path = CGPathCreateWithRect(CGRectMake(0, 0, inputSize, inputSize), nil)
-        self.outputColoredLayer.frame = CGRectMake(0, 0, outputSize, outputSize)
-        self.outputColoredLayer.path = CGPathCreateWithRect(CGRectMake(0, 0, outputSize, outputSize), nil)
+        self.inputColoredLayer.frame = CGRect(x: outputOverhang, y:  outputOverhang, width:  inputSize, height: inputSize)
+        self.inputColoredLayer.path = CGPath(rect: CGRect(x: 0, y:  0, width:  inputSize, height: inputSize), transform: nil)
+        self.outputColoredLayer.frame = CGRect(x: 0, y:  0, width:  outputSize, height: outputSize)
+        self.outputColoredLayer.path = CGPath(rect: CGRect(x: 0, y:  0, width:  outputSize, height: outputSize), transform: nil)
         
         for inputPort in self.inputPorts {
             inputPort.center = self.inputColoredLayer.frame.center()
@@ -576,14 +576,14 @@ class MultiplierView: MultiInputOutputConstraintView {
             rotationAngle = connectorAngle - portAngle
         }
         
-        self.transform = CGAffineTransformMakeRotation(rotationAngle)
+        self.transform = CGAffineTransform(rotationAngle: rotationAngle)
         
         self.label.center = self.inputColoredLayer.frame.center()
-        self.label.transform = CGAffineTransformMakeRotation(-rotationAngle)
+        self.label.transform = CGAffineTransform(rotationAngle: -rotationAngle)
     }
     
-    override func sizeThatFits(size: CGSize) -> CGSize {
-        return CGSizeMake(inputSize + outputOverhang, inputSize + outputOverhang)
+    override func sizeThatFits(_ size: CGSize) -> CGSize {
+        return CGSize(width: inputSize + outputOverhang, height: inputSize + outputOverhang)
     }
 }
 
@@ -633,10 +633,10 @@ class AdderView: MultiInputOutputConstraintView {
     override func layoutWithConnectorPositions(positions: [Connector: CGPoint]) {
         self.sizeToFit()
         
-        self.inputColoredLayer.frame = CGRectMake(outputOverhang, outputOverhang, inputSize, inputSize)
-        self.inputColoredLayer.path = CGPathCreateWithEllipseInRect(CGRectMake(0, 0, inputSize, inputSize), nil)
-        self.outputColoredLayer.frame = CGRectMake(0, 0, outputSize, outputSize)
-        self.outputColoredLayer.path = CGPathCreateWithEllipseInRect(CGRectMake(0, 0, outputSize, outputSize), nil)
+        self.inputColoredLayer.frame = CGRect(x: outputOverhang, y:  outputOverhang, width:  inputSize, height: inputSize)
+        self.inputColoredLayer.path = CGPath(ellipseIn: CGRect(x: 0, y:  0, width:  inputSize, height: inputSize), transform: nil)
+        self.outputColoredLayer.frame = CGRect(x: 0, y:  0, width:  outputSize, height: outputSize)
+        self.outputColoredLayer.path = CGPath(ellipseIn: CGRect(x: 0, y:  0, width:  outputSize, height: outputSize), transform: nil)
         
         for inputPort in self.inputPorts {
             inputPort.center = self.inputColoredLayer.frame.center()
@@ -651,14 +651,14 @@ class AdderView: MultiInputOutputConstraintView {
             rotationAngle = connectorAngle - portAngle
         }
         
-        self.transform = CGAffineTransformMakeRotation(rotationAngle)
+        self.transform = CGAffineTransform(rotationAngle: rotationAngle)
         
         self.label.center = self.inputColoredLayer.frame.center()
-        self.label.transform = CGAffineTransformMakeRotation(-rotationAngle)
+        self.label.transform = CGAffineTransform(rotationAngle: -rotationAngle)
     }
     
-    override func sizeThatFits(size: CGSize) -> CGSize {
-        return CGSizeMake(inputSize + outputOverhang, inputSize + outputOverhang)
+    override func sizeThatFits(_ size: CGSize) -> CGSize {
+        return CGSize(width: inputSize + outputOverhang, height: inputSize + outputOverhang)
     }
 }
 
@@ -699,10 +699,10 @@ class ExponentView: ConstraintView {
         return [exponentInput, resultOutput, baseInput]
     }
     
-    override func connectorPortForDragAtLocation(location: CGPoint, @noescape connectorIsVisible: (Connector) -> Bool) -> ConnectorPort? {
+    override func connectorPortForDragAtLocation(location: CGPoint, connectorIsVisible: @noescape(Connector) -> Bool) -> ConnectorPort? {
         for internalPort in internalConnectorPorts() {
             let cutoffSquared: CGFloat = (internalPort === basePort) ? 900 : 400
-            if euclidianDistanceSquared(internalPort.center, b: location) < cutoffSquared {
+            if euclidianDistanceSquared(a: internalPort.center, b: location) < cutoffSquared {
                 return internalPort
             }
         }
@@ -725,7 +725,7 @@ class ExponentView: ConstraintView {
     override func removeConnectorAtPort(port: ConnectorPort) {
         for internalPort in internalConnectorPorts() {
             if internalPort === port {
-                addSentinelConnectorToPort(internalPort) // This will remove the old connector
+                addSentinelConnectorToPort(connectorPort: internalPort) // This will remove the old connector
                 return
             }
         }
@@ -737,17 +737,17 @@ class ExponentView: ConstraintView {
     let label = UILabel()
     init(exponent: Exponent) {
         self.exponent = exponent
-        super.init(frame: CGRectZero)
-        addSentinelConnectorToPort(self.exponentInput)
-        addSentinelConnectorToPort(self.baseInput)
-        addSentinelConnectorToPort(self.resultOutput)
+        super.init(frame: CGRect.zero)
+        addSentinelConnectorToPort(connectorPort: self.exponentInput)
+        addSentinelConnectorToPort(connectorPort: self.baseInput)
+        addSentinelConnectorToPort(connectorPort: self.resultOutput)
         self.baseInput.color = UIColor.exponentBaseColor()
         self.exponentInput.color = UIColor.exponentExponentColor()
         self.resultOutput.color = UIColor.exponentResultColor()
         
-        self.baseLayer.backgroundColor = self.baseInput.color.CGColor
-        self.exponentLayer.backgroundColor = self.exponentInput.color.CGColor
-        self.resultLayer.backgroundColor = self.resultOutput.color.CGColor
+        self.baseLayer.backgroundColor = self.baseInput.color.cgColor
+        self.exponentLayer.backgroundColor = self.exponentInput.color.cgColor
+        self.resultLayer.backgroundColor = self.resultOutput.color.cgColor
         
         let borderWidth: CGFloat = 2.0
         self.baseLayer.borderWidth = borderWidth
@@ -775,22 +775,22 @@ class ExponentView: ConstraintView {
     let spacing: CGFloat = 10.0
     let baseSize: CGFloat = 35
     let portSize: CGFloat = 18
-    let portOverhang = CGPointMake(0, 0)
+    let portOverhang = CGPoint(x: 0, y: 0)
     override func layoutWithConnectorPositions(positions: [Connector: CGPoint]) {
         self.sizeToFit()
         
-        self.baseLayer.frame = CGRectMake(0, 0, baseSize, baseSize)
-        self.baseLayer.position = CGPointMake(baseSize / 2, self.bounds.height / 2)
+        self.baseLayer.frame = CGRect(x: 0, y:  0, width:  baseSize, height: baseSize)
+        self.baseLayer.position = CGPoint(x: baseSize / 2, y: self.bounds.height / 2)
         self.baseLayer.cornerRadius = baseSize / 2
         self.baseInput.center = self.baseLayer.position
         
-        self.exponentLayer.frame = CGRectMake(0, 0, portSize, portSize)
-        self.exponentLayer.position = CGPointMake(baseSize + portOverhang.x, self.baseLayer.frame.minY - portOverhang.y)
+        self.exponentLayer.frame = CGRect(x: 0, y:  0, width:  portSize, height: portSize)
+        self.exponentLayer.position = CGPoint(x: baseSize + portOverhang.x, y: self.baseLayer.frame.minY - portOverhang.y)
         self.exponentLayer.cornerRadius = portSize / 3
         self.exponentInput.center = self.exponentLayer.position
         
-        self.resultLayer.frame = CGRectMake(0, 0, portSize, portSize)
-        self.resultLayer.position = CGPointMake(baseSize + portOverhang.x, self.baseLayer.frame.maxY + portOverhang.y)
+        self.resultLayer.frame = CGRect(x: 0, y:  0, width:  portSize, height: portSize)
+        self.resultLayer.position = CGPoint(x: baseSize + portOverhang.x, y: self.baseLayer.frame.maxY + portOverhang.y)
         self.resultLayer.cornerRadius = portSize / 3
         self.resultOutput.center = self.resultLayer.position
         self.label.center = self.baseInput.center
@@ -798,7 +798,7 @@ class ExponentView: ConstraintView {
     
     override func idealAngleForNewConnectorLabel(connector: Connector, positions: [Connector: CGPoint]) -> CGFloat {
         var offset: CGPoint?
-        var allCenters = CGPointZero
+        var allCenters = CGPoint.zero
         
         // We find where this connector is in relation to the average center of all our ports. This way, if it
         // is visually in the top-right of the other connectors then the new connector will appear in the top-right
@@ -819,8 +819,8 @@ class ExponentView: ConstraintView {
         }
     }
     
-    override func sizeThatFits(size: CGSize) -> CGSize {
-        return CGSizeMake(baseSize + portSize / 2 + portOverhang.x, baseSize + portSize / 2 + portOverhang.y)
+    override func sizeThatFits(_ size: CGSize) -> CGSize {
+        return CGSize(width: baseSize + portSize / 2 + portOverhang.x, height: baseSize + portSize / 2 + portOverhang.y)
     }
     
     override func setConnectorPort(port: ConnectorPort, isHighlighted: Bool) {
@@ -837,7 +837,7 @@ class ExponentView: ConstraintView {
             layer = self.resultLayer
         }
         
-        layer.backgroundColor = isHighlighted ? color.colorWithSaturationComponent(0.25, brightness: 1.0).CGColor : color.CGColor
+        layer.backgroundColor = isHighlighted ? color.colorWithSaturationComponent(saturation: 0.25, brightness: 1.0).cgColor : color.cgColor
     }
     
 }

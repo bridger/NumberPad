@@ -154,9 +154,9 @@
 /* Begin PBXFileReference section */
 		AE04E7531A4DE6F40077D2E3 /* DTWDigitClassifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DTWDigitClassifier.swift; sourceTree = "<group>"; };
 		AE064B6A1A64679200A10381 /* Constraints.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constraints.swift; sourceTree = "<group>"; };
-		AE064B6D1A646A6300A10381 /* ConstraintViews.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConstraintViews.swift; sourceTree = "<group>"; };
+		AE064B6D1A646A6300A10381 /* ConstraintViews.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = ConstraintViews.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		AE064B6F1A646FB200A10381 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
-		AE0EF4501B40EF82000DFFE2 /* Toy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Toy.swift; sourceTree = "<group>"; };
+		AE0EF4501B40EF82000DFFE2 /* Toy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = Toy.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		AE1CA0731A8C651B00CC1FDA /* SwiftAutoLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftAutoLayout.swift; sourceTree = "<group>"; };
 		AE1CA0751A8C652A00CC1FDA /* VisualFormat.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VisualFormat.swift; sourceTree = "<group>"; };
 		AE3DD2331A52100E007D1500 /* DTWDigitClassifierTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DTWDigitClassifierTests.swift; sourceTree = "<group>"; };
@@ -169,7 +169,7 @@
 		AE3DD2481A5494B7007D1500 /* bridger_train.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = bridger_train.json; path = Data/bridger_train.json; sourceTree = SOURCE_ROOT; };
 		AE5554611A5CB9D3007DCF1D /* DigitRecognizer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DigitRecognizer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE5554641A5CB9D3007DCF1D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		AE5554651A5CB9D3007DCF1D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		AE5554651A5CB9D3007DCF1D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = AppDelegate.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		AE5554671A5CB9D3007DCF1D /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		AE55546C1A5CB9D3007DCF1D /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		AE55547A1A5CB9D3007DCF1D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -187,7 +187,7 @@
 		AE6023E11C01786500D34FEB /* IntroViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntroViewController.swift; sourceTree = "<group>"; };
 		AE890D0C1A65AFAE00E604C4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = "Base.lproj/Launch Screen.xib"; sourceTree = "<group>"; };
 		AE890D0E1A68970800E604C4 /* CGPoint+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGPoint+Extensions.swift"; sourceTree = "<group>"; };
-		AE890D101A68AB5B00E604C4 /* VisualizeCollectionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VisualizeCollectionViewController.swift; sourceTree = "<group>"; };
+		AE890D101A68AB5B00E604C4 /* VisualizeCollectionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = VisualizeCollectionViewController.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		AE890D151A699E7E00E604C4 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		AE890D171A69DA0300E604C4 /* bridger_normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = bridger_normalized.json; sourceTree = "<group>"; };
 		AEA7F3691A7DBF86008A07E4 /* FiftyThreeSdk.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FiftyThreeSdk.framework; sourceTree = "<group>"; };
@@ -247,14 +247,14 @@
 		AEC9EEBA1A3CDC4A002C7B08 /* NumberPad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NumberPad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC9EEBE1A3CDC4A002C7B08 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		AEC9EEC11A3CDC4A002C7B08 /* CanvasViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasViewController.swift; sourceTree = "<group>"; };
+		AEC9EEC11A3CDC4A002C7B08 /* CanvasViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = CanvasViewController.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		AEC9EEC61A3CDC4A002C7B08 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		AEC9EECF1A3CDC4A002C7B08 /* NumberPadTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NumberPadTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC9EED41A3CDC4A002C7B08 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AEC9EED51A3CDC4A002C7B08 /* NumberPadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberPadTests.swift; sourceTree = "<group>"; };
 		AEC9EEDF1A3CEB3A002C7B08 /* StrokeGestureRecognizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StrokeGestureRecognizer.swift; sourceTree = "<group>"; };
 		AECB34F31A6AEC540034A2AB /* NumberPad-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NumberPad-Bridging-Header.h"; sourceTree = "<group>"; };
-		AECB34FB1A6B1F460034A2AB /* NumberSlideView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NumberSlideView.swift; sourceTree = "<group>"; };
+		AECB34FB1A6B1F460034A2AB /* NumberSlideView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = NumberSlideView.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		AEDB570E1B45CDD10065A4DD /* UIColor+Additions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIColor+Additions.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
