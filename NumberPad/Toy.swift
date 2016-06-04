@@ -71,7 +71,7 @@ class MotionToy : UIView, Toy {
             return
         }
         
-        let range = 5
+        let range = 10
         for offset in -range...range {
             if offset == 0 {
                 continue
