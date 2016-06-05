@@ -107,11 +107,11 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         }
     }
     func connectorsFromToyInputsToOutputs(_ toy: Toy) -> Set<Connector> {
-        // Here we start at a toy's inputs and trace the path to the outputs. We collect all shortest paths
-        // that go to the outputs.
+        // Here we start at a toy's outputs and trace the path to the inputs. We collect all shortest paths
+        // betweeen.
         
         // All edges are equal weight, so the shortest path reduces to a breadth-first search
-        return connectorsOnPath(from: toy.inputConnectors(), to: toy.outputConnectors(), stopOnFirstPath: false)
+        return connectorsOnPath(from: toy.outputConnectors(), to: toy.inputConnectors(), stopOnFirstPath: false)
     }
     
     func connectorsOnPath(from startConnectors: [Connector], to endConnectors: [Connector], stopOnFirstPath: Bool = true, excluding excludedConnectors: [Connector] = []) -> Set<Connector> {
@@ -632,7 +632,14 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                     let isDeleteTap = usePenClassifications() ? touchInfo.classification == .Delete :  touch.tapCount == 2
                     if !isDeleteTap {
                         // This is a selection tap
-                        if let (selectedToy, _) = touchInfo.toy {
+                        if let (ghostableToy, simulationContext) = self.ghostToy(at: point) {
+                            self.lastSimulationValues = simulationContext // Show the values for this ghost
+                            if let selectable = ghostableToy as? SelectableToy {
+                                self.selectedToy = selectable
+                            }
+                            self.updateDisplay(needsSolving: true)
+                            
+                        } else if let (selectedToy, _) = touchInfo.toy {
                             self.selectedToy = selectedToy
                             
                         } else if let (connectorLabel, _) = touchInfo.connectorLabel {
@@ -1145,6 +1152,17 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         return nil
     }
     
+    func ghostToy(at point: CGPoint) -> (GhostableToy, ResolvedValues)? {
+        for toy in self.toys {
+            if let toy = toy as? GhostableToy {
+                if let resolvedValues = toy.ghostState(at: point) {
+                    return (toy, resolvedValues)
+                }
+            }
+        }
+        return nil
+    }
+    
     func processStrokes() {
         let unprocessedStrokesCopy = self.unprocessedStrokes
         self.unprocessedStrokes.removeAll(keepingCapacity: false)
@@ -1436,6 +1454,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 
                 if let label = self.connectorToLabel[connector] {
                     label.displayValue(value: resolvedValue.DoubleValue)
+                    connector.debugValue = resolvedValue.DoubleValue
                 }
                 if let lastValue = lastSimulationValues?[connector] {
                     if (lastValue.WasDependent != resolvedValue.WasDependent || lastValue.Informant != resolvedValue.Informant) {
@@ -1514,7 +1533,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             }
         }
         
-        func updateToyAndGhosts(toy: Toy, lastSimulationValues: [Connector: SimulationContext.ResolvedValue]) {
+        func updateToyAndGhosts(toy: GhostableToy, lastSimulationValues: [Connector: SimulationContext.ResolvedValue]) {
             toy.update(values: lastSimulationValues)
             
             // Now, get the state needed to update the ghosts
@@ -1597,7 +1616,9 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
 
         if let lastSimulationValues = self.lastSimulationValues where ranSolver {
             for toy in self.toys {
-                updateToyAndGhosts(toy: toy, lastSimulationValues: lastSimulationValues)
+                if let toy = toy as? GhostableToy {
+                    updateToyAndGhosts(toy: toy, lastSimulationValues: lastSimulationValues)
+                }
             }
             
             // We first make a map from value DDExpressions to the formatted value

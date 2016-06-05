@@ -133,7 +133,7 @@ class MultiInputOutputConstraint : Constraint {
 }
 
 
-class Connector {
+class Connector: CustomDebugStringConvertible {
     var constraints: [Constraint] = []
     
     func connect(constraint: Constraint) {
@@ -144,6 +144,14 @@ class Connector {
             constraints.remove(at: index)
         } else {
             print("Unable to remove constraint")
+        }
+    }
+    
+    var debugValue: Double = 0.0
+    
+    var debugDescription: String {
+        get {
+            return "<Connector: \(unsafeAddress(of: self)) debugValue = \(debugValue)>"
         }
     }
 }

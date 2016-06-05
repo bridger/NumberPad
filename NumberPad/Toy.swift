@@ -10,7 +10,8 @@ import QuartzCore
 
 // This is a function passed into updateGhostState. The toy will call this for various different values
 // for the input connectors and it should return the resolved value for all of the output connectors
-typealias GhostValueResolver = (inputValues: [Connector: Double]) -> [Connector: SimulationContext.ResolvedValue]
+typealias ResolvedValues = [Connector: SimulationContext.ResolvedValue]
+typealias GhostValueResolver = (inputValues: [Connector: Double]) -> ResolvedValues
 
 // This method is called with the value of the current input connector and a lambda which can solve for
 // the output connector values given
@@ -21,9 +22,13 @@ protocol Toy: class {
     func inputConnectors() -> [Connector]
     func outputConnectors() -> [Connector]
     
+    func update(values: ResolvedValues)
+}
+
+protocol GhostableToy: Toy {
     func updateGhosts(inputStates: [Connector: ConnectorState], resolver: GhostValueResolver)
     
-    func update(values: [Connector: SimulationContext.ResolvedValue])
+    func ghostState(at point: CGPoint) -> ResolvedValues?
 }
 
 protocol SelectableToy: Toy {
@@ -36,7 +41,7 @@ protocol SelectableToy: Toy {
     func valuesForDrag(to newCenter: CGPoint) -> [Connector: Double]
 }
 
-class MotionToy : UIView, SelectableToy {
+class MotionToy : UIView, SelectableToy, GhostableToy {
     let xConnector: Connector
     let yConnector: Connector
     let driverConnector: Connector
@@ -104,6 +109,7 @@ class MotionToy : UIView, SelectableToy {
             
             let percent = Double(offset) / Double(range)
             let ghost = self.createNewGhost(percent: percent)
+            ghost.simulationContext = ghostValues
             self.superview?.insertSubview(ghost, belowSubview: self)
             ghost.center.x = CGFloat(xPosition)
             let toyYZero = self.superview?.frame.size.height ?? 0
@@ -124,15 +130,36 @@ class MotionToy : UIView, SelectableToy {
         }
     }
     
-    var activeGhosts: [UIView] = []
-    var reuseGhosts: [UIView] = []
+    func ghostState(at point: CGPoint) -> ResolvedValues? {
+        var minDistance = CGFloat.greatestFiniteMagnitude
+        var bestMatch: ResolvedValues? = nil
+        for ghostView in activeGhosts where ghostView.frame.contains(point) {
+            let score = ghostView.center.distanceTo(point: point)
+            if score < minDistance {
+                minDistance = score
+                bestMatch = ghostView.simulationContext
+            }
+        }
+        if minDistance < self.center.distanceTo(point: point) {
+            return bestMatch
+        } else {
+            return nil
+        }
+    }
     
-    func createNewGhost(percent: Double) -> UIView {
-        let ghost: UIView
+    class GhostView: UIImageView {
+        var simulationContext: ResolvedValues? = nil
+    }
+    
+    var activeGhosts: [GhostView] = []
+    var reuseGhosts: [GhostView] = []
+    
+    func createNewGhost(percent: Double) -> GhostView {
+        let ghost: GhostView
         if let oldGhost = reuseGhosts.popLast() {
             ghost = oldGhost
         } else {
-            ghost = UIImageView(image: self.image)
+            ghost = GhostView(image: self.image)
             ghost.sizeToFit()
         }
         let alpha = (1.0 - abs(percent)) * 0.35
@@ -154,7 +181,7 @@ class MotionToy : UIView, SelectableToy {
         didSet {
             if selected {
                 imageView.layer.shadowColor = UIColor.selectedBackgroundColor().cgColor
-                imageView.layer.shadowOpacity = 0.5
+                imageView.layer.shadowOpacity = 0.8
                 imageView.layer.shadowRadius = 5
             } else {
                 imageView.layer.shadowOpacity = 0
@@ -278,10 +305,6 @@ class CirclesToy : UIView, Toy {
         return [circumferenceConnector]
     }
     
-    func updateGhosts(inputStates: [Connector : ConnectorState], resolver: GhostValueResolver) {
-        // No ghosts, currently
-    }
-    
     override func layoutSublayers(of layer: CALayer) {
         self.mainCircle.position = CGPoint(x: layer.bounds.size.width / 2, y: layer.bounds.size.height / 3)
     }
@@ -326,11 +349,6 @@ class PythagorasToy : UIView, Toy {
     func outputConnectors() -> [Connector] {
         return [cConnector]
     }
-    
-    func updateGhosts(inputStates: [Connector : ConnectorState], resolver: GhostValueResolver) {
-        // No ghosts, currently
-    }
-    
     
     var a: Double = 0
     var b: Double = 0
