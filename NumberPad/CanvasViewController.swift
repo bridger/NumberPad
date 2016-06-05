@@ -106,7 +106,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             print("Tried to move connector to bottom priority, but couldn't find it!")
         }
     }
-    @discardableResult func removeConnectorLabel(label: ConnectorLabel) -> [(ConstraintView, ConnectorPort)] {
+    @discardableResult func remove(connectorLabel label: ConnectorLabel) -> [(ConstraintView, ConnectorPort)] {
         var oldPorts: [(ConstraintView, ConnectorPort)] = []
         if let index = connectorLabels.index(of: label) {
             if label == selectedConnectorLabel {
@@ -156,7 +156,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 self.selectedToy = nil
                 
                 // Here we are careful that if there isn't a value already selected (it was a ?), we don't assign a value. We just put 0 in the picker
-                let selectedValue = selectedConnectorLabelValueOverride ?? self.lastValueForConnector(connector: connectorLabel.connector)
+                let selectedValue = selectedConnectorLabelValueOverride ?? self.lastValue(for: connectorLabel.connector)
                 var valueToDisplay = selectedValue ?? 0.0
                 selectedConnectorLabelValueOverride = nil
                 if !valueToDisplay.isFinite {
@@ -221,13 +221,16 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                     if let connectorLabel = self.connectorToLabel[output] {
                         moveConnectorToTopPriority(connectorLabel: connectorLabel)
                     }
-                    if let selectedValue = self.lastValueForConnector(connector: output) {
+                    if let selectedValue = self.lastValue(for: output) {
                         values[output] = selectedValue
                     }
                 }
                 
                 // Update the display to show which variables are dependent
                 updateDisplay(values: values, needsSolving: true)
+            } else {
+                // Solve again, to clear dependent connections
+                updateDisplay(needsSolving: true)
             }
         }
     }
@@ -306,10 +309,10 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
     
     var connectionLayers: [CAShapeLayer] = []
     var lastSimulationValues: [Connector: SimulationContext.ResolvedValue]?
-    func lastValueForConnector(connector: Connector) -> Double? {
+    func lastValue(for connector: Connector) -> Double? {
         return self.lastSimulationValues?[connector]?.DoubleValue
     }
-    func lastInformantForConnector(connector: Connector) -> (WasDependent: Bool, Informant: Constraint?)? {
+    func lastInformant(for connector: Connector) -> (WasDependent: Bool, Informant: Constraint?)? {
         if let lastValue = self.lastSimulationValues?[connector] {
             return (lastValue.WasDependent, lastValue.Informant)
         }
@@ -572,7 +575,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                             }
                             
                         } else if let (connectorLabel, _, _) = self.connectionLineAtPoint(point: point) {
-                            let lastInformant = self.lastInformantForConnector(connector: connectorLabel.connector)
+                            let lastInformant = self.lastInformant(for: connectorLabel.connector)
                             
                             if (lastInformant != nil && lastInformant!.WasDependent) {
                                 // Try to make this connector high priority, so it is constant instead of dependent
@@ -600,7 +603,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                         if let (connectorLabel, _) = touchInfo.connectorLabel {
                             // Delete this connector!
                             if !self.connectorIsForToy(connector: connectorLabel.connector) {
-                                removeConnectorLabel(label: connectorLabel)
+                                remove(connectorLabel: connectorLabel)
                             }
                             deletedSomething = true
                         }
@@ -771,7 +774,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         for point in touchInfo.currentStroke.points {
             if let connectorLabel = self.connectorLabelAtPoint(point: point) {
                 if !self.connectorIsForToy(connector: connectorLabel.connector) {
-                    self.removeConnectorLabel(label: connectorLabel)
+                    self.remove(connectorLabel: connectorLabel)
                 }
             } else if let constraintView = self.constraintViewAtPoint(point: point) {
                 self.removeConstraintView(constraintView: constraintView)
@@ -809,7 +812,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         if let (connectorLabel, _) = touchInfo.connectorLabel {
             let targetConstraint = connectorPortAtLocation(location: point)
             let labelPoint = connectorLabel.center
-            let dependent = lastInformantForConnector(connector: connectorLabel.connector)?.WasDependent ?? false
+            let dependent = lastInformant(for: connectorLabel.connector)?.WasDependent ?? false
             dragLine = createConnectionLayer(startPoint: labelPoint, endPoint: point, color: targetConstraint?.ConnectorPort.color, isDependent: dependent, drawArrow: false)
             
             touchInfo.highlightedConnectorPort = targetConstraint
@@ -823,7 +826,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             var dependent = false
             if let targetConnector = connectorLabelAtPoint(point: point) {
                 endPoint = targetConnector.center
-                dependent = lastInformantForConnector(connector: targetConnector.connector)?.WasDependent ?? false
+                dependent = lastInformant(for: targetConnector.connector)?.WasDependent ?? false
                 touchInfo.highlightedConnectorPort = nil
             } else {
                 let targetConstraint = connectorPortAtLocation(location: point)
@@ -919,7 +922,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         
         // We just delete connectorLabelToDelete, but wire up all connections to bigConnectorLabel
         
-        let oldPorts = removeConnectorLabel(label: connectorLabelToDelete)
+        let oldPorts = remove(connectorLabel: connectorLabelToDelete)
         for (constraintView, port) in oldPorts {
             connect(connectorLabel: bigConnectorLabel, constraintView: constraintView, connectorPort: port)
         }
@@ -1186,7 +1189,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
     func numberSlideView(numberSlideView _: NumberSlideView, didSelectNewScale scale: Int16) {
         if let selectedConnectorLabel = self.selectedConnectorLabel {
             selectedConnectorLabel.scale = scale
-            selectedConnectorLabel.displayValue(value: lastValueForConnector(connector: selectedConnectorLabel.connector))
+            selectedConnectorLabel.displayValue(value: lastValue(for: selectedConnectorLabel.connector))
         }
     }
     
@@ -1212,7 +1215,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                         let constraintPoint = self.scrollView.convert(connectorPort.center, from: constraintView)
                         let labelPoint = connectorLabel.center
                         
-                        let lastInformant = self.lastInformantForConnector(connector: connectorLabel.connector)
+                        let lastInformant = self.lastInformant(for: connectorLabel.connector)
                         let dependent = lastInformant?.WasDependent ?? false
                         
                         let startPoint: CGPoint
