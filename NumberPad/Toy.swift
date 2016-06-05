@@ -29,7 +29,11 @@ protocol Toy: class {
 protocol SelectableToy: Toy {
     func contains(_ point: CGPoint) -> Bool
     
+    var center: CGPoint { get }
+    
     var selected: Bool { get set }
+    
+    func valuesForDrag(to newCenter: CGPoint) -> [Connector: Double]
 }
 
 class MotionToy : UIView, SelectableToy {
@@ -157,6 +161,11 @@ class MotionToy : UIView, SelectableToy {
                 imageView.layer.shadowOpacity = 0
             }
         }
+    }
+    
+    func valuesForDrag(to newCenter: CGPoint) -> [Connector: Double] {
+        let toyYZero = self.superview?.frame.size.height ?? 0
+        return [xConnector: Double(newCenter.x), yConnector: Double(toyYZero - newCenter.y)]
     }
 }
 

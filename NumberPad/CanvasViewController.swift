@@ -360,6 +360,9 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
     
     func gestureClassificationForTouchAndPen(touchInfo: TouchInfo, penClassification: FTTouchClassification) -> GestureClassification? {
         if penClassification == .pen {
+            if touchInfo.toy != nil {
+                return .OperateToy // This takes precedence
+            }
             // If there is a connectorPort or label, they are drawing a connection
             if touchInfo.connectorLabel != nil || touchInfo.constraintView?.ConnectorPort != nil {
                 return .MakeConnection
@@ -367,6 +370,9 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 return .Stroke
             }
         } else if penClassification == .finger {
+            if touchInfo.toy != nil {
+                return .OperateToy // This takes precedence
+            }
             if touchInfo.pickedUpView() != nil {
                 return .Drag
             }
@@ -388,13 +394,18 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         case MakeConnection
         case Drag
         case Delete
+        case OperateToy
     }
     
     class TouchInfo {
+        // The classification can change mid-stroke, so we need to store the initial state for several
+        // possible classifications in this class. This data isn't mutually exclusive so it isn't store
+        // in the classification enum.
         var connectorLabel: (ConnectorLabel: ConnectorLabel, Offset: CGPoint)?
         var constraintView: (ConstraintView: ConstraintView, Offset: CGPoint, ConnectorPort: ConnectorPort?)?
         var drawConnectionLine: CAShapeLayer?
         var highlightedConnectorPort: (ConstraintView: ConstraintView, ConnectorPort: ConnectorPort)?
+        var toy: (Toy: SelectableToy, Offset: CGPoint)?
         
         let currentStroke = Stroke()
         
@@ -433,16 +444,16 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             let point = touch.location(in: self.scrollView)
             
             let touchInfo = TouchInfo(initialPoint: point, initialTime: touch.timestamp)
-            
+
+            if let selectedToy = self.selectableToy(at: point) {
+                touchInfo.toy = (selectedToy, selectedToy.center - point)
+            }
             if let connectorLabel = self.connectorLabelAtPoint(point: point) {
                 touchInfo.connectorLabel = (connectorLabel, connectorLabel.center - point)
-                
             } else if let (constraintView, connectorPort) = self.connectorPortAtLocation(location: point) {
                 touchInfo.constraintView = (constraintView, constraintView.center - point, connectorPort)
-                
             } else if let constraintView = self.constraintViewAtPoint(point: point) {
                 touchInfo.constraintView = (constraintView, constraintView.center - point, nil)
-                
             }
             
             let touchID = FTPenManager.sharedInstance().classifier.id(for: touch)
@@ -450,7 +461,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             
             if (!usePenClassifications()) {
                 // Test for a long press, to trigger a drag
-                if (touchInfo.connectorLabel != nil || touchInfo.constraintView != nil) {
+                if (touchInfo.connectorLabel != nil || touchInfo.constraintView != nil) && touchInfo.toy == nil {
                     delay(delay: dragDelayTime) {
                         // If this still hasn't been classified as something else (like a connection draw), then it is a move
                         if touchInfo.classification == nil {
@@ -496,8 +507,10 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 } else {
                     // Assign a classification, only if one doesn't exist
                     if touchInfo.classification == nil {
-                        // If they weren't pointing at anything, then this is definitely a stroke
-                        if touchInfo.connectorLabel == nil && touchInfo.constraintView == nil {
+                        if touchInfo.toy != nil {
+                            changeTouchToClassification(touchInfo: touchInfo, classification: .OperateToy)
+                        } else if touchInfo.connectorLabel == nil && touchInfo.constraintView == nil {
+                            // If they weren't pointing at anything, then this is definitely a stroke
                             changeTouchToClassification(touchInfo: touchInfo, classification: .Stroke)
                         } else if touchInfo.connectorLabel != nil || touchInfo.constraintView?.ConnectorPort != nil {
                             // If we have moved significantly before the long press timer fired, then this is a connection draw
@@ -545,7 +558,10 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                     let isDeleteTap = usePenClassifications() ? touchInfo.classification == .Delete :  touch.tapCount == 2
                     if !isDeleteTap {
                         // This is a selection tap
-                        if let (connectorLabel, _) = touchInfo.connectorLabel {
+                        if let (selectedToy, _) = touchInfo.toy {
+                            self.selectedToy = selectedToy
+                            
+                        } else if let (connectorLabel, _) = touchInfo.connectorLabel {
                             
                             if usePenClassifications() {
                                 if self.selectedConnectorLabel != connectorLabel {
@@ -586,9 +602,6 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                             }
                             updateDisplay(needsSolving: true)
                         
-                        } else if let selectedToy = self.selectableToy(at: point) {
-                            self.selectedToy = selectedToy
-                            
                         } else {
                             // De-select everything
                             // TODO: What if they were just drawing a point?
@@ -674,6 +687,9 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                     touchInfo.currentStroke.updateLayer()
                     touchInfo.currentStroke.layer.strokeColor = UIColor.red().cgColor
                     self.scrollView.layer.addSublayer(touchInfo.currentStroke.layer)
+                    
+                case .OperateToy:
+                    updateOperateToyGesture(touchInfo)
                 }
             }
         }
@@ -696,6 +712,9 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 }
             case .Delete:
                 touchInfo.currentStroke.layer.removeFromSuperlayer()
+                
+            case .OperateToy:
+                break // Can't undo
             }
         }
     }
@@ -715,6 +734,9 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 
             case .Delete:
                 touchInfo.currentStroke.updateLayer()
+                
+            case .OperateToy:
+                updateOperateToyGesture(touchInfo)
             }
             
         } else {
@@ -763,6 +785,9 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             case .Delete:
                 completeDeleteGesture(touchInfo: touchInfo)
                 touchInfo.currentStroke.layer.removeFromSuperlayer()
+                
+            case .OperateToy:
+                break // Nothing left to do
             }
         } else {
             fatalError("A touchInfo must have a classification to complete the gesture.")
@@ -785,6 +810,19 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             }
         }
         self.updateDisplay()
+    }
+    
+    func updateOperateToyGesture(_ touchInfo: TouchInfo) {
+        guard let (touchToy, offset) = touchInfo.toy else {
+            fatalError("A touchInfo was classified as OperateToy, but didn't have a toy.")
+        }
+        if self.selectedToy !== touchToy {
+            self.selectedToy = touchToy
+        }
+        let point = touchInfo.currentStroke.points.last!
+        let newCenter = point + offset
+        let values = touchToy.valuesForDrag(to: newCenter)
+        updateDisplay(values: values, needsSolving: true)
     }
     
     func updateDragGesture(touchInfo: TouchInfo) {
@@ -1335,15 +1373,6 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 label.hasError = false
             }
             
-            // TODO: Take the values of the selected toy here
-            
-            // First, the selected connector
-            if let selectedConnector = self.selectedConnectorLabel?.connector {
-                if let value = (values[selectedConnector] ?? lastSimulationValues?[selectedConnector]?.DoubleValue) {
-                    simulationContext.setConnectorValue(connector: selectedConnector, value: (DoubleValue: value, Expression: constantExpression(number: value), WasDependent: true, Informant: nil))
-                }
-            }
-            
             var dependentConnectors: [Connector] = []
             if let selectedConnectorLabel = selectedConnectorLabel {
                 dependentConnectors.append(selectedConnectorLabel.connector)
@@ -1362,11 +1391,12 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             var index = 0
             while index < self.connectorLabels.count {
                 let connector = self.connectorLabels[index].connector
+                let dependent = dependentConnectors.contains(connector)
                 
-                // If we haven't already resolved this connector, then set it as a non-dependent variable to the value from the last simulation
+                // If we haven't already resolved this connector, then set it to the value from the last simulation
                 if simulationContext.connectorValues[connector] == nil {
                     if let lastValue = lastSimulationValues?[connector]?.DoubleValue {
-                        simulationContext.setConnectorValue(connector: connector, value: (DoubleValue: lastValue, Expression: constantExpression(number: lastValue), WasDependent: false, Informant: nil))
+                        simulationContext.setConnectorValue(connector: connector, value: (DoubleValue: lastValue, Expression: constantExpression(number: lastValue), WasDependent: dependent, Informant: nil))
                     }
                 }
                 index += 1
