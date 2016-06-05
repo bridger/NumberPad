@@ -111,34 +111,48 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         // that go to the outputs.
         
         // All edges are equal weight, so the shortest path reduces to a breadth-first search
-        let startConnectors = toy.inputConnectors()
-        let endConnectors = toy.outputConnectors()
-        
+        return connectorsOnPath(from: toy.inputConnectors(), to: toy.outputConnectors(), stopOnFirstPath: false)
+    }
+    
+    func connectorsOnPath(from startConnectors: [Connector], to endConnectors: [Connector], stopOnFirstPath: Bool = true, excluding excludedConnectors: [Connector] = []) -> Set<Connector> {
         var visitedConnectors = Set<Connector>()
         
-        typealias PathToExplore = [Connector]
+        struct PathToExplore {
+            let path: [Connector]
+            // We don't want to backtrack to the same constraint that brought us here. Otherwise, we might
+            // go back through a constraint that is directly connected to an endConnector (and thus not in
+            // visitedConnectors)
+            let constraint: Constraint?
+        }
         
         // This is a queue where the oldest is at the back and the newest are at the front
         var connectorsToExplore = [PathToExplore]()
         
         for input in startConnectors {
             visitedConnectors.insert(input)
-            connectorsToExplore.insert([input], at: 0)
+            connectorsToExplore.insert(PathToExplore(path: [input], constraint: nil), at: 0)
+        }
+        for excluded in excludedConnectors {
+            visitedConnectors.insert(excluded)
         }
         
         var connectorsOnPaths = Set<Connector>()
         while let toExplore = connectorsToExplore.popLast() {
-            for constraint in toExplore.last!.constraints {
+            for constraint in toExplore.path.last!.constraints where constraint !== toExplore.constraint {
                 for newConnector in constraint.connectors {
                     if endConnectors.contains(newConnector) {
                         
                         // Add all of this path, except the first element which was the input connector
-                        for connector in toExplore[1..<toExplore.count] {
+                        for connector in toExplore.path[1..<toExplore.path.count] {
                             connectorsOnPaths.insert(connector)
+                        }
+                        if (stopOnFirstPath) {
+                            return connectorsOnPaths
                         }
                     } else if case (inserted: true, _) = visitedConnectors.insert(newConnector) {
                         // Remember this path as the shortest path to this connector
-                        connectorsToExplore.insert(toExplore + [newConnector], at: 0)
+                        let newPath = toExplore.path + [newConnector]
+                        connectorsToExplore.insert(PathToExplore(path: newPath, constraint: constraint), at: 0)
                     }
                 }
             }
@@ -146,7 +160,6 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         
         return connectorsOnPaths
     }
-    
     
     @discardableResult func remove(connectorLabel label: ConnectorLabel) -> [(ConstraintView, ConnectorPort)] {
         var oldPorts: [(ConstraintView, ConnectorPort)] = []
@@ -211,6 +224,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                     if toy.inputConnectors().contains(connectorLabel.connector)  {
                         for connectorToOutput in connectorsFromToyInputsToOutputs(toy) {
                             if let outputLabel = self.connectorToLabel[connectorToOutput] {
+                                debugPrint("Moving connector \(outputLabel.valueLabel.text) to bottom")
                                 self.moveConnectorToBottomPriority(connectorLabel: outputLabel)
                             }
                         }
@@ -279,6 +293,19 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 // Solve again, to clear dependent connections
                 updateDisplay(needsSolving: true)
             }
+        }
+    }
+    
+    var dependentConnectors: [Connector] {
+        get {
+            var connectors = [Connector]()
+            if let selectedConnectorLabel = selectedConnectorLabel {
+                connectors.append(selectedConnectorLabel.connector)
+            }
+            if let selectedToy = selectedToy {
+                connectors += selectedToy.outputConnectors()
+            }
+            return connectors
         }
     }
     
@@ -644,7 +671,15 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                                 // Try to make this connector high priority, so it is constant instead of dependent
                                 moveConnectorToTopPriority(connectorLabel: connectorLabel)
                             } else {
-                                // Lower the priority of this connector, so it will be dependent
+                                // Lower the priority of this connector and all connectors from the selected
+                                // connectors to it. This way, it will become dependent
+                                let excluded = self.selectedToy?.inputConnectors() ?? []
+                                for connectorOnPath in connectorsOnPath(from: self.dependentConnectors, to: [connectorLabel.connector], excluding: excluded) {
+                                    if let label = connectorToLabel[connectorOnPath] {
+                                        debugPrint("Moving connector \(label.valueLabel.text) to bottom")
+                                        moveConnectorToBottomPriority(connectorLabel: label)
+                                    }
+                                }
                                 moveConnectorToBottomPriority(connectorLabel: connectorLabel)
                             }
                             updateDisplay(needsSolving: true)
@@ -1420,13 +1455,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 label.hasError = false
             }
             
-            var dependentConnectors: [Connector] = []
-            if let selectedConnectorLabel = selectedConnectorLabel {
-                dependentConnectors.append(selectedConnectorLabel.connector)
-            }
-            if let selectedToy = selectedToy {
-                dependentConnectors += selectedToy.outputConnectors()
-            }
+            let dependentConnectors = self.dependentConnectors
             
             // These are the first priority
             for (connector, value) in values {

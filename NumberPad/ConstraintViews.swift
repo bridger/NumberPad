@@ -261,6 +261,13 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
         
         self.frame.size = newSize
     }
+    
+    override var debugDescription: String {
+        get {
+            let description = super.debugDescription
+            return "\(description) value = \(valueLabel.text)"
+        }
+    }
 }
 
 protocol ConnectorPort: NSObjectProtocol {
