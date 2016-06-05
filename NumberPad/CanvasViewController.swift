@@ -142,15 +142,18 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
     }
     var selectedConnectorLabel: ConnectorLabel? {
         didSet {
+            guard selectedConnectorLabel != oldValue else {
+                return
+            }
+            
             if let oldConnectorLabel = oldValue {
                 oldConnectorLabel.isSelected = false
             }
             
             if let connectorLabel = selectedConnectorLabel {
                 connectorLabel.isSelected = true
-                if self.selectedConnectorPort != nil {
-                    self.selectedConnectorPort = nil
-                }
+                self.selectedConnectorPort = nil
+                self.selectedToy = nil
                 
                 // Here we are careful that if there isn't a value already selected (it was a ?), we don't assign a value. We just put 0 in the picker
                 let selectedValue = selectedConnectorLabelValueOverride ?? self.lastValueForConnector(connector: connectorLabel.connector)
@@ -189,6 +192,46 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         }
     }
     
+    var selectedToy: SelectableToy? {
+        didSet {
+            guard selectedToy !== oldValue else {
+                return
+            }
+            if let oldToy = oldValue {
+                oldToy.selected = false
+            }
+            
+            if let selectedToy = selectedToy {
+                selectedToy.selected = true
+                self.selectedConnectorPort = nil
+                self.selectedConnectorLabel = nil
+                
+                for input in selectedToy.inputConnectors() {
+                    // We want this to be a pretty high priority, because if it is dependent then we can't
+                    // ghost
+                    if let connectorLabel = self.connectorToLabel[input] {
+                        moveConnectorToTopPriority(connectorLabel: connectorLabel)
+                    }
+                }
+                
+                var values: [Connector: Double] = [:]
+                for output in selectedToy.outputConnectors() {
+                    // These will be the highest priority, because they are what the user is actually
+                    // moving
+                    if let connectorLabel = self.connectorToLabel[output] {
+                        moveConnectorToTopPriority(connectorLabel: connectorLabel)
+                    }
+                    if let selectedValue = self.lastValueForConnector(connector: output) {
+                        values[output] = selectedValue
+                    }
+                }
+                
+                // Update the display to show which variables are dependent
+                updateDisplay(values: values, needsSolving: true)
+            }
+        }
+    }
+    
     var constraintViews: [ConstraintView] = []
     func addConstraintView(constraintView: ConstraintView, firstInputPort: ConnectorPort?, secondInputPort: ConnectorPort?, outputPort: ConnectorPort?) {
         constraintViews.append(constraintView)
@@ -215,6 +258,10 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
     }
     var selectedConnectorPort: (ConstraintView: ConstraintView, ConnectorPort: ConnectorPort)? {
         didSet {
+            guard selectedConnectorPort != nil || oldValue != nil else {
+                return
+            }
+            
             if let (oldConstraintView, oldConnectorPort) = oldValue {
                 oldConstraintView.setConnector(port: oldConnectorPort, isHighlighted: false)
             }
@@ -222,9 +269,8 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             if let (newConstraintView, newConnectorPort) = self.selectedConnectorPort {
                 newConstraintView.setConnector(port: newConnectorPort, isHighlighted: true)
                 
-                if self.selectedConnectorLabel != nil {
-                    self.selectedConnectorLabel = nil
-                }
+                self.selectedConnectorLabel = nil
+                self.selectedToy = nil
             }
         }
     }
@@ -423,8 +469,6 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 }
             }
         }
-        
-        // TODO: See if this was a double-tap, to delete
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -538,12 +582,16 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                                 moveConnectorToBottomPriority(connectorLabel: connectorLabel)
                             }
                             updateDisplay(needsSolving: true)
+                        
+                        } else if let selectedToy = self.selectableToy(at: point) {
+                            self.selectedToy = selectedToy
                             
                         } else {
                             // De-select everything
                             // TODO: What if they were just drawing a point?
                             self.selectedConnectorLabel = nil
                             self.selectedConnectorPort = nil
+                            self.selectedToy = nil
                         }
                         
                     } else {
@@ -963,6 +1011,17 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         return minMatch
     }
     
+    func selectableToy(at point: CGPoint) -> SelectableToy? {
+        for toy in toys {
+            if let selectable = toy as? SelectableToy {
+                if selectable.contains(point) {
+                    return selectable
+                }
+            }
+        }
+        return nil
+    }
+    
     func processStrokes() {
         let unprocessedStrokesCopy = self.unprocessedStrokes
         self.unprocessedStrokes.removeAll(keepingCapacity: false)
@@ -1282,9 +1341,18 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 }
             }
             
+            var dependentConnectors: [Connector] = []
+            if let selectedConnectorLabel = selectedConnectorLabel {
+                dependentConnectors.append(selectedConnectorLabel.connector)
+            }
+            if let selectedToy = selectedToy {
+                dependentConnectors += selectedToy.outputConnectors()
+            }
+            
             // These are the first priority
             for (connector, value) in values {
-                simulationContext.setConnectorValue(connector: connector, value: (DoubleValue: value, Expression: constantExpression(number: value), WasDependent: false, Informant: nil))
+                let dependent = dependentConnectors.contains(connector)
+                simulationContext.setConnectorValue(connector: connector, value: (DoubleValue: value, Expression: constantExpression(number: value), WasDependent: dependent, Informant: nil))
             }
             
             // We loop through connectorLabels like this, because it can mutate during the simulation, if a constraint "resolves a port"

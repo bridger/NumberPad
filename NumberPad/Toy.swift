@@ -17,7 +17,7 @@ typealias GhostValueResolver = (inputValues: [Connector: Double]) -> [Connector:
 typealias ConnectorState = (Value: SimulationContext.ResolvedValue, Scale: Int16)
 
 
-protocol Toy {
+protocol Toy: class {
     func inputConnectors() -> [Connector]
     func outputConnectors() -> [Connector]
     
@@ -26,25 +26,36 @@ protocol Toy {
     func update(values: [Connector: SimulationContext.ResolvedValue])
 }
 
-class MotionToy : UIView, Toy {
+protocol SelectableToy: Toy {
+    func contains(_ point: CGPoint) -> Bool
+    
+    var selected: Bool { get set }
+}
+
+class MotionToy : UIView, SelectableToy {
     let xConnector: Connector
     let yConnector: Connector
     let driverConnector: Connector
     let image: UIImage
+    let imageView: UIImageView
     
     init(image: UIImage, xConnector: Connector, yConnector: Connector, driverConnector: Connector) {
         self.xConnector = xConnector
         self.yConnector = yConnector
         self.driverConnector = driverConnector
         self.image = image
+        self.imageView = UIImageView(image: image)
         
         super.init(frame: CGRect.zero)
         
-        let imageView = UIImageView(image: image)
         imageView.sizeToFit()
         self.frame.size = imageView.frame.size
         imageView.frame = self.bounds
         self.addSubview(imageView)
+    }
+    
+    func contains(_ point: CGPoint) -> Bool {
+        return self.frame.contains(point)
     }
     
     required init(coder aDecoder: NSCoder) {
@@ -98,7 +109,6 @@ class MotionToy : UIView, Toy {
         }
     }
     
-    
     func update(values: [Connector : SimulationContext.ResolvedValue]) {
         removeAllGhosts()
         
@@ -135,6 +145,18 @@ class MotionToy : UIView, Toy {
             reuseGhosts.append(ghost)
         }
         activeGhosts = []
+    }
+    
+    var selected: Bool = false {
+        didSet {
+            if selected {
+                imageView.layer.shadowColor = UIColor.selectedBackgroundColor().cgColor
+                imageView.layer.shadowOpacity = 0.5
+                imageView.layer.shadowRadius = 5
+            } else {
+                imageView.layer.shadowOpacity = 0
+            }
+        }
     }
 }
 
@@ -442,6 +464,5 @@ class PythagorasToy : UIView, Toy {
         
         context.restoreGState()
     }
-    
 }
 
