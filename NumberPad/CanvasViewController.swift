@@ -106,6 +106,48 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             print("Tried to move connector to bottom priority, but couldn't find it!")
         }
     }
+    func connectorsFromToyInputsToOutputs(_ toy: Toy) -> Set<Connector> {
+        // Here we start at a toy's inputs and trace the path to the outputs. We collect all shortest paths
+        // that go to the outputs.
+        
+        // All edges are equal weight, so the shortest path reduces to a breadth-first search
+        let startConnectors = toy.inputConnectors()
+        let endConnectors = toy.outputConnectors()
+        
+        var visitedConnectors = Set<Connector>()
+        
+        typealias PathToExplore = [Connector]
+        
+        // This is a queue where the oldest is at the back and the newest are at the front
+        var connectorsToExplore = [PathToExplore]()
+        
+        for input in startConnectors {
+            visitedConnectors.insert(input)
+            connectorsToExplore.insert([input], at: 0)
+        }
+        
+        var connectorsOnPaths = Set<Connector>()
+        while let toExplore = connectorsToExplore.popLast() {
+            for constraint in toExplore.last!.constraints {
+                for newConnector in constraint.connectors {
+                    if endConnectors.contains(newConnector) {
+                        
+                        // Add all of this path, except the first element which was the input connector
+                        for connector in toExplore[1..<toExplore.count] {
+                            connectorsOnPaths.insert(connector)
+                        }
+                    } else if case (inserted: true, _) = visitedConnectors.insert(newConnector) {
+                        // Remember this path as the shortest path to this connector
+                        connectorsToExplore.insert(toExplore + [newConnector], at: 0)
+                    }
+                }
+            }
+        }
+        
+        return connectorsOnPaths
+    }
+    
+    
     @discardableResult func remove(connectorLabel label: ConnectorLabel) -> [(ConstraintView, ConnectorPort)] {
         var oldPorts: [(ConstraintView, ConnectorPort)] = []
         if let index = connectorLabels.index(of: label) {
@@ -167,6 +209,11 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 // If this is the input of a toy, make sure the outputs are low priority
                 for toy in self.toys {
                     if toy.inputConnectors().contains(connectorLabel.connector)  {
+                        for connectorToOutput in connectorsFromToyInputsToOutputs(toy) {
+                            if let outputLabel = self.connectorToLabel[connectorToOutput] {
+                                self.moveConnectorToBottomPriority(connectorLabel: outputLabel)
+                            }
+                        }
                         for output in toy.outputConnectors() {
                             if let outputLabel = self.connectorToLabel[output] {
                                 self.moveConnectorToBottomPriority(connectorLabel: outputLabel)
@@ -1387,10 +1434,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 simulationContext.setConnectorValue(connector: connector, value: (DoubleValue: value, Expression: constantExpression(number: value), WasDependent: dependent, Informant: nil))
             }
             
-            // We loop through connectorLabels like this, because it can mutate during the simulation, if a constraint "resolves a port"
-            var index = 0
-            while index < self.connectorLabels.count {
-                let connector = self.connectorLabels[index].connector
+            func resolveToLastValue(_ connector: Connector) {
                 let dependent = dependentConnectors.contains(connector)
                 
                 // If we haven't already resolved this connector, then set it to the value from the last simulation
@@ -1399,6 +1443,16 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                         simulationContext.setConnectorValue(connector: connector, value: (DoubleValue: lastValue, Expression: constantExpression(number: lastValue), WasDependent: dependent, Informant: nil))
                     }
                 }
+            }
+            
+            for connector in dependentConnectors {
+                resolveToLastValue(connector)
+            }
+            
+            // We loop through connectorLabels like this, because it can mutate during the simulation, if a constraint "resolves a port"
+            var index = 0
+            while index < self.connectorLabels.count {
+                resolveToLastValue(self.connectorLabels[index].connector)
                 index += 1
             }
             
@@ -1435,7 +1489,6 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             toy.update(values: lastSimulationValues)
             
             // Now, get the state needed to update the ghosts
-            
             var inputConnectorStates: [Connector: ConnectorState] = [:]
             for inputConnector in toy.inputConnectors() {
                 guard let inputConnectorLabel = self.connectorToLabel[inputConnector],
@@ -1459,11 +1512,11 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             }
             // Filter out any of the output connectors, to make sure they are last priority
             let outputConnectors = toy.outputConnectors()
+            let pathToOutputConnectors = connectorsFromToyInputsToOutputs(toy)
             allConnectors = allConnectors.filter({ connector -> Bool in
-                return !outputConnectors.contains(connector)
+                return !outputConnectors.contains(connector) && !pathToOutputConnectors.contains(connector)
             })
-            allConnectors = allConnectors + outputConnectors
-            
+            allConnectors = allConnectors + Array(pathToOutputConnectors) + outputConnectors
             
             toy.updateGhosts(inputStates: inputConnectorStates) { (inputValues: [Connector: Double]) -> [Connector : SimulationContext.ResolvedValue] in
                 // The toy calls this each time it wants to know what the outputs end up being for a given input
@@ -1485,7 +1538,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                         continue
                     }
                     if let value = (values[connector] ?? lastSimulationValues[connector]?.DoubleValue) {
-                        simulationContext.setConnectorValue(connector: connector, value: (DoubleValue: value, Expression: constantExpression(number: value), WasDependent: true, Informant: nil))
+                        simulationContext.setConnectorValue(connector: connector, value: (DoubleValue: value, Expression: constantExpression(number: value), WasDependent: false, Informant: nil))
                     }
                 }
                 

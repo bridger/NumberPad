@@ -65,6 +65,11 @@ func constantExpression(number: Double) -> DDExpression {
 
 class Constraint {
     func processNewValues(context: SimulationContext) -> Bool { return true }
+    var connectors: [Connector] {
+        get {
+            return []
+        }
+    }
 }
 
 extension Constraint: Hashable {
@@ -118,6 +123,11 @@ class MultiInputOutputConstraint : Constraint {
             connector.disconnect(constraint: self)
         } else {
             print("Unable to remove output connector!")
+        }
+    }
+    override var connectors: [Connector] {
+        get {
+            return inputs + outputs
         }
     }
 }
@@ -342,6 +352,12 @@ class Exponent : Constraint {
                 oldValue.disconnect(constraint: self)
             }
             self.result.connect(constraint: self)
+        }
+    }
+    
+    override var connectors: [Connector] {
+        get {
+            return [base, exponent, result]
         }
     }
     

@@ -93,8 +93,7 @@ class MotionToy : UIView, SelectableToy {
             }
             let valueOffset = Double(offset) * pow(10.0, Double(driverState.Scale + 1))
             let offsetDriverValue = driverState.Value.DoubleValue + valueOffset
-            
-            
+
             let ghostValues = resolver(inputValues: [self.driverConnector: offsetDriverValue])
             
             guard let xPosition = ghostValues[self.xConnector]?.DoubleValue,
