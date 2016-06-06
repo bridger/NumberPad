@@ -138,6 +138,17 @@ class IntroViewController: UIViewController {
     @IBAction func startFootballDemo(sender: AnyObject) {
         let canvas = configureNewCanvas()
         
+        let fieldImage = UIImage(named: "field")!
+        let fieldColor = UIColor(patternImage: fieldImage)
+        let fieldView = UIView()
+        let fieldHeight = fieldImage.size.height
+        fieldView.heightAnchor.constraintEqual(toConstant: fieldHeight).isActive = true
+        fieldView.backgroundColor = fieldColor
+        canvas.view.addAutoLayoutSubview(subview: fieldView)
+        canvas.view.sendSubview(toBack: fieldView)
+        canvas.view.addHorizontalConstraints(|[fieldView]|)
+        canvas.view.addVerticalConstraints([fieldView]|)
+        
         let xConnector = Connector()
         let xLabel = ConnectorLabel(connector: xConnector)
         xLabel.scale = 0
@@ -153,7 +164,7 @@ class IntroViewController: UIViewController {
         yLabel.center = CGPoint(x: self.view.bounds.size.width - 60, y: 250)
         
         canvas.addConnectorLabel(label: yLabel, topPriority: false, automaticallyConnect: false)
-        canvas.selectConnectorLabelAndSetToValue(connectorLabel: yLabel, value: 350)
+        canvas.selectConnectorLabelAndSetToValue(connectorLabel: yLabel, value: 300)
         
         canvas.addConnectorLabel(label: xLabel, topPriority: false, automaticallyConnect: false)
         canvas.selectConnectorLabelAndSetToValue(connectorLabel: xLabel, value: 200)
@@ -165,6 +176,7 @@ class IntroViewController: UIViewController {
         timeLabel.center = CGPoint(x: self.view.bounds.size.width / 2, y: 40)
         
         let newToy = MotionToy(image: UIImage(named: "football")!, xConnector: xConnector, yConnector: yConnector, driverConnector: timeConnector)
+        newToy.yOffset = fieldHeight
         canvas.scrollView.addSubview(newToy)
         canvas.toys.append(newToy)
         

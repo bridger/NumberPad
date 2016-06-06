@@ -47,6 +47,7 @@ class MotionToy : UIView, SelectableToy, GhostableToy {
     let driverConnector: Connector
     let image: UIImage
     let imageView: UIImageView
+    var yOffset: CGFloat = 0
     
     init(image: UIImage, xConnector: Connector, yConnector: Connector, driverConnector: Connector) {
         self.xConnector = xConnector
@@ -112,10 +113,12 @@ class MotionToy : UIView, SelectableToy, GhostableToy {
             ghost.simulationContext = ghostValues
             self.superview?.insertSubview(ghost, belowSubview: self)
             ghost.center.x = CGFloat(xPosition)
-            let toyYZero = self.superview?.frame.size.height ?? 0
-        
-            ghost.center.y = toyYZero - CGFloat(yPosition)
+            ghost.center.y = toyYZero() - CGFloat(yPosition)
         }
+    }
+    
+    func toyYZero() -> CGFloat {
+        return (self.superview?.frame.size.height ?? 0) - yOffset
     }
     
     func update(values: [Connector : SimulationContext.ResolvedValue]) {
@@ -125,9 +128,12 @@ class MotionToy : UIView, SelectableToy, GhostableToy {
             self.center.x = CGFloat(xPosition)
         }
         if let yPosition = values[self.yConnector]?.DoubleValue where yPosition.isFinite {
-            let toyYZero = self.superview?.frame.size.height ?? 0
-            self.center.y = toyYZero - CGFloat(yPosition)
+            self.center.y = toyYZero() - CGFloat(yPosition)
         }
+    }
+    
+    func valuesForDrag(to newCenter: CGPoint) -> [Connector: Double] {
+        return [xConnector: Double(newCenter.x), yConnector: Double(toyYZero() - newCenter.y)]
     }
     
     func ghostState(at point: CGPoint) -> ResolvedValues? {
@@ -187,11 +193,6 @@ class MotionToy : UIView, SelectableToy, GhostableToy {
                 imageView.layer.shadowOpacity = 0
             }
         }
-    }
-    
-    func valuesForDrag(to newCenter: CGPoint) -> [Connector: Double] {
-        let toyYZero = self.superview?.frame.size.height ?? 0
-        return [xConnector: Double(newCenter.x), yConnector: Double(toyYZero - newCenter.y)]
     }
 }
 
