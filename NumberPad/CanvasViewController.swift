@@ -940,7 +940,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             let targetConstraint = connectorPortAtLocation(location: point)
             let labelPoint = connectorLabel.center
             let dependent = lastInformant(for: connectorLabel.connector)?.WasDependent ?? false
-            dragLine = createConnectionLayer(startPoint: labelPoint, endPoint: point, color: targetConstraint?.ConnectorPort.color, isDependent: dependent, drawArrow: false)
+            dragLine = createConnectionLayer(startPoint: labelPoint, endPoint: point, color: targetConstraint?.ConnectorPort.color, isDependent: dependent, arrowHeadPosition: nil)
             
             touchInfo.highlightedConnectorPort = targetConstraint
             if let (constraintView, connectorPort) = targetConstraint {
@@ -962,7 +962,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                     constraintView.setConnector(port: connectorPort, isHighlighted: true)
                 }
             }
-            dragLine = createConnectionLayer(startPoint: startPoint, endPoint: endPoint, color: connectorPort!.color, isDependent: dependent, drawArrow: false)
+            dragLine = createConnectionLayer(startPoint: startPoint, endPoint: endPoint, color: connectorPort!.color, isDependent: dependent, arrowHeadPosition: nil)
             constraintView.setConnector(port: connectorPort!, isHighlighted: true)
             
         } else {
@@ -1358,6 +1358,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                         
                         let startPoint: CGPoint
                         let endPoint: CGPoint
+                        var arrowHeadPosition: CGFloat = 0.33
                         // If this contraintView was the informant, then the arrow goes from the constraint
                         // to the connector. Otherwise, it goes from the connector to the constraint
                         if lastInformant?.Informant == constraintView.constraint {
@@ -1366,9 +1367,12 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                         } else {
                             startPoint = labelPoint
                             endPoint = constraintPoint
+                            arrowHeadPosition = 1 - arrowHeadPosition
                         }
+                        // Don't draw the arrow head if there was no informant
+                        let drawArrowHead: CGFloat? = lastInformant == nil ? nil : arrowHeadPosition;
                         
-                        let connectionLayer = self.createConnectionLayer(startPoint: startPoint, endPoint: endPoint, color: connectorPort.color, isDependent: dependent, drawArrow: lastInformant != nil)
+                        let connectionLayer = self.createConnectionLayer(startPoint: startPoint, endPoint: endPoint, color: connectorPort.color, isDependent: dependent, arrowHeadPosition: drawArrowHead)
                         
                         self.connectionLayers.append(connectionLayer)
                         connectionLayer.zPosition = self.connectionLayersZPosition
@@ -1648,14 +1652,14 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         }
     }
     
-    func createConnectionLayer(startPoint: CGPoint, endPoint: CGPoint, color: UIColor?, isDependent: Bool, drawArrow: Bool) -> CAShapeLayer {
+    func createConnectionLayer(startPoint: CGPoint, endPoint: CGPoint, color: UIColor?, isDependent: Bool, arrowHeadPosition: CGFloat?) -> CAShapeLayer {
         let dragLine = CAShapeLayer()
         dragLine.lineWidth = 3
         dragLine.fillColor = nil
         dragLine.lineCap = kCALineCapRound
         dragLine.strokeColor = color?.cgColor ?? UIColor.textColor().cgColor
         
-        dragLine.path = createPointingLine(startPoint: startPoint, endPoint: endPoint, dash: isDependent, arrowHead: drawArrow)
+        dragLine.path = createPointingLine(startPoint: startPoint, endPoint: endPoint, dash: isDependent, arrowHeadPosition: arrowHeadPosition)
         return dragLine
     }
     

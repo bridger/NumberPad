@@ -10,7 +10,7 @@ import Foundation
 import CoreGraphics
 import DigitRecognizerSDK
 
-func createPointingLine(startPoint: CGPoint, endPoint: CGPoint, dash: Bool, arrowHead: Bool) -> CGPath {
+func createPointingLine(startPoint: CGPoint, endPoint: CGPoint, dash: Bool, arrowHeadPosition: CGFloat?) -> CGPath {
     let length = (endPoint - startPoint).length()
     let headWidth: CGFloat = 10
     let headLength: CGFloat = 10
@@ -27,7 +27,7 @@ func createPointingLine(startPoint: CGPoint, endPoint: CGPoint, dash: Bool, arro
         }
     }
     
-    if arrowHead {
+    if let arrowHeadPosition = arrowHeadPosition {
         /* Now add the arrow head
         *
         *   \
@@ -36,7 +36,7 @@ func createPointingLine(startPoint: CGPoint, endPoint: CGPoint, dash: Bool, arro
         *   /
         *
         */
-        let arrowStartX = length / 2
+        let arrowStartX = length * arrowHeadPosition
         path.moveTo(nil, x: arrowStartX - headLength, y: headWidth / 2) // top
         path.addLineTo(nil, x: arrowStartX, y: 0) // middle
         path.addLineTo(nil, x: arrowStartX - headLength, y: -headWidth / 2) // bottom
