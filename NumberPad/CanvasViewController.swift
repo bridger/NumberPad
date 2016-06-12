@@ -1537,9 +1537,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             }
         }
         
-        func updateToyAndGhosts(toy: GhostableToy, lastSimulationValues: [Connector: SimulationContext.ResolvedValue]) {
-            toy.update(values: lastSimulationValues)
-            
+        func updateGhosts(toy: GhostableToy, lastSimulationValues: [Connector: SimulationContext.ResolvedValue]) {
             // Now, get the state needed to update the ghosts
             var inputConnectorStates: [Connector: ConnectorState] = [:]
             for inputConnector in toy.inputConnectors() {
@@ -1617,11 +1615,11 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             rebuildAllConnectionLayers()
         }
         
-
         if let lastSimulationValues = self.lastSimulationValues where ranSolver {
             for toy in self.toys {
+                toy.update(values: lastSimulationValues)
                 if let toy = toy as? GhostableToy {
-                    updateToyAndGhosts(toy: toy, lastSimulationValues: lastSimulationValues)
+                    updateGhosts(toy: toy, lastSimulationValues: lastSimulationValues)
                 }
             }
             
