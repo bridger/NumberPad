@@ -140,7 +140,7 @@ class SpacedViewsConstraintToken: NSObject, ConstraintAble, ViewContainingToken 
             }
         }
         
-        NSException(name: NSInvalidArgumentException, reason: "This space constraint was between two view items that couldn't fit together. Weird?", userInfo: nil).raise()
+        NSException(name: NSExceptionName.invalidArgumentException, reason: "This space constraint was between two view items that couldn't fit together. Weird?", userInfo: nil).raise()
         return [] // To appease the compiler, which doesn't realize this branch dies
     }
 }
@@ -266,9 +266,9 @@ public class LeadingSuperviewConstraintToken: NSObject, ConstraintAble, ViewCont
                 
                 return viewContainer.toConstraints(axis: axis) + [constraint]
             }
-            NSException(name: NSInvalidArgumentException, reason: "You tried to create a constraint to \(view)'s superview, but it has no superview yet!", userInfo: nil).raise()
+            NSException(name: NSExceptionName.invalidArgumentException, reason: "You tried to create a constraint to \(view)'s superview, but it has no superview yet!", userInfo: nil).raise()
         }
-        NSException(name: NSInvalidArgumentException, reason: "This superview bar | was before something that doesn't have a view. Weird?", userInfo: nil).raise()
+        NSException(name: NSExceptionName.invalidArgumentException, reason: "This superview bar | was before something that doesn't have a view. Weird?", userInfo: nil).raise()
         return [] // To appease the compiler, which doesn't realize this branch dies
     }
 }
@@ -315,9 +315,9 @@ public class TrailingSuperviewConstraintToken: NSObject, ConstraintAble, ViewCon
                 
                 return viewContainer.toConstraints(axis: axis) + [constraint]
             }
-            NSException(name: NSInvalidArgumentException, reason: "You tried to create a constraint to \(view)'s superview, but it has no superview yet!", userInfo: nil).raise()
+            NSException(name: NSExceptionName.invalidArgumentException, reason: "You tried to create a constraint to \(view)'s superview, but it has no superview yet!", userInfo: nil).raise()
         }
-        NSException(name: NSInvalidArgumentException, reason: "This superview bar | was after something that doesn't have a view. Weird?", userInfo: nil).raise()
+        NSException(name: NSExceptionName.invalidArgumentException, reason: "This superview bar | was after something that doesn't have a view. Weird?", userInfo: nil).raise()
         
         return [] // To appease the compiler, which doesn't realize this branch dies
     }

@@ -184,6 +184,6 @@ public extension ALView {
     
     /// Equivalent to NSLayoutAttribute.Baseline
     var al_baseline: ALLayoutItem {
-        return al_operand(attribute: .baseline)
+        return al_operand(attribute: .lastBaseline)
     }
 }

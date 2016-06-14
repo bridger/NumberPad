@@ -15,16 +15,16 @@ protocol NameCanvasDelegate {
 class NameCanvasAnimator: NSObject, UIViewControllerAnimatedTransitioning {
     var presenting = false
     
-    func transitionDuration(_ transitionContext: UIViewControllerContextTransitioning?) -> NSTimeInterval {
+    func transitionDuration(_ transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
         return 0.2
     }
 
     @objc(animateTransition:) func animateTransition(_ transitionContext: UIViewControllerContextTransitioning) {
         guard let toViewController = transitionContext.viewController(forKey: UITransitionContextToViewControllerKey),
-            fromViewController = transitionContext.viewController(forKey: UITransitionContextFromViewControllerKey),
-            containerView = transitionContext.containerView() else {
+            fromViewController = transitionContext.viewController(forKey: UITransitionContextFromViewControllerKey) else {
                 return
         }
+        let containerView = transitionContext.containerView()
         
         if (presenting) {
             containerView.addAutoLayoutSubview(subview: toViewController.view)

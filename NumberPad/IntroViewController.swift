@@ -16,7 +16,7 @@ class IntroViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        if let path = NSBundle.main().pathForResource("bridger_normalized", ofType: "json") {
+        if let path = Bundle.main().pathForResource("bridger_normalized", ofType: "json") {
             loadData(path: path)
         }
         
@@ -142,7 +142,7 @@ class IntroViewController: UIViewController {
         let fieldColor = UIColor(patternImage: fieldImage)
         let fieldView = UIView()
         let fieldHeight = fieldImage.size.height
-        fieldView.heightAnchor.constraintEqual(toConstant: fieldHeight).isActive = true
+        fieldView.heightAnchor.constraint(equalToConstant: fieldHeight).isActive = true
         fieldView.backgroundColor = fieldColor
         canvas.view.addAutoLayoutSubview(subview: fieldView)
         canvas.view.sendSubview(toBack: fieldView)

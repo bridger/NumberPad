@@ -83,7 +83,7 @@ class VisualizeCollectionViewController: UICollectionViewController {
         return digitClassifier.normalizedPrototypeLibrary[label]?.count ?? 0
     }
     
-    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: NSIndexPath) -> UICollectionViewCell {
+    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! ImageCell
         
         let label = self.digitLabels[indexPath.section]

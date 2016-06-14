@@ -487,8 +487,8 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         var classification: GestureClassification?
         
         let initialPoint: CGPoint
-        let initialTime: NSTimeInterval
-        init(initialPoint: CGPoint, initialTime: NSTimeInterval) {
+        let initialTime: TimeInterval
+        init(initialPoint: CGPoint, initialTime: TimeInterval) {
             self.initialPoint = initialPoint
             self.initialTime = initialTime
             
@@ -536,7 +536,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             if (!usePenClassifications()) {
                 // Test for a long press, to trigger a drag
                 if (touchInfo.connectorLabel != nil || touchInfo.constraintView != nil) && touchInfo.toy == nil {
-                    delay(delay: dragDelayTime) {
+                    delay(after: dragDelayTime) {
                         // If this still hasn't been classified as something else (like a connection draw), then it is a move
                         if touchInfo.classification == nil {
                             if touchInfo.phase == .began || touchInfo.phase == .moved {
@@ -652,7 +652,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                                 }
                             } else {
                                 // We delay this by a bit, so that the selection doesn't happen if a double-tap completes and the connector is deleted
-                                delay(delay: dragDelayTime) {
+                                delay(after: dragDelayTime) {
                                     if let _ = self.connectorLabels.index(of: connectorLabel) { // It will be found unless it has been deleted
                                         if self.selectedConnectorLabel != connectorLabel {
                                             self.selectedConnectorLabel = connectorLabel
@@ -848,7 +848,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                     //device
                     let delayTime = 0.4
                 #endif
-                delay(delay: delayTime) { [weak self] in
+                delay(after: delayTime) { [weak self] in
                     if let strongself = self {
                         // If we haven't begun a new stroke in the intervening time, then process the old strokes
                         if strongself.processStrokesCounter == currentCounter {
@@ -1167,14 +1167,14 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         let unprocessedStrokesCopy = self.unprocessedStrokes
         self.unprocessedStrokes.removeAll(keepingCapacity: false)
         
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0)) {
+        DispatchQueue.global(attributes: DispatchQueue.GlobalAttributes.qosUserInitiated).async {
             var allStrokes: DTWDigitClassifier.DigitStrokes = []
             for previousStroke in unprocessedStrokesCopy {
                 allStrokes.append(previousStroke.points)
             }
             let classifiedLabels = self.digitClassifier.classifyMultipleDigits(strokes: allStrokes)
             
-            dispatch_async(dispatch_get_main_queue()) {
+            DispatchQueue.main.async {
                 if let classifiedLabels = classifiedLabels {
                     // Find the bounding rect of all of the strokes
                     var topLeft: CGPoint?

@@ -20,7 +20,7 @@ class Stroke {
         layer.fillColor = nil
     }
     
-    func append( CGPoint)
+    func append(_ point: CGPoint)
     {
         points.append(point)
         

@@ -27,7 +27,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func application(_: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
-        if let path = NSBundle.main().pathForResource("bridger_train", ofType: "json") {
+        if let path = Bundle.main().pathForResource("bridger_train", ofType: "json") {
             loadData(path: path)
         }
         //saveMisclassified()
@@ -40,7 +40,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func documentsDirectory() -> NSURL {
-        let path = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.documentDirectory, NSSearchPathDomainMask.userDomainMask, true)[0] as String
+        let path = NSSearchPathForDirectoriesInDomains(FileManager.SearchPathDirectory.documentDirectory, FileManager.SearchPathDomainMask.userDomainMask, true)[0] as String
         return NSURL(fileURLWithPath: path)
     }
     
@@ -56,11 +56,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             saveNumber = 1
         }
         
-        let documentName = self.documentsDirectory().appendingPathComponent(filePrefix + String(saveNumber))
+        let documentName = self.documentsDirectory().appendingPathComponent(filePrefix + String(saveNumber))!
         
         do {
-            let jsonObject = try NSJSONSerialization.data(withJSONObject: dataToSave, options: [])
-            jsonObject.write(to: documentName, atomically: false)
+            let jsonObject = try JSONSerialization.data(withJSONObject: dataToSave, options: [])
+            try jsonObject.write(to: documentName)
         } catch let error as NSError {
             print("Couldn't save data \(error)")
         }
@@ -76,7 +76,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func newestSavedData() -> String? {
         let contents: [AnyObject]?
         do {
-            contents = try NSFileManager.default().contentsOfDirectory(atPath: self.documentsDirectory().path!)
+            contents = try FileManager.default().contentsOfDirectory(atPath: self.documentsDirectory().path!)
         } catch _ {
             contents = nil
         }
@@ -85,7 +85,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 let filtered = contents.filter({ string in
                     return string.hasPrefix(filePrefix)
                 }).sorted(isOrderedBefore: { (string1, string2) in
-                    return string1.compare(string2) == NSComparisonResult.orderedAscending
+                    return string1.compare(string2) == ComparisonResult.orderedAscending
                 })
                 
                 return filtered.last
@@ -98,13 +98,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func saveMisclassified() {
         
-        let testDataPath = NSBundle.main().pathForResource("bridger_test", ofType: "json")!
+        let testDataPath = Bundle.main().pathForResource("bridger_test", ofType: "json")!
         let testDataJson = DTWDigitClassifier.jsonLibraryFromFile(path: testDataPath)!["rawData"]!
         let testData = DTWDigitClassifier.jsonToLibrary(json: testDataJson)
         let randomNumber = arc4random() % 500
-        let documentDirectory = documentsDirectory().appendingPathComponent("\(randomNumber)")
+        let documentDirectory = documentsDirectory().appendingPathComponent("\(randomNumber)")!
         do {
-            try NSFileManager.default().createDirectory(at: documentDirectory, withIntermediateDirectories: true, attributes: nil)
+            try FileManager.default().createDirectory(at: documentDirectory, withIntermediateDirectories: true, attributes: nil)
         } catch _ {
         }
 
@@ -131,8 +131,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
             
             let baseName = "\(safeName(name: testLabel)) as \(safeName(name: trainLabel)) indexes \(testIndex) \(trainIndex)"
-            let testFileName = documentDirectory.appendingPathComponent(baseName + " - Test.png")
-            let trainFileName = documentDirectory.appendingPathComponent(baseName + " - Train.png")
+            let testFileName = try! documentDirectory.appendingPathComponent(baseName + " - Test.png")
+            let trainFileName = try! documentDirectory.appendingPathComponent(baseName + " - Train.png")
             
             do {
                 try UIImagePNGRepresentation(testStrokeImage)!.write(to: testFileName, options: [])

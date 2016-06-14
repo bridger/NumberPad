@@ -25,7 +25,7 @@ class DTWDigitClassifierTests: XCTestCase {
     
     func testParameters() {
         let digitClassifier = DTWDigitClassifier()
-        let bundle = NSBundle(for: self.dynamicType)
+        let bundle = Bundle(for: self.dynamicType)
         
         let trainingJsonData = DTWDigitClassifier.jsonLibraryFromFile(path: bundle.pathForResource("bridger_train", ofType: "json")!)
         digitClassifier.loadData(jsonData: trainingJsonData!, loadNormalizedData: false)
@@ -39,7 +39,7 @@ class DTWDigitClassifierTests: XCTestCase {
         for (votesCounted, scoreCutoff): (Int, CGFloat) in [(5, 0.8)] {
             print("\n\n\nTesting votesCounted=\(votesCounted) scoreCutoff=\(scoreCutoff)")
             
-            let startTime = NSDate()
+            let startTime = Date()
             var aggregateCorrect = 0
             var aggregateTotal = 0
             
@@ -50,7 +50,7 @@ class DTWDigitClassifierTests: XCTestCase {
                 var labelTotal = 0
                 var labelWrong = 0
                 var labelUnclassified = 0
-                let startDigitTime = NSDate()
+                let startDigitTime = Date()
                 
                 var index = 0
                 for testDigit in testDigits {
@@ -70,7 +70,7 @@ class DTWDigitClassifierTests: XCTestCase {
                 }
                 
                 let accuracy = Double(labelCorrect) / Double(labelTotal)
-                let elapsedTime = NSDate().timeIntervalSince(startDigitTime)
+                let elapsedTime = Date().timeIntervalSince(startDigitTime)
                 print(String(format: "Accuracy score for %@ is %.3f%% (%d/%d). %d wrong. %d unknown. Took %d seconds", label, accuracy, labelCorrect, labelTotal, labelWrong, labelUnclassified, Int(elapsedTime)))
                 
                 
@@ -86,7 +86,7 @@ class DTWDigitClassifierTests: XCTestCase {
             print("")
             
             let accuracy = Double(aggregateCorrect) / Double(aggregateTotal)
-            let elapsedTime = NSDate().timeIntervalSince(startTime)
+            let elapsedTime = Date().timeIntervalSince(startTime)
             print("Accuracy score for (\(votesCounted), \(scoreCutoff)) is \(accuracy)% (\(aggregateCorrect)/\(aggregateTotal)). All tests took \(elapsedTime) seconds.")
         }
     }
@@ -94,7 +94,7 @@ class DTWDigitClassifierTests: XCTestCase {
     func testPerformanceAndAccuracy() {
         let digitClassifier = DTWDigitClassifier()
         
-        let bundle = NSBundle(for: self.dynamicType)
+        let bundle = Bundle(for: self.dynamicType)
         let trainingJsonData = DTWDigitClassifier.jsonLibraryFromFile(path: bundle.pathForResource("bridger_train", ofType: "json")!)
         XCTAssertNotNil(trainingJsonData,  "Could not load training data")
         
@@ -104,7 +104,7 @@ class DTWDigitClassifierTests: XCTestCase {
         
         digitClassifier.loadData(jsonData: trainingJsonData!, loadNormalizedData: false)
         self.measure {
-            let startTime = NSDate()
+            let startTime = Date()
             var aggregateCorrect = 0
             var aggregateTotal = 0
             
@@ -135,7 +135,7 @@ class DTWDigitClassifierTests: XCTestCase {
             }
             
             let accuracy = Double(aggregateCorrect) / Double(aggregateTotal)
-            let elapsedTime = NSDate().timeIntervalSince(startTime)
+            let elapsedTime = Date().timeIntervalSince(startTime)
             print("Accuracy score for all training data is \(accuracy)% (\(aggregateCorrect)/\(aggregateTotal)). All tests took \(elapsedTime) seconds.")
         }
     }

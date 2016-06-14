@@ -112,14 +112,14 @@ public class DTWDigitClassifier {
     public typealias Classification = (Label: DigitLabel, Confidence: CGFloat, BestPrototypeIndex: Int)
     public func classifyDigit(digit: DigitStrokes, votesCounted: Int = 5, scoreCutoff: CGFloat = 0.8) -> Classification? {
         if let normalizedDigit = normalizeDigit(inputDigit: digit) {
-            let serviceGroup = dispatch_group_create()!
-            let queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0)!
-            let serialResultsQueue = dispatch_queue_create("collect_results", nil)!
+            let serviceGroup = DispatchGroup()
+            let queue = DispatchQueue.global(attributes: DispatchQueue.GlobalAttributes.qosUserInitiated)
+            let serialResultsQueue = DispatchQueue(label: "collect_results")
             
             var bestMatches = SortedMinArray<CGFloat, (DigitLabel, Int)>(capacity: votesCounted)
             for (label, prototypes) in self.normalizedPrototypeLibrary {
                 
-                dispatch_group_async(serviceGroup, queue) {
+                queue.async(group: serviceGroup) {
                     var localBestMatches = SortedMinArray<CGFloat, (DigitLabel, Int)>(capacity: votesCounted)
                     var index = 0
                     for prototype in prototypes {
@@ -131,7 +131,7 @@ public class DTWDigitClassifier {
                         }
                         index += 1
                     }
-                    dispatch_group_async(serviceGroup, serialResultsQueue) {
+                    serialResultsQueue.async(group: serviceGroup) {
                         for (score, bestMatch) in localBestMatches {
                             bestMatches.add(value: score, element: bestMatch)
                         }
@@ -140,7 +140,7 @@ public class DTWDigitClassifier {
             }
             
             // Wait for all results
-            dispatch_group_wait(serviceGroup, DISPATCH_TIME_FOREVER);
+            serviceGroup.wait()
             
             var votes: [DigitLabel: Int] = [:]
             for (_, (label, _)) in bestMatches {
@@ -206,7 +206,7 @@ public class DTWDigitClassifier {
         let filename = NSURL(fileURLWithPath: path).lastPathComponent
         if let data = NSData(contentsOfFile: path) {
             do {
-                let json: AnyObject = try NSJSONSerialization.jsonObject(with: data, options: [])
+                let json: AnyObject = try JSONSerialization.jsonObject(with: data as Data, options: [])
                 if let jsonLibrary = json as? [String: JSONCompatibleLibrary] {
                     return jsonLibrary
                 } else {
