@@ -491,8 +491,6 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         init(initialPoint: CGPoint, initialTime: TimeInterval) {
             self.initialPoint = initialPoint
             self.initialTime = initialTime
-            
-            currentStroke.append( initialPoint)
         }
         
         func pickedUpView() -> (View: UIView, Offset: CGPoint)? {
@@ -515,10 +513,17 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
+            // We use regular location instead of precise location for hit testing
             let point = touch.location(in: self.scrollView)
             
             let touchInfo = TouchInfo(initialPoint: point, initialTime: touch.timestamp)
-
+            
+            // Grab all points for this touch, including those between display refreshes (from Pencil esp)
+            for coalesced in event?.coalescedTouches(for: touch) ?? [] {
+                let point = coalesced.preciseLocation(in: self.scrollView)
+                touchInfo.currentStroke.append( point)
+            }
+            
             if let selectedToy = self.selectableToy(at: point) {
                 touchInfo.toy = (selectedToy, selectedToy.center - point)
             }
@@ -563,9 +568,13 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         for touch in touches {
             let touchID = FTPenManager.sharedInstance().classifier.id(for: touch)
             if let touchInfo = self.touches[touchID] {
+                // Grab all points for this touch, including those between display refreshes (from Pencil esp)
+                for coalesced in event?.coalescedTouches(for: touch) ?? [] {
+                    let point = coalesced.preciseLocation(in: self.scrollView)
+                    touchInfo.currentStroke.append( point)
+                }
+                // We use regular location instead of precise location for hit testing
                 let point = touch.location(in: self.scrollView)
-                
-                touchInfo.currentStroke.append( point)
                 touchInfo.phase = .moved
                 
                 if (usePenClassifications()) {
@@ -607,9 +616,14 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         for touch in touches {
             let touchID = FTPenManager.sharedInstance().classifier.id(for: touch)
             if let touchInfo = self.touches[touchID] {
+                // Grab all points for this touch, including those between display refreshes (from Pencil esp)
+                for coalesced in event?.coalescedTouches(for: touch) ?? [] {
+                    let point = coalesced.preciseLocation(in: self.scrollView)
+                    touchInfo.currentStroke.append( point)
+                }
+                // We use regular location instead of precise location for hit testing
                 let point = touch.location(in: self.scrollView)
                 
-                touchInfo.currentStroke.append( point)
                 touchInfo.phase = .ended
                 
                 // See if this was a tap

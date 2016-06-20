@@ -117,7 +117,12 @@ class NameCanvasViewController: UIViewController {
                 let stroke = Stroke()
                 activeStrokes[touchID] = stroke
                 
-                stroke.append( point)
+                // Use precise locations for the stroke
+                for coalesced in event?.coalescedTouches(for: touch) ?? [] {
+                    let point = coalesced.preciseLocation(in: self.canvasView)
+                    stroke.append( point)
+                }
+                
                 self.boundingRect = self.boundingRect.union(CGRect(x: point.x, y:  point.y, width:  0, height: 0))
                 self.canvasView.layer.addSublayer(stroke.layer)
                 stroke.layer.strokeColor = UIColor.selectedTextColor().cgColor
@@ -130,10 +135,14 @@ class NameCanvasViewController: UIViewController {
             let touchID = FTPenManager.sharedInstance().classifier.id(for: touch)
             
             if let stroke = activeStrokes[touchID] {
-                let point = touch.location(in: self.canvasView)
+                // Use precise locations for the stroke drawing
+                for coalesced in event?.coalescedTouches(for: touch) ?? [] {
+                    let point = coalesced.preciseLocation(in: self.canvasView)
+                    stroke.append( point)
+                }
                 
+                let point = touch.location(in: self.canvasView)
                 self.boundingRect = self.boundingRect.union(CGRect(x: point.x, y:  point.y, width:  0, height: 0))
-                stroke.append( point)
                 stroke.updateLayer()
             }
         }

@@ -713,6 +713,8 @@
 					};
 					AE5554C01A5CBBF7007DCF1D = {
 						CreatedOnToolsVersion = 6.1.1;
+						DevelopmentTeam = DW543M2N27;
+						DevelopmentTeamName = "Bridger Maxwell";
 						LastSwiftMigration = 0800;
 					};
 					AE5554CA1A5CBBF7007DCF1D = {
@@ -1159,6 +1161,7 @@
 					"$(PROJECT_DIR)/NumberPad",
 				);
 				INFOPLIST_FILE = NumberPad/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.bridgermaxwell.$(PRODUCT_NAME:rfc1034identifier)";
@@ -1180,6 +1183,7 @@
 					"$(PROJECT_DIR)/NumberPad",
 				);
 				INFOPLIST_FILE = NumberPad/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.bridgermaxwell.$(PRODUCT_NAME:rfc1034identifier)";
