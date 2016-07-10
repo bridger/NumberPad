@@ -72,7 +72,7 @@ class IntroViewController: UIViewController {
         let initialDiameter: Double = 160
         
         canvas.addConnectorLabel(label: circumferenceLabel, topPriority: false, automaticallyConnect: false)
-        canvas.selectConnectorLabelAndSetToValue(connectorLabel: circumferenceLabel, value: initialDiameter * M_PI_4)
+        canvas.selectConnectorLabelAndSetToValue(connectorLabel: circumferenceLabel, value: initialDiameter * 3 * M_PI_4)
         
         let newToy = CirclesToy(diameterConnector: diameterConnector, circumferenceConnector: circumferenceConnector)
         canvas.view.addSubview(newToy)

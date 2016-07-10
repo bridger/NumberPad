@@ -34,3 +34,19 @@ extension UIColor {
     
 }
 
+public extension Comparable {
+    func clamp(lower: Self, upper: Self) -> Self {
+        return min(max(self, lower), upper)
+    }
+}
+
+public extension Double {
+    func lerp(lower: Double, upper: Double) -> Double {
+        return lower + (upper - lower) * self
+    }
+    
+    func clampedLerp(lower: Double, upper: Double) -> Double {
+        return self.clamp(lower: 0, upper: 1.0).lerp(lower: lower, upper: upper)
+    }
+}
+

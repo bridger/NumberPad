@@ -216,6 +216,7 @@ class CircleLayer {
     let mainLayer: CAShapeLayer
     let diameterLayer: CAShapeLayer
     let circumferenceLayer: CAShapeLayer
+    let overshootCircumferenceLayer: CAShapeLayer
 
     init() {
         self.mainLayer = CAShapeLayer()
@@ -233,8 +234,14 @@ class CircleLayer {
         self.circumferenceLayer.strokeColor = UIColor.adderOutputColor().cgColor
         self.circumferenceLayer.fillColor = nil
         
+        self.overshootCircumferenceLayer = CAShapeLayer()
+        self.overshootCircumferenceLayer.lineWidth = 7
+        self.overshootCircumferenceLayer.strokeColor = UIColor.errorColor().cgColor
+        self.overshootCircumferenceLayer.fillColor = nil
+        
         self.mainLayer.addSublayer(self.diameterLayer)
         self.mainLayer.addSublayer(self.circumferenceLayer)
+        self.mainLayer.addSublayer(self.overshootCircumferenceLayer)
         
         update()
     }
@@ -258,21 +265,32 @@ class CircleLayer {
             self.diameterLayer.path = diameterPath
         }
         
-        let circumferencePath = CGMutablePath()
-        let angle = -CGFloat(self.circumference) / cgRadius
-        let clockwise = angle < 0
-        circumferencePath.addArc(nil, x: cgRadius, y: cgRadius, radius: cgRadius, startAngle: 0, endAngle: angle, clockwise: clockwise)
-        
-        self.circumferenceLayer.path = circumferencePath
         let expectedCircumference = self.diameter * M_PI
-        let difference = abs(self.circumference - expectedCircumference)
-        let maxDifference: Double = 6.0
-        let minOpacity: Float = 0.3
-        if difference < maxDifference {
-            self.circumferenceLayer.opacity = 1.0 - Float(difference / maxDifference) * (1.0 - minOpacity)
-        } else {
-            self.circumferenceLayer.opacity = minOpacity
+        let inRangeCircumference = self.circumference.clamp(lower: 0, upper: expectedCircumference)
+        let overCircumfererence = self.circumference - inRangeCircumference // Can be negative, if circumference negative
+        
+        func circumferencePath(length circumference: Double) -> CGPath {
+            let circumferencePath = CGMutablePath()
+            let angle = -CGFloat(circumference) / cgRadius
+            let clockwise = angle < 0
+            circumferencePath.addArc(nil, x: cgRadius, y: cgRadius, radius: cgRadius, startAngle: 0, endAngle: angle, clockwise: clockwise)
+            return circumferencePath
         }
+        
+        let maxDifference: Double = 6.0
+        let difference = abs(self.circumference - expectedCircumference)
+        let percentError = (difference / maxDifference).clamp(lower: 0, upper: 1.0)
+        
+        let lineWidth = CGFloat(percentError.lerp(lower: 9, upper: 7))
+        self.circumferenceLayer.lineWidth = lineWidth
+        self.overshootCircumferenceLayer.lineWidth = lineWidth
+        
+        self.circumferenceLayer.path = circumferencePath(length: inRangeCircumference)
+        let minOpacity: Double = 0.3
+        self.circumferenceLayer.opacity = Float(percentError.lerp(lower: 1.0, upper: minOpacity))
+        
+        self.overshootCircumferenceLayer.path = circumferencePath(length: overCircumfererence)
+        self.overshootCircumferenceLayer.opacity = Float(abs(overCircumfererence) / maxDifference)
         
         CATransaction.commit()
     }

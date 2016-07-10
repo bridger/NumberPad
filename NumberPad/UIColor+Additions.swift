@@ -49,6 +49,10 @@ extension UIColor {
         return UIColor(red: CGFloat(1.0), green: 0.11, blue: 0.11, alpha: 1.0)
     }
     
+    class func errorColor() -> UIColor {
+        return self.exponentResultColor()
+    }
+    
     class func textColor() -> UIColor {
         return UIColor(red: CGFloat(0.16), green: 0.25, blue: 0.30, alpha: 1.0)
     }
