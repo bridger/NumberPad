@@ -7,6 +7,7 @@
 //
 
 import QuartzCore
+import DigitRecognizerSDK
 
 // This is a function passed into updateGhostState. The toy will call this for various different values
 // for the input connectors and it should return the resolved value for all of the output connectors
@@ -168,7 +169,7 @@ class MotionToy : UIView, SelectableToy, GhostableToy {
             ghost = GhostView(image: self.image)
             ghost.sizeToFit()
         }
-        let alpha = (1.0 - abs(percent)) * 0.35
+        let alpha = (1.0 - abs(percent)) * 0.3
         ghost.alpha = CGFloat(alpha)
         
         activeGhosts.append(ghost)
@@ -212,6 +213,10 @@ class CircleLayer {
             self.mainLayer.position = position
         }
     }
+    
+    var centerOffset = CGPoint.zero
+    
+    var simulationContext: ResolvedValues? = nil
     
     let mainLayer: CAShapeLayer
     let diameterLayer: CAShapeLayer
@@ -277,7 +282,7 @@ class CircleLayer {
             return circumferencePath
         }
         
-        let maxDifference: Double = 6.0
+        let maxDifference = self.diameter * 0.0375
         let difference = abs(self.circumference - expectedCircumference)
         let percentError = (difference / maxDifference).clamp(lower: 0, upper: 1.0)
         
@@ -290,13 +295,13 @@ class CircleLayer {
         self.circumferenceLayer.opacity = Float(percentError.lerp(lower: 1.0, upper: minOpacity))
         
         self.overshootCircumferenceLayer.path = circumferencePath(length: overCircumfererence)
-        self.overshootCircumferenceLayer.opacity = Float(abs(overCircumfererence) / maxDifference)
+        self.overshootCircumferenceLayer.opacity = Float(abs(overCircumfererence / maxDifference).lerp(lower: minOpacity, upper: 1.0))
         
         CATransaction.commit()
     }
 }
 
-class CirclesToy : UIView, Toy {
+class CirclesToy : UIView, GhostableToy {
     let diameterConnector: Connector
     let circumferenceConnector: Connector
     
@@ -325,7 +330,12 @@ class CirclesToy : UIView, Toy {
     }
     
     override func layoutSublayers(of layer: CALayer) {
-        self.mainCircle.position = CGPoint(x: layer.bounds.size.width / 2, y: layer.bounds.size.height / 3)
+        let center = CGPoint(x: layer.bounds.size.width / 2, y: layer.bounds.size.height / 3)
+        
+        self.mainCircle.position = center
+        for ghost in self.activeGhosts {
+            ghost.position = center + ghost.centerOffset
+        }
     }
     
     func update(values: [Connector : SimulationContext.ResolvedValue]) {
@@ -335,6 +345,97 @@ class CirclesToy : UIView, Toy {
         if let circumference = values[self.circumferenceConnector]?.DoubleValue where circumference.isFinite {
             self.mainCircle.circumference = circumference
         }
+    }
+    
+    var activeGhosts: [CircleLayer] = []
+    var reuseGhosts: [CircleLayer] = []
+    
+    func createNewGhost() -> CircleLayer {
+        let ghost: CircleLayer
+        if let oldGhost = reuseGhosts.popLast() {
+            ghost = oldGhost
+        } else {
+            ghost = CircleLayer()
+        }
+        ghost.mainLayer.opacity = 0.35
+        
+        activeGhosts.append(ghost)
+        self.layer.addSublayer(ghost.mainLayer)
+        return ghost
+    }
+    
+    func removeAllGhosts() {
+        for ghost in activeGhosts.reversed() {
+            ghost.mainLayer.removeFromSuperlayer()
+            reuseGhosts.append(ghost)
+        }
+        activeGhosts = []
+    }
+    
+    func updateGhosts(inputStates: [Connector : ConnectorState], resolver: GhostValueResolver) {
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        defer { CATransaction.commit() }
+        
+        removeAllGhosts()
+        
+        let driverConnector = self.diameterConnector
+        guard let driverState = inputStates[driverConnector] else {
+            return
+        }
+        let driverValue = driverState.Value.DoubleValue
+        
+        func diameter(at index: Int) -> Double {
+            return pow(1.3, Double(index)) * driverValue
+        }
+        
+        let range = 4
+        for offsetIndex in -range...range {
+            if offsetIndex == 0 {
+                continue
+            }
+            
+            let offsetDriverValue = diameter(at: offsetIndex)
+            
+            if offsetDriverValue <= 0 || !offsetDriverValue.isFinite {
+                continue
+            }
+            
+            let ghostValues = resolver(inputValues: [driverConnector: offsetDriverValue])
+            
+            guard let circumference = ghostValues[self.circumferenceConnector]?.DoubleValue
+                where circumference.isFinite else {
+                    continue
+            }
+            
+            let ghost = self.createNewGhost()
+            ghost.simulationContext = ghostValues
+            ghost.circumference = circumference
+            ghost.diameter = offsetDriverValue
+            
+            // We need to space this out so it accounts for the main circle's width, it's own width, and the
+            // width of each ghost in between
+            let spacing: Double = 15
+            let offsetDirection: Int = offsetIndex > 0 ? 1 : -1
+            var xOffset = Double(offsetDirection) * (driverValue / 2 + offsetDriverValue / 2 + spacing)
+            
+            // Figure the size of each ghost between this ghost and the real circle, and account for its size
+            var inBetweenGhostIndex = offsetIndex - offsetDirection
+            while inBetweenGhostIndex != 0 {
+                xOffset += Double(offsetDirection) * (diameter(at: inBetweenGhostIndex) + spacing)
+                inBetweenGhostIndex -= offsetDirection
+            }
+            
+            ghost.centerOffset = CGPoint(x: CGFloat(xOffset), y: 0)
+        }
+        self.layer.layoutIfNeeded()
+    }
+    
+    func ghostState(at point: CGPoint) -> ResolvedValues? {
+        for ghost in activeGhosts where ghost.mainLayer.frame.contains(point) {
+            return ghost.simulationContext
+        }
+        return nil
     }
 }
 

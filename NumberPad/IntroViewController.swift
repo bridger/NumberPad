@@ -69,7 +69,7 @@ class IntroViewController: UIViewController {
         circumferenceLabel.sizeToFit()
         circumferenceLabel.center = CGPoint(x: 200, y: self.view.frame.size.height - 180)
         
-        let initialDiameter: Double = 160
+        let initialDiameter: Double = UIDevice.current().userInterfaceIdiom == .pad ? 160 : 70
         
         canvas.addConnectorLabel(label: circumferenceLabel, topPriority: false, automaticallyConnect: false)
         canvas.selectConnectorLabelAndSetToValue(connectorLabel: circumferenceLabel, value: initialDiameter * 3 * M_PI_4)
