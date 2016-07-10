@@ -19,19 +19,6 @@ func euclidianDistanceSquared(a: CGPoint, b: CGPoint) -> CGFloat {
     return dx*dx + dy*dy
 }
 
-extension FTTouchClassification : CustomStringConvertible {
-    public
-    var description : String {
-        switch self {
-        case .unknownDisconnected: return "UnkownDisconnected"
-        case .palm: return "Palm"
-        case .finger: return "Finger"
-        case .eraser: return "Eraser"
-        default: return "Unknown"
-        }
-    }
-}
-
 extension UIColor {
     
     func colorWithSaturationComponent(saturation: CGFloat, brightness: CGFloat ) -> UIColor {

@@ -9,7 +9,7 @@
 import UIKit
 import DigitRecognizerSDK
 
-class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlideViewDelegate, FTPenManagerDelegate, FTTouchClassificationsChangedDelegate, NameCanvasDelegate, UIViewControllerTransitioningDelegate {
+class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlideViewDelegate, NameCanvasDelegate, UIViewControllerTransitioningDelegate {
     
     init(digitClassifier: DTWDigitClassifier) {
         self.digitClassifier = digitClassifier
@@ -28,9 +28,6 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         self.view.isUserInteractionEnabled = true
         self.view.isExclusiveTouch = true
         self.view.backgroundColor = UIColor.backgroundColor()
-        
-        FTPenManager.sharedInstance().delegate = self;
-        FTPenManager.sharedInstance().classifier.delegate = self;
         
         self.scrollView = UIScrollView(frame: self.view.bounds)
         self.scrollView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
@@ -393,74 +390,6 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         return nil
     }
     
-    // MARK: Pencil integration
-    
-    func penManagerStateDidChange(_ state: FTPenManagerState) {
-        let connected = FTPenManagerStateIsConnected(state)
-        // TODO: Switch between two-finger scroll and using finger to scroll by disabling UIScrollView's gesture recognizer
-        if (connected)
-        {
-            print("Connected")
-        }
-        else
-        {
-            print("Disconnected")
-        }
-    }
-    
-    func penClassificationForTouch(touch: UITouch) -> FTTouchClassification? {
-        var classification = FTTouchClassification.unknown
-        if FTPenManager.sharedInstance().classifier.classification(&classification, for: touch) {
-            return classification
-        } else {
-            return nil
-        }
-    }
-    
-    func classificationsDidChange(forTouches touches: Set<NSObject>) {
-        if usePenClassifications() {
-            for object in touches {
-                if let classificationInfo = object as? FTTouchClassificationInfo {
-                    if let touchInfo = self.touches[classificationInfo.touchId] {
-                        
-                        let penClassification = classificationInfo.newValue
-                        let gestureClassification = gestureClassificationForTouchAndPen(touchInfo: touchInfo, penClassification: penClassification)
-                        changeTouchToClassification(touchInfo: touchInfo, classification: gestureClassification)
-                    }
-                }
-            }
-        }
-    }
-    
-    func gestureClassificationForTouchAndPen(touchInfo: TouchInfo, penClassification: FTTouchClassification) -> GestureClassification? {
-        if penClassification == .pen {
-            if touchInfo.toy != nil {
-                return .OperateToy // This takes precedence
-            }
-            // If there is a connectorPort or label, they are drawing a connection
-            if touchInfo.connectorLabel != nil || touchInfo.constraintView?.ConnectorPort != nil {
-                return .MakeConnection
-            } else if touchInfo.constraintView == nil { // If there was a constraintView but no connectorPort, it was a miss and we ignore it
-                return .Stroke
-            }
-        } else if penClassification == .finger {
-            if touchInfo.toy != nil {
-                return .OperateToy // This takes precedence
-            }
-            if touchInfo.pickedUpView() != nil {
-                return .Drag
-            }
-            // TODO: Scroll the view, if there is no view to pick up
-        } else if penClassification == .eraser {
-            return .Delete
-        }
-        return nil
-    }
-    
-    func usePenClassifications() -> Bool {
-        return FTPenManagerStateIsConnected(FTPenManager.sharedInstance().state)
-    }
-    
     // MARK: Gestures
     
     enum GestureClassification {
@@ -504,7 +433,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         }
     }
     
-    typealias TouchID = NSInteger
+    var touchTracker = TouchTracker()
     var touches: [TouchID: TouchInfo] = [:]
     var processStrokesCounter: Int = 0
     
@@ -535,30 +464,25 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 touchInfo.constraintView = (constraintView, constraintView.center - point, nil)
             }
             
-            let touchID = FTPenManager.sharedInstance().classifier.id(for: touch)
+            let touchID = touchTracker.id(for: touch)
             self.touches[touchID] = touchInfo
             
-            if (!usePenClassifications()) {
-                // Test for a long press, to trigger a drag
-                if (touchInfo.connectorLabel != nil || touchInfo.constraintView != nil) && touchInfo.toy == nil {
-                    delay(after: dragDelayTime) {
-                        // If this still hasn't been classified as something else (like a connection draw), then it is a move
-                        if touchInfo.classification == nil {
-                            if touchInfo.phase == .began || touchInfo.phase == .moved {
-                                self.changeTouchToClassification(touchInfo: touchInfo, classification: .Drag)
-                            }
+            // Test for a long press, to trigger a drag
+            if (touchInfo.connectorLabel != nil || touchInfo.constraintView != nil) && touchInfo.toy == nil {
+                delay(after: dragDelayTime) {
+                    // If this still hasn't been classified as something else (like a connection draw), then it is a move
+                    if touchInfo.classification == nil {
+                        if touchInfo.phase == .began || touchInfo.phase == .moved {
+                            self.changeTouchToClassification(touchInfo: touchInfo, classification: .Drag)
                         }
                     }
                 }
             }
             
-            let classification = penClassificationForTouch(touch: touch)
-            if classification == nil || classification! != .palm {
-                if let lastStroke = self.unprocessedStrokes.last, lastStrokeLastPoint = lastStroke.points.last {
-                    if euclidianDistance(a: lastStrokeLastPoint, b: point) > 150 {
-                        // This was far away from the last stroke, so we process that stroke
-                        processStrokes()
-                    }
+            if let lastStroke = self.unprocessedStrokes.last, lastStrokeLastPoint = lastStroke.points.last {
+                if euclidianDistance(a: lastStrokeLastPoint, b: point) > 150 {
+                    // This was far away from the last stroke, so we process that stroke
+                    processStrokes()
                 }
             }
         }
@@ -566,7 +490,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
-            let touchID = FTPenManager.sharedInstance().classifier.id(for: touch)
+            let touchID = touchTracker.id(for: touch)
             if let touchInfo = self.touches[touchID] {
                 // Grab all points for this touch, including those between display refreshes (from Pencil esp)
                 for coalesced in event?.coalescedTouches(for: touch) ?? [] {
@@ -577,31 +501,19 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 let point = touch.location(in: self.scrollView)
                 touchInfo.phase = .moved
                 
-                if (usePenClassifications()) {
-                    if touchInfo.classification == nil {
-                        if let penClassification = penClassificationForTouch(touch: touch) {
-                            if let gestureClassification = gestureClassificationForTouchAndPen(touchInfo: touchInfo, penClassification: penClassification) {
-                                print("Used penClassification \(penClassification) in touchesMoved for touch \(touchID)")
-                                changeTouchToClassification(touchInfo: touchInfo, classification: gestureClassification)
-                            }
+                // Assign a classification, only if one doesn't exist
+                if touchInfo.classification == nil {
+                    if touchInfo.toy != nil {
+                        changeTouchToClassification(touchInfo: touchInfo, classification: .OperateToy)
+                    } else if touchInfo.connectorLabel == nil && touchInfo.constraintView == nil {
+                        // If they weren't pointing at anything, then this is definitely a stroke
+                        changeTouchToClassification(touchInfo: touchInfo, classification: .Stroke)
+                    } else if touchInfo.connectorLabel != nil || touchInfo.constraintView?.ConnectorPort != nil {
+                        // If we have moved significantly before the long press timer fired, then this is a connection draw
+                        if touchInfo.initialPoint.distanceTo(point: point) > dragMaxDistance {
+                            changeTouchToClassification(touchInfo: touchInfo, classification: .MakeConnection)
                         }
-                    }
-                    
-                } else {
-                    // Assign a classification, only if one doesn't exist
-                    if touchInfo.classification == nil {
-                        if touchInfo.toy != nil {
-                            changeTouchToClassification(touchInfo: touchInfo, classification: .OperateToy)
-                        } else if touchInfo.connectorLabel == nil && touchInfo.constraintView == nil {
-                            // If they weren't pointing at anything, then this is definitely a stroke
-                            changeTouchToClassification(touchInfo: touchInfo, classification: .Stroke)
-                        } else if touchInfo.connectorLabel != nil || touchInfo.constraintView?.ConnectorPort != nil {
-                            // If we have moved significantly before the long press timer fired, then this is a connection draw
-                            if touchInfo.initialPoint.distanceTo(point: point) > dragMaxDistance {
-                                changeTouchToClassification(touchInfo: touchInfo, classification: .MakeConnection)
-                            }
-                            // TODO: Maybe it should be a failed gesture if there was no connectorPort?
-                        }
+                        // TODO: Maybe it should be a failed gesture if there was no connectorPort?
                     }
                 }
                 
@@ -614,7 +526,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
-            let touchID = FTPenManager.sharedInstance().classifier.id(for: touch)
+            let touchID = touchTracker.id(for: touch)
             if let touchInfo = self.touches[touchID] {
                 // Grab all points for this touch, including those between display refreshes (from Pencil esp)
                 for coalesced in event?.coalescedTouches(for: touch) ?? [] {
@@ -643,7 +555,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                         undoEffectsOfGestureInProgress(touchInfo: touchInfo)
                     }
                     
-                    let isDeleteTap = usePenClassifications() ? touchInfo.classification == .Delete :  touch.tapCount == 2
+                    let isDeleteTap = touch.tapCount == 2
                     if !isDeleteTap {
                         // This is a selection tap
                         if let (ghostableToy, simulationContext) = self.ghostToy(at: point) {
@@ -657,22 +569,13 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                             self.selectedToy = selectedToy
                             
                         } else if let (connectorLabel, _) = touchInfo.connectorLabel {
-                            
-                            if usePenClassifications() {
-                                if self.selectedConnectorLabel != connectorLabel {
-                                    self.selectedConnectorLabel = connectorLabel
-                                } else {
-                                    showNameCanvas()
-                                }
-                            } else {
-                                // We delay this by a bit, so that the selection doesn't happen if a double-tap completes and the connector is deleted
-                                delay(after: dragDelayTime) {
-                                    if let _ = self.connectorLabels.index(of: connectorLabel) { // It will be found unless it has been deleted
-                                        if self.selectedConnectorLabel != connectorLabel {
-                                            self.selectedConnectorLabel = connectorLabel
-                                        } else {
-                                            self.showNameCanvas()
-                                        }
+                            // We delay this by a bit, so that the selection doesn't happen if a double-tap completes and the connector is deleted
+                            delay(after: dragDelayTime) {
+                                if let _ = self.connectorLabels.index(of: connectorLabel) { // It will be found unless it has been deleted
+                                    if self.selectedConnectorLabel != connectorLabel {
+                                        self.selectedConnectorLabel = connectorLabel
+                                    } else {
+                                        self.showNameCanvas()
                                     }
                                 }
                             }
@@ -748,7 +651,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
     override func touchesCancelled(_ touches: Set<UITouch>?, with event: UIEvent?) {
         guard let touches = touches else { return }
         for touch in touches {
-            let touchID = FTPenManager.sharedInstance().classifier.id(for: touch)
+            let touchID = touchTracker.id(for: touch)
             if let touchInfo = self.touches[touchID] {
                 undoEffectsOfGestureInProgress(touchInfo: touchInfo)
                 touchInfo.phase = .cancelled

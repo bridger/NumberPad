@@ -12,6 +12,7 @@
 		AE064B6E1A646A6300A10381 /* ConstraintViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE064B6D1A646A6300A10381 /* ConstraintViews.swift */; };
 		AE064B701A646FB200A10381 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE064B6F1A646FB200A10381 /* Utils.swift */; };
 		AE064B721A64C1D000A10381 /* DigitRecognizerSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = AE5554C11A5CBBF7007DCF1D /* DigitRecognizerSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		AE0763011D32959B00F09FF1 /* TouchTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE0763001D32959B00F09FF1 /* TouchTracker.swift */; };
 		AE0EF4511B40EF82000DFFE2 /* Toy.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE0EF4501B40EF82000DFFE2 /* Toy.swift */; };
 		AE1CA0741A8C651B00CC1FDA /* SwiftAutoLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE1CA0731A8C651B00CC1FDA /* SwiftAutoLayout.swift */; };
 		AE1CA0761A8C652A00CC1FDA /* VisualFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE1CA0751A8C652A00CC1FDA /* VisualFormat.swift */; };
@@ -50,11 +51,9 @@
 		AE890D141A699A0400E604C4 /* bridger_test.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD2471A5494B7007D1500 /* bridger_test.json */; };
 		AE890D161A699E7E00E604C4 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE890D151A699E7E00E604C4 /* Utils.swift */; };
 		AE890D181A69DA0300E604C4 /* bridger_normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = AE890D171A69DA0300E604C4 /* bridger_normalized.json */; };
-		AEA7F36A1A7DBF86008A07E4 /* FiftyThreeSdk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEA7F3691A7DBF86008A07E4 /* FiftyThreeSdk.framework */; };
 		AEA7F36C1A7DBFE0008A07E4 /* libc++.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AEA7F36B1A7DBFE0008A07E4 /* libc++.dylib */; };
 		AEA7F36E1A7DBFEC008A07E4 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEA7F36D1A7DBFEC008A07E4 /* CoreBluetooth.framework */; };
 		AEA7F3701A7DBFF3008A07E4 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEA7F36F1A7DBFF3008A07E4 /* CoreGraphics.framework */; };
-		AEA7F3721A7DC065008A07E4 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA7F3711A7DC065008A07E4 /* main.swift */; };
 		AEA8E8331A86C52D0050344B /* DDMathOperator.m in Sources */ = {isa = PBXBuildFile; fileRef = AEA8E82E1A86C52D0050344B /* DDMathOperator.m */; };
 		AEA8E8341A86C52D0050344B /* DDMathOperatorSet.m in Sources */ = {isa = PBXBuildFile; fileRef = AEA8E8301A86C52D0050344B /* DDMathOperatorSet.m */; };
 		AEA8E8351A86C52D0050344B /* DDMathOperatorTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = AEA8E8321A86C52D0050344B /* DDMathOperatorTypes.m */; };
@@ -156,6 +155,7 @@
 		AE064B6A1A64679200A10381 /* Constraints.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constraints.swift; sourceTree = "<group>"; };
 		AE064B6D1A646A6300A10381 /* ConstraintViews.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = ConstraintViews.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		AE064B6F1A646FB200A10381 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		AE0763001D32959B00F09FF1 /* TouchTracker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TouchTracker.swift; sourceTree = "<group>"; };
 		AE0EF4501B40EF82000DFFE2 /* Toy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = Toy.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		AE1CA0731A8C651B00CC1FDA /* SwiftAutoLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftAutoLayout.swift; sourceTree = "<group>"; };
 		AE1CA0751A8C652A00CC1FDA /* VisualFormat.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VisualFormat.swift; sourceTree = "<group>"; };
@@ -194,7 +194,6 @@
 		AEA7F36B1A7DBFE0008A07E4 /* libc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++.dylib"; path = "usr/lib/libc++.dylib"; sourceTree = SDKROOT; };
 		AEA7F36D1A7DBFEC008A07E4 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
 		AEA7F36F1A7DBFF3008A07E4 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
-		AEA7F3711A7DC065008A07E4 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		AEA8E82A1A86C5060050344B /* DDMathParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDMathParser.h; sourceTree = "<group>"; };
 		AEA8E82B1A86C5060050344B /* DDMathParserMacros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDMathParserMacros.h; sourceTree = "<group>"; };
 		AEA8E82D1A86C52D0050344B /* DDMathOperator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDMathOperator.h; sourceTree = "<group>"; };
@@ -290,7 +289,6 @@
 				AEA7F36E1A7DBFEC008A07E4 /* CoreBluetooth.framework in Frameworks */,
 				AEA7F36C1A7DBFE0008A07E4 /* libc++.dylib in Frameworks */,
 				AE064B661A64605A00A10381 /* DigitRecognizerSDK.framework in Frameworks */,
-				AEA7F36A1A7DBF86008A07E4 /* FiftyThreeSdk.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -531,6 +529,7 @@
 			children = (
 				AEC9EEBF1A3CDC4A002C7B08 /* AppDelegate.swift */,
 				AEC9EEC11A3CDC4A002C7B08 /* CanvasViewController.swift */,
+				AE0763001D32959B00F09FF1 /* TouchTracker.swift */,
 				AE6023E11C01786500D34FEB /* IntroViewController.swift */,
 				AE57BB501B5CA12D00600F50 /* Stroke.swift */,
 				AE064B6A1A64679200A10381 /* Constraints.swift */,
@@ -563,7 +562,6 @@
 				AE3DD23B1A52785D007D1500 /* ujipenchars2_test.json */,
 				AE3DD23C1A52785D007D1500 /* ujipenchars2_train.json */,
 				AE3DD2391A52784A007D1500 /* ujipenchars2.json */,
-				AEA7F3711A7DC065008A07E4 /* main.swift */,
 				AEA7F36F1A7DBFF3008A07E4 /* CoreGraphics.framework */,
 				AEA7F36D1A7DBFEC008A07E4 /* CoreBluetooth.framework */,
 				AEA7F36B1A7DBFE0008A07E4 /* libc++.dylib */,
@@ -849,10 +847,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				AEA8E8501A86C5B70050344B /* NSString+DDMathParsing.m in Sources */,
+				AE0763011D32959B00F09FF1 /* TouchTracker.swift in Sources */,
 				AEA8E8671A86C6910050344B /* DDExpression.m in Sources */,
 				AEA8E85B1A86C6150050344B /* DDTypes.m in Sources */,
 				AEA8E8331A86C52D0050344B /* DDMathOperator.m in Sources */,
-				AEA7F3721A7DC065008A07E4 /* main.swift in Sources */,
 				AE064B701A646FB200A10381 /* Utils.swift in Sources */,
 				AEA8E8631A86C63C0050344B /* _DDFunctionEvaluator.m in Sources */,
 				AEA8E84C1A86C5A30050344B /* DDEnumerator.m in Sources */,

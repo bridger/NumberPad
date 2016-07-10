@@ -69,6 +69,7 @@ class NameCanvasViewController: UIViewController {
     var label: UILabel!
     var doneButton: UIButton!
     var delegate: NameCanvasDelegate?
+    var touchTracker = TouchTracker()
     
     override func viewDidLoad() {
         self.view.translatesAutoresizingMaskIntoConstraints = false
@@ -112,7 +113,7 @@ class NameCanvasViewController: UIViewController {
             let point = touch.location(in: self.canvasView)
             
             if self.canvasView.bounds.contains(point) {
-                let touchID = FTPenManager.sharedInstance().classifier.id(for: touch)
+                let touchID = touchTracker.id(for: touch)
                 
                 let stroke = Stroke()
                 activeStrokes[touchID] = stroke
@@ -132,7 +133,7 @@ class NameCanvasViewController: UIViewController {
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
-            let touchID = FTPenManager.sharedInstance().classifier.id(for: touch)
+            let touchID = touchTracker.id(for: touch)
             
             if let stroke = activeStrokes[touchID] {
                 // Use precise locations for the stroke drawing
@@ -150,7 +151,7 @@ class NameCanvasViewController: UIViewController {
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
-            let touchID = FTPenManager.sharedInstance().classifier.id(for: touch)
+            let touchID = touchTracker.id(for: touch)
             
             if let stroke = activeStrokes[touchID] {
                 completedStrokes.append(stroke)
@@ -164,7 +165,7 @@ class NameCanvasViewController: UIViewController {
             return
         }
         for touch in touches {
-            let touchID = FTPenManager.sharedInstance().classifier.id(for: touch)
+            let touchID = touchTracker.id(for: touch)
             
             if let stroke = activeStrokes[touchID] {
                 activeStrokes[touchID] = nil
