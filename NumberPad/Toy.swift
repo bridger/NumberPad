@@ -214,6 +214,8 @@ class CircleLayer {
         }
     }
     
+    static let valueToPointScale: Double = UIDevice.current().userInterfaceIdiom == .pad ? 20 : 7
+
     var centerOffset = CGPoint.zero
     
     var simulationContext: ResolvedValues? = nil
@@ -255,7 +257,7 @@ class CircleLayer {
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         
-        let cgDiameter = CGFloat(self.diameter)
+        let cgDiameter = CGFloat(self.diameter * CircleLayer.valueToPointScale)
         let cgRadius = cgDiameter / 2
         if self.mainLayer.frame.size.width != cgDiameter {
             let roundedSize = round(cgDiameter)
@@ -276,7 +278,7 @@ class CircleLayer {
         
         func circumferencePath(length circumference: Double) -> CGPath {
             let circumferencePath = CGMutablePath()
-            let angle = -CGFloat(circumference) / cgRadius
+            let angle = -CGFloat(circumference * CircleLayer.valueToPointScale) / cgRadius
             let clockwise = angle < 0
             circumferencePath.addArc(nil, x: cgRadius, y: cgRadius, radius: cgRadius, startAngle: 0, endAngle: angle, clockwise: clockwise)
             return circumferencePath
@@ -417,12 +419,13 @@ class CirclesToy : UIView, GhostableToy {
             // width of each ghost in between
             let spacing: Double = 15
             let offsetDirection: Int = offsetIndex > 0 ? 1 : -1
-            var xOffset = Double(offsetDirection) * (driverValue / 2 + offsetDriverValue / 2 + spacing)
+            let halfWidths = (driverValue + offsetDriverValue) / 2 * CircleLayer.valueToPointScale
+            var xOffset = Double(offsetDirection) * (halfWidths + spacing)
             
             // Figure the size of each ghost between this ghost and the real circle, and account for its size
             var inBetweenGhostIndex = offsetIndex - offsetDirection
             while inBetweenGhostIndex != 0 {
-                xOffset += Double(offsetDirection) * (diameter(at: inBetweenGhostIndex) + spacing)
+                xOffset += Double(offsetDirection) * (diameter(at: inBetweenGhostIndex) * CircleLayer.valueToPointScale + spacing)
                 inBetweenGhostIndex -= offsetDirection
             }
             
@@ -473,6 +476,7 @@ class PythagorasToy : UIView, Toy {
     var a: Double = 0
     var b: Double = 0
     var c: Double = 0
+    let valueToPointScale: Double = UIDevice.current().userInterfaceIdiom == .pad ? 12 : 5
     func update(values: [Connector : SimulationContext.ResolvedValue]) {
         if let a = values[self.aConnector]?.DoubleValue, let b = values[self.bConnector]?.DoubleValue where a.isFinite && b.isFinite {
             if self.a != a || self.b != b {
@@ -493,9 +497,9 @@ class PythagorasToy : UIView, Toy {
     var topMargin: CGFloat = 80
     override func draw(_ rect: CGRect) {
         
-        let a = CGFloat(self.a)
-        let b = CGFloat(self.b)
-        let c = CGFloat(self.c)
+        let a = CGFloat(self.a * valueToPointScale)
+        let b = CGFloat(self.b * valueToPointScale)
+        let c = CGFloat(self.c * valueToPointScale)
         
         let context = UIGraphicsGetCurrentContext()!
         context.clear(rect)

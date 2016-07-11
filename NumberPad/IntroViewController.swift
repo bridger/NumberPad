@@ -57,22 +57,19 @@ class IntroViewController: UIViewController {
         
         let diameterConnector = Connector()
         let diameterLabel = ConnectorLabel(connector: diameterConnector)
-        diameterLabel.scale = 0
+        diameterLabel.scale = -1
         diameterLabel.name = "diameter"
         diameterLabel.sizeToFit()
         diameterLabel.center = CGPoint(x: 200, y: self.view.frame.size.height - 300)
         
         let circumferenceConnector = Connector()
         let circumferenceLabel = ConnectorLabel(connector: circumferenceConnector)
-        circumferenceLabel.scale = 0
+        circumferenceLabel.scale = -1
         circumferenceLabel.name = "circumference"
         circumferenceLabel.sizeToFit()
         circumferenceLabel.center = CGPoint(x: 200, y: self.view.frame.size.height - 180)
         
-        let initialDiameter: Double = UIDevice.current().userInterfaceIdiom == .pad ? 160 : 70
-        
-        canvas.addConnectorLabel(label: circumferenceLabel, topPriority: false, automaticallyConnect: false)
-        canvas.selectConnectorLabelAndSetToValue(connectorLabel: circumferenceLabel, value: initialDiameter * 3 * M_PI_4)
+        let initialDiameter: Double = 10
         
         let newToy = CirclesToy(diameterConnector: diameterConnector, circumferenceConnector: circumferenceConnector)
         canvas.view.addSubview(newToy)
@@ -83,6 +80,9 @@ class IntroViewController: UIViewController {
         canvas.addConnectorLabel(label: diameterLabel, topPriority: false, automaticallyConnect: false)
         canvas.selectConnectorLabelAndSetToValue(connectorLabel: diameterLabel, value: initialDiameter)
         
+        canvas.addConnectorLabel(label: circumferenceLabel, topPriority: false, automaticallyConnect: false)
+        canvas.selectConnectorLabelAndSetToValue(connectorLabel: circumferenceLabel, value: initialDiameter * 3 * M_PI_4)
+        
         self.navigationController?.pushViewController(canvas, animated: true)
     }
     
@@ -90,29 +90,35 @@ class IntroViewController: UIViewController {
         
         let canvas = configureNewCanvas()
         
+        // Some pythagorean tripes:
+        //  13  12  5
+        //  15  12  9
+        //  20  12  16
+        //  17  15  8
+        
         let aConnector = Connector()
         let aLabel = ConnectorLabel(connector: aConnector)
-        aLabel.scale = 0
+        aLabel.scale = -1
         aLabel.name = "📗"
         aLabel.sizeToFit()
         aLabel.center = CGPoint(x: 60, y: 250)
         
         let bConnector = Connector()
         let bLabel = ConnectorLabel(connector: bConnector)
-        bLabel.scale = 0
+        bLabel.scale = -1
         bLabel.name = "🔷"
         bLabel.sizeToFit()
         bLabel.center = CGPoint(x: self.view.bounds.size.width - 60, y: 250)
         
         canvas.addConnectorLabel(label: bLabel, topPriority: false, automaticallyConnect: false)
-        canvas.selectConnectorLabelAndSetToValue(connectorLabel: bLabel, value: 150)
+        canvas.selectConnectorLabelAndSetToValue(connectorLabel: bLabel, value: 12)
         
         canvas.addConnectorLabel(label: aLabel, topPriority: false, automaticallyConnect: false)
-        canvas.selectConnectorLabelAndSetToValue(connectorLabel: aLabel, value: 50)
+        canvas.selectConnectorLabelAndSetToValue(connectorLabel: aLabel, value: 9)
         
         let cConnector = Connector()
         let cLabel = ConnectorLabel(connector: cConnector)
-        cLabel.scale = 0
+        cLabel.scale = -1
         cLabel.name = "🔶"
         cLabel.sizeToFit()
         cLabel.center = CGPoint(x: self.view.bounds.size.width / 2, y: self.view.bounds.size.height - 300)
@@ -124,7 +130,7 @@ class IntroViewController: UIViewController {
         canvas.toys.append(newToy)
         
         canvas.addConnectorLabel(label: cLabel, topPriority: false, automaticallyConnect: false)
-        canvas.selectConnectorLabelAndSetToValue(connectorLabel: cLabel, value: 120)
+        canvas.selectConnectorLabelAndSetToValue(connectorLabel: cLabel, value: 13)
         
         self.navigationController?.pushViewController(canvas, animated: true)
     }
