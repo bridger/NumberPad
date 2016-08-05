@@ -93,7 +93,7 @@ public func visualizeNormalizedStrokes(strokes: DTWDigitClassifier.DigitStrokes,
                 ctx.addLineTo(x: transformedPoint.x, y: transformedPoint.y)
             }
         }
-        ctx.setStrokeColor(UIColor.white().cgColor)
+        ctx.setStrokeColor(UIColor.white.cgColor)
         ctx.setLineWidth(2)
         ctx.strokePath()
         

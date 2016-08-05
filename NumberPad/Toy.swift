@@ -104,8 +104,8 @@ class MotionToy : UIView, SelectableToy, GhostableToy {
             let ghostValues = resolver(inputValues: [self.driverConnector: offsetDriverValue])
             
             guard let xPosition = ghostValues[self.xConnector]?.DoubleValue,
-                let yPosition = ghostValues[self.yConnector]?.DoubleValue
-                where xPosition.isFinite && yPosition.isFinite else {
+                let yPosition = ghostValues[self.yConnector]?.DoubleValue,
+                xPosition.isFinite, yPosition.isFinite else {
                     continue
             }
             
@@ -125,10 +125,10 @@ class MotionToy : UIView, SelectableToy, GhostableToy {
     func update(values: [Connector : SimulationContext.ResolvedValue]) {
         removeAllGhosts()
         
-        if let xPosition = values[self.xConnector]?.DoubleValue where xPosition.isFinite {
+        if let xPosition = values[self.xConnector]?.DoubleValue, xPosition.isFinite {
             self.center.x = CGFloat(xPosition)
         }
-        if let yPosition = values[self.yConnector]?.DoubleValue where yPosition.isFinite {
+        if let yPosition = values[self.yConnector]?.DoubleValue, yPosition.isFinite {
             self.center.y = toyYZero() - CGFloat(yPosition)
         }
     }
@@ -214,7 +214,7 @@ class CircleLayer {
         }
     }
     
-    static let valueToPointScale: Double = UIDevice.current().userInterfaceIdiom == .pad ? 20 : 7
+    static let valueToPointScale: Double = UIDevice.current.userInterfaceIdiom == .pad ? 20 : 7
 
     var centerOffset = CGPoint.zero
     
@@ -341,10 +341,10 @@ class CirclesToy : UIView, GhostableToy {
     }
     
     func update(values: [Connector : SimulationContext.ResolvedValue]) {
-        if let diameter = values[self.diameterConnector]?.DoubleValue where diameter.isFinite {
+        if let diameter = values[self.diameterConnector]?.DoubleValue, diameter.isFinite {
             self.mainCircle.diameter = diameter
         }
-        if let circumference = values[self.circumferenceConnector]?.DoubleValue where circumference.isFinite {
+        if let circumference = values[self.circumferenceConnector]?.DoubleValue, circumference.isFinite {
             self.mainCircle.circumference = circumference
         }
     }
@@ -405,8 +405,8 @@ class CirclesToy : UIView, GhostableToy {
             
             let ghostValues = resolver(inputValues: [driverConnector: offsetDriverValue])
             
-            guard let circumference = ghostValues[self.circumferenceConnector]?.DoubleValue
-                where circumference.isFinite else {
+            guard let circumference = ghostValues[self.circumferenceConnector]?.DoubleValue,
+                circumference.isFinite else {
                     continue
             }
             
@@ -457,7 +457,7 @@ class PythagorasToy : UIView, Toy {
         super.init(frame: CGRect.zero)
         
         self.isUserInteractionEnabled = false
-        self.backgroundColor = UIColor.clear()
+        self.backgroundColor = UIColor.clear
     }
     
     
@@ -476,16 +476,16 @@ class PythagorasToy : UIView, Toy {
     var a: Double = 0
     var b: Double = 0
     var c: Double = 0
-    let valueToPointScale: Double = UIDevice.current().userInterfaceIdiom == .pad ? 12 : 5
+    let valueToPointScale: Double = UIDevice.current.userInterfaceIdiom == .pad ? 12 : 5
     func update(values: [Connector : SimulationContext.ResolvedValue]) {
-        if let a = values[self.aConnector]?.DoubleValue, let b = values[self.bConnector]?.DoubleValue where a.isFinite && b.isFinite {
+        if let a = values[self.aConnector]?.DoubleValue, let b = values[self.bConnector]?.DoubleValue, a.isFinite, b.isFinite {
             if self.a != a || self.b != b {
                 self.a = max(a, 0)
                 self.b = max(b, 0)
                 self.setNeedsDisplay()
             }
         }
-        if let c = values[self.cConnector]?.DoubleValue where c.isFinite {
+        if let c = values[self.cConnector]?.DoubleValue, c.isFinite {
             if self.c != c {
                 self.c = max(c, 0)
                 self.setNeedsDisplay()
@@ -526,11 +526,11 @@ class PythagorasToy : UIView, Toy {
         
         let lightness: CGFloat = 0.25
         let aColor = UIColor.multiplierInputColor().cgColor
-        let aColorLight = CGColor(copyWithAlphaColor: aColor, alpha: lightness)!
+        let aColorLight = aColor.copy(alpha: lightness)!
         let bColor = UIColor.adderInputColor().cgColor
-        let bColorLight = CGColor(copyWithAlphaColor: bColor, alpha: lightness)!
+        let bColorLight = bColor.copy(alpha: lightness)!
         let cColor = UIColor.exponentBaseColor().cgColor
-        let cColorLight = CGColor(copyWithAlphaColor: cColor, alpha: lightness)!
+        let cColorLight = cColor.copy(alpha: lightness)!
         
         let squareSide = a + b
         let totalWidth = squareSide * 2 + spacing
@@ -593,12 +593,12 @@ class PythagorasToy : UIView, Toy {
         } else {
             cOpacity = minOpacity
         }
-        let cColorResult = CGColor(copyWithAlphaColor: cColor, alpha: cOpacity)!
+        let cColorResult = cColor.copy(alpha: cOpacity)!
         
         context.saveGState()
         // Translate to the center of the right square, and rotate to match the hyp sides
-        context.translate(x: (self.bounds.size.width + spacing + squareSide) / 2, y: topMargin + squareSide / 2)
-        context.rotate(byAngle: -atan2(a, b))
+        context.translateBy(x: (self.bounds.size.width + spacing + squareSide) / 2, y: topMargin + squareSide / 2)
+        context.rotate(by: -atan2(a, b))
         
         context.setFillColor(cColorResult)
         let cRect = CGRect(x: -c/2, y:  -c/2, width:  c, height: c)

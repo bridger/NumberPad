@@ -10,7 +10,7 @@ import UIKit
 
 
 func delay(after: Double, closure: () -> Void) {
-    DispatchQueue.main.after(when: .now() + after, execute: closure)
+    DispatchQueue.main.asyncAfter(deadline: .now() + after, execute: closure)
 }
 
 func euclidianDistanceSquared(a: CGPoint, b: CGPoint) -> CGFloat {

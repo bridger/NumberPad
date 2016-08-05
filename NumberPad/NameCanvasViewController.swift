@@ -15,16 +15,16 @@ protocol NameCanvasDelegate {
 class NameCanvasAnimator: NSObject, UIViewControllerAnimatedTransitioning {
     var presenting = false
     
-    func transitionDuration(_ transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
+    func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
         return 0.2
     }
 
-    @objc(animateTransition:) func animateTransition(_ transitionContext: UIViewControllerContextTransitioning) {
+    @objc(animateTransition:) func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
         guard let toViewController = transitionContext.viewController(forKey: UITransitionContextToViewControllerKey),
-            fromViewController = transitionContext.viewController(forKey: UITransitionContextFromViewControllerKey) else {
+            let fromViewController = transitionContext.viewController(forKey: UITransitionContextFromViewControllerKey) else {
                 return
         }
-        let containerView = transitionContext.containerView()
+        let containerView = transitionContext.containerView
         
         if (presenting) {
             containerView.addAutoLayoutSubview(subview: toViewController.view)
@@ -39,8 +39,8 @@ class NameCanvasAnimator: NSObject, UIViewControllerAnimatedTransitioning {
             containerView.addConstraint(hideConstraint)
             
             containerView.layoutIfNeeded()
-            containerView.backgroundColor = UIColor.clear()
-            UIView.animate(withDuration: self.transitionDuration(transitionContext), animations: {
+            containerView.backgroundColor = UIColor.clear
+            UIView.animate(withDuration: self.transitionDuration(using: transitionContext), animations: {
                 containerView.removeConstraint(hideConstraint)
                 containerView.layoutIfNeeded()
                 containerView.backgroundColor = UIColor(white: 1.0, alpha: 0.7)
@@ -51,10 +51,10 @@ class NameCanvasAnimator: NSObject, UIViewControllerAnimatedTransitioning {
         } else {
             let hideConstraint = fromViewController.view.al_left == containerView.al_right
             
-            UIView.animate(withDuration: self.transitionDuration(transitionContext), animations: {
+            UIView.animate(withDuration: self.transitionDuration(using: transitionContext), animations: {
                 containerView.addConstraint(hideConstraint)
                 containerView.layoutIfNeeded()
-                containerView.backgroundColor = UIColor.clear()
+                containerView.backgroundColor = UIColor.clear
                 
                 }, completion: { (bool) in
                     fromViewController.view.removeFromSuperview()
@@ -204,12 +204,12 @@ class NameCanvasViewController: UIViewController {
         
         // Flip the y axis
         var transform = CGAffineTransform(scaleX: 1, y: -1)
-        transform = transform.translateBy(x: 0, y: CGFloat(-height))
+        transform = transform.translatedBy(x: 0, y: CGFloat(-height))
         
         // Scale the points down to fit into the image
-        transform = transform.scaleBy(x: ratio, y: ratio)
-        transform = transform.translateBy(x: -self.boundingRect.origin.x + strokeWidth, y: 0)
-        graphicsContext.concatCTM(transform)
+        transform = transform.scaledBy(x: ratio, y: ratio)
+        transform = transform.translatedBy(x: -self.boundingRect.origin.x + strokeWidth, y: 0)
+        graphicsContext.concatenate(transform)
         
         for stroke in completedStrokes {
             var firstPoint = true

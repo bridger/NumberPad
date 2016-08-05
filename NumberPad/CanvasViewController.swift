@@ -313,13 +313,13 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         constraintView.layer.zPosition = constraintZPosition
         updateScrollableSize()
         
-        if let outputPort = outputPort, (lastConstraint, inputPort) = self.selectedConnectorPort {
+        if let outputPort = outputPort, let (lastConstraint, inputPort) = self.selectedConnectorPort {
             if connectorToLabel[inputPort.connector] == nil {
                 self.connectConstraintViews(firstConstraintView: constraintView, firstConnectorPort: outputPort, secondConstraintView: lastConstraint, secondConnectorPort: inputPort)
             }
         }
         
-        if let firstInputPort = firstInputPort, selectedConnector = self.selectedConnectorLabel {
+        if let firstInputPort = firstInputPort, let selectedConnector = self.selectedConnectorLabel {
             constraintView.connect(firstInputPort, to: selectedConnector.connector)
             self.needsLayout = true
             self.needsSolving = true
@@ -352,7 +352,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
     // want to do this if it isn't the permanently selected connector. Also, this accepts the parameters as
     // optionals for convenience.
     func unhighlightConnectorPortIfNotSelected(constraintView: ConstraintView?, connectorPort: ConnectorPort?) {
-        if let constraintView = constraintView, connectorPort = connectorPort {
+        if let constraintView = constraintView, let connectorPort = connectorPort {
             if selectedConnectorPort?.ConnectorPort !== connectorPort {
                 constraintView.setConnector(port: connectorPort, isHighlighted: false)
             }
@@ -479,7 +479,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 }
             }
             
-            if let lastStroke = self.unprocessedStrokes.last, lastStrokeLastPoint = lastStroke.points.last {
+            if let lastStroke = self.unprocessedStrokes.last, let lastStrokeLastPoint = lastStroke.points.last {
                 if euclidianDistance(a: lastStrokeLastPoint, b: point) > 150 {
                     // This was far away from the last stroke, so we process that stroke
                     processStrokes()
@@ -691,7 +691,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                     
                 case .Delete:
                     touchInfo.currentStroke.updateLayer()
-                    touchInfo.currentStroke.layer.strokeColor = UIColor.red().cgColor
+                    touchInfo.currentStroke.layer.strokeColor = UIColor.red.cgColor
                     self.scrollView.layer.addSublayer(touchInfo.currentStroke.layer)
                     
                 case .OperateToy:
@@ -906,7 +906,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             if let (constraintView, connectorPort) = connectorPortAtLocation(location: point) {
                 self.connect(connectorLabel: connectorLabel, constraintView: constraintView, connectorPort: connectorPort)
                 connectionMade = true
-            } else if let destinationConnectorLabel = connectorLabelAtPoint(point: point) where destinationConnectorLabel != connectorLabel {
+            } else if let destinationConnectorLabel = connectorLabelAtPoint(point: point), destinationConnectorLabel != connectorLabel {
                 // Try to combine these connector labels
                 if connectorIsForToy(connector: destinationConnectorLabel.connector) {
                     if connectorIsForToy(connector: connectorLabel.connector) {
@@ -945,7 +945,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         if pickedUp {
             // Add some styles to make it look picked up
             UIView.animate(withDuration: 0.2) {
-                view.layer.shadowColor = UIColor.darkGray().cgColor
+                view.layer.shadowColor = UIColor.darkGray.cgColor
                 view.layer.shadowOpacity = 0.4
                 view.layer.shadowRadius = 10
                 view.layer.shadowOffset = CGSize(width: 5, height: 5)
@@ -1084,7 +1084,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         let unprocessedStrokesCopy = self.unprocessedStrokes
         self.unprocessedStrokes.removeAll(keepingCapacity: false)
         
-        DispatchQueue.global(attributes: DispatchQueue.GlobalAttributes.qosUserInitiated).async {
+        DispatchQueue.global(qos: .userInitiated).async {
             var allStrokes: DTWDigitClassifier.DigitStrokes = []
             for previousStroke in unprocessedStrokesCopy {
                 allStrokes.append(previousStroke.points)
@@ -1118,7 +1118,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                         }
                     }
                     
-                    var combinedLabels = classifiedLabels.reduce("", combine: +)
+                    var combinedLabels = classifiedLabels.reduce("", +)
                     var isPercent = false
                     if classifiedLabels.count > 1 && combinedLabels.hasSuffix("/") {
                         combinedLabels = combinedLabels.substring(to: combinedLabels.index(before: combinedLabels.endIndex))
@@ -1532,7 +1532,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             rebuildAllConnectionLayers()
         }
         
-        if let lastSimulationValues = self.lastSimulationValues where ranSolver {
+        if let lastSimulationValues = self.lastSimulationValues, ranSolver {
             for toy in self.toys {
                 toy.update(values: lastSimulationValues)
                 if let toy = toy as? GhostableToy {
@@ -1625,12 +1625,12 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
     }
     
     func nameCanvasViewControllerDidFinish(nameCanvasViewController: NameCanvasViewController) {
-        guard let canvasViewController = self.nameCanvas where canvasViewController == nameCanvasViewController else {
+        guard let canvasViewController = self.nameCanvas, canvasViewController == nameCanvasViewController else {
             return
         }
         
         if let selectedConnectorLabel = self.selectedConnectorLabel {
-            let scale = UIScreen.main().scale
+            let scale = UIScreen.main.scale
             let height = selectedConnectorLabel.valueLabel.frame.size.height
             
             if let nameImage = canvasViewController.renderedImage(pointHeight: height, scale: scale, color: UIColor.textColor().cgColor),
@@ -1653,7 +1653,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         return animator
     }
     
-    func animationController(forDismissedController dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+    func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
         return NameCanvasAnimator()
     }
 }

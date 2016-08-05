@@ -53,14 +53,14 @@ public struct SortedMinArray<Value: Comparable, Element> {
     
     public mutating func add(value: Value, element: Element) {
         let hasRoom = contents.count < self.capacity
-        
+
         if (hasRoom || (self.capacity > 0 && value < contents.last!.value)) {
             if !hasRoom {
                 contents.remove(at: contents.count - 1)
             }
-            
+
             // Insert the element
-            let insertedTuple = (value, element)
+            let insertedTuple: ValueTuple = (value, element)
             let index = insertionIndexOf(array: contents, elem: insertedTuple) { tuple1, tuple2 in
                 return tuple1.value < tuple2.value
             }

@@ -14,7 +14,7 @@ public class StrokeGestureRecognizer: UIGestureRecognizer {
     public override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
         super.touchesBegan(touches, with: event)
         
-        if (self.numberOfTouches() != 1) {
+        if (self.numberOfTouches != 1) {
             if (self.state == UIGestureRecognizerState.possible) {
                 self.state = UIGestureRecognizerState.failed
             } else {

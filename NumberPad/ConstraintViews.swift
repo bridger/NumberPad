@@ -67,7 +67,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
             let equationView = WKWebView(frame: CGRect(x: 10, y:  20, width:  65, height: 25), configuration: configuration)
             
             self.addSubview(equationView)
-            equationView.backgroundColor = UIColor.clear()
+            equationView.backgroundColor = UIColor.clear
             equationView.isOpaque = false
             equationView.isUserInteractionEnabled = false
             self.equationView = equationView
@@ -142,7 +142,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
     var hasError: Bool = false {
         didSet {
             if self.hasError {
-                self.layer.borderColor = UIColor.red().cgColor
+                self.layer.borderColor = UIColor.red.cgColor
             } else {
                 self.layer.borderColor = UIColor.textColor().cgColor
             }
@@ -192,7 +192,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
             self.nameView = imageView
             self.nameAndValueView.addSubview(imageView)
         }
-        if let nameView = self.nameView where self.nameImages == nil {
+        if let nameView = self.nameView, self.nameImages == nil {
             nameView.removeFromSuperview()
             self.nameView = nil
         }
@@ -245,7 +245,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
         let horizontalMargin: CGFloat = 5.0 + borderWidth
         let equationSpace: CGFloat = 2.0
         
-        if let equationSize = self.equationViewSize where equationView != nil {
+        if let equationSize = self.equationViewSize, equationView != nil {
             newSize.width = max(newSize.width, equationSize.width)
             newSize.height += equationSpace + equationSize.height
         }
@@ -283,7 +283,7 @@ protocol ConnectorPort: NSObjectProtocol {
 }
 
 class InternalConnectorPort: NSObject, ConnectorPort {
-    var color: UIColor = UIColor.white()
+    var color: UIColor = UIColor.white
     var connector = Connector()
     let isOutput: Bool
     var center: CGPoint = CGPoint.zero

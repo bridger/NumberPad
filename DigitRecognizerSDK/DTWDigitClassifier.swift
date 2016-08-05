@@ -113,7 +113,7 @@ public class DTWDigitClassifier {
     public func classifyDigit(digit: DigitStrokes, votesCounted: Int = 5, scoreCutoff: CGFloat = 0.8) -> Classification? {
         if let normalizedDigit = normalizeDigit(inputDigit: digit) {
             let serviceGroup = DispatchGroup()
-            let queue = DispatchQueue.global(attributes: DispatchQueue.GlobalAttributes.qosUserInitiated)
+            let queue = DispatchQueue.global(qos: .userInitiated)
             let serialResultsQueue = DispatchQueue(label: "collect_results")
             
             var bestMatches = SortedMinArray<CGFloat, (DigitLabel, Int)>(capacity: votesCounted)

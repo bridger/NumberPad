@@ -12,7 +12,7 @@ typealias TouchID = Int
 
 class TouchTracker {
     var currentTouchId: TouchID = 0
-    var touchIds = MapTable<UITouch, NSNumber>(keyOptions: [.weakMemory], valueOptions: [])
+    var touchIds = NSMapTable<UITouch, NSNumber>(keyOptions: [.weakMemory], valueOptions: [])
     func id(for touch: UITouch) -> TouchID {
         if let touchId = touchIds.object(forKey: touch) {
             return touchId.intValue

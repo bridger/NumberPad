@@ -16,7 +16,7 @@ class IntroViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        if let path = Bundle.main().pathForResource("bridger_normalized", ofType: "json") {
+        if let path = Bundle.main.path(forResource: "bridger_normalized", ofType: "json") {
             loadData(path: path)
         }
     }
@@ -33,7 +33,7 @@ class IntroViewController: UIViewController {
         let backButton = UIButton()
         backButton.setTitle("< Back", for: [])
         backButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 18)
-        backButton.setTitleColor(UIColor.blue(), for: [])
+        backButton.setTitleColor(UIColor.blue, for: [])
         canvas.view.addAutoLayoutSubview(subview: backButton)
         canvas.view.addHorizontalConstraints(|-6-[backButton])
         canvas.view.addVerticalConstraints(|-15-[backButton])

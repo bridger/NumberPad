@@ -45,6 +45,6 @@ func createPointingLine(startPoint: CGPoint, endPoint: CGPoint, dash: Bool, arro
     // Now transform it so that it starts and ends at the right points
     let angle = (endPoint - startPoint).angle
     
-    var transform = CGAffineTransform(translationX: startPoint.x, y: startPoint.y).rotate(angle)
+    var transform = CGAffineTransform(translationX: startPoint.x, y: startPoint.y).rotated(by: angle)
     return path.copy(using: &transform)!
 }
