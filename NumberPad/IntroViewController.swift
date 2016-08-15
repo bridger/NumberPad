@@ -19,7 +19,13 @@ class IntroViewController: UIViewController {
         if let path = Bundle.main.path(forResource: "bridger_normalized", ofType: "json") {
             loadData(path: path)
         }
-        // TODO: Set all buttons to be aspectFill
+        // Set all buttons to be aspectFit. This is kind of a hack because
+        // I couldn't find the property in IB
+        for subview in self.view.subviews.flatMap({ $0.subviews} ) {
+            if let button = subview as? UIButton {
+                button.imageView?.contentMode = .scaleAspectFit
+            }
+        }
     }
     
     func loadData(path: String) {
@@ -30,6 +36,7 @@ class IntroViewController: UIViewController {
 
     func configureNewCanvas() -> CanvasViewController {
         let canvas = CanvasViewController(digitClassifier: self.digitClassifier)
+        canvas.view.clipsToBounds = true
         
         let backButton = UIButton()
         backButton.setTitle("< Back", for: [])
