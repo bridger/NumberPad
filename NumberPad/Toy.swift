@@ -100,7 +100,7 @@ class MotionToy : UIView, SelectableToy, GhostableToy {
             }
             let valueOffset = Double(offset) * pow(10.0, Double(driverState.Scale + 1))
             let offsetDriverValue = driverState.Value.DoubleValue + valueOffset
-
+            
             let ghostValues = resolver(inputValues: [self.driverConnector: offsetDriverValue])
             
             guard let xPosition = ghostValues[self.xConnector]?.DoubleValue,
@@ -215,7 +215,7 @@ class CircleLayer {
     }
     
     static let valueToPointScale: Double = UIDevice.current.userInterfaceIdiom == .pad ? 20 : 7
-
+    
     var centerOffset = CGPoint.zero
     
     var simulationContext: ResolvedValues? = nil
@@ -224,7 +224,7 @@ class CircleLayer {
     let diameterLayer: CAShapeLayer
     let circumferenceLayer: CAShapeLayer
     let overshootCircumferenceLayer: CAShapeLayer
-
+    
     init() {
         self.mainLayer = CAShapeLayer()
         self.mainLayer.lineWidth = 4
@@ -259,8 +259,8 @@ class CircleLayer {
         
         let cgDiameter = CGFloat(self.diameter * CircleLayer.valueToPointScale)
         let cgRadius = cgDiameter / 2
-        if self.mainLayer.frame.size.width != cgDiameter {
-            let roundedSize = round(cgDiameter)
+        let roundedSize = round(cgDiameter)
+        if self.mainLayer.frame.size.width != roundedSize {
             
             self.mainLayer.frame = CGRect(x: 0, y: 0, width: roundedSize, height: roundedSize)
             self.mainLayer.path = CGPath(ellipseIn: self.mainLayer.bounds, transform: nil)
@@ -332,7 +332,7 @@ class CirclesToy : UIView, GhostableToy {
     }
     
     override func layoutSublayers(of layer: CALayer) {
-        let center = CGPoint(x: layer.bounds.size.width / 2, y: layer.bounds.size.height / 3)
+        let center = CGPoint(x: layer.bounds.size.width / 2, y: layer.bounds.size.height * 2 / 3)
         
         self.mainCircle.position = center
         for ghost in self.activeGhosts {
@@ -442,6 +442,275 @@ class CirclesToy : UIView, GhostableToy {
     }
 }
 
+class SquareLayer {
+    var side: Double = 0 {
+        didSet {
+            update()
+        }
+    }
+    var area: Double = 0 {
+        didSet {
+            update()
+        }
+    }
+    var position: CGPoint = CGPoint.zero {
+        didSet {
+            self.mainLayer.position = position
+        }
+    }
+    
+    static let valueToPointScale: Double = UIDevice.current.userInterfaceIdiom == .pad ? 15 : 9
+    
+    var centerOffset = CGPoint.zero
+    
+    var simulationContext: ResolvedValues? = nil
+    
+    let darkSidesLayer: CAShapeLayer // Two lines, dark
+    let lightSidesLayer: CAShapeLayer // Two lines, light
+    let darkAreaLayer: CAShapeLayer // Two lines, dark
+    let lightAreaLayer: CAShapeLayer // Filled in and transparent unless correct
+    
+    var mainLayer: CAShapeLayer {
+        get {
+            return darkSidesLayer
+        }
+    }
+    
+    let lineWidth: CGFloat = 4
+    init() {
+        let color = UIColor.adderInputColor()
+        let transparentColor = color.withAlphaComponent(0.4)
+        
+        self.darkSidesLayer = CAShapeLayer()
+        self.darkSidesLayer.lineWidth = lineWidth
+        self.darkSidesLayer.strokeColor = color.cgColor
+        self.darkSidesLayer.fillColor = nil
+        self.darkSidesLayer.lineCap = "round"
+        
+        self.lightSidesLayer = CAShapeLayer()
+        self.lightSidesLayer.lineWidth = lineWidth
+        self.lightSidesLayer.strokeColor = transparentColor.cgColor
+        self.lightSidesLayer.fillColor = nil
+        self.lightSidesLayer.lineCap = "round"
+        
+        self.darkAreaLayer = CAShapeLayer()
+        self.darkAreaLayer.lineWidth = lineWidth
+        self.darkAreaLayer.strokeColor = color.cgColor
+        self.darkAreaLayer.fillColor = nil
+        self.darkAreaLayer.lineCap = "round"
+        
+        self.lightAreaLayer = CAShapeLayer()
+        self.lightAreaLayer.fillColor = color.cgColor
+        
+        self.darkSidesLayer.addSublayer(self.lightSidesLayer)
+        self.darkSidesLayer.addSublayer(self.darkAreaLayer)
+        self.darkAreaLayer.addSublayer(self.lightAreaLayer)
+        
+        update()
+    }
+    
+    func update() {
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        
+        func pathForSides(length: CGFloat, vertical: Bool) -> CGPath {
+            // This draws a path with two lines on the sides of a square either on
+            // the vertical or horizontal edges
+            let segments = [
+                CGPoint(x: 0, y: 0), // bottom-left
+                (vertical
+                    ? CGPoint(x: 0, y: length) // top-left
+                    : CGPoint(x: length, y: 0) // bottom-right
+                ),
+                
+                CGPoint(x: length, y: length), // top-right
+                (vertical
+                    ? CGPoint(x: length, y: 0) // bottom-right
+                    : CGPoint(x: 0, y: length) // top-left
+                ),
+            ]
+            let path = CGMutablePath()
+            path.moveTo(nil,    x: segments[0].x, y: segments[0].y)
+            path.addLineTo(nil, x: segments[1].x, y: segments[1].y)
+            path.moveTo(nil,    x: segments[2].x, y: segments[2].y)
+            path.addLineTo(nil, x: segments[3].x, y: segments[3].y)
+            return path
+        }
+        
+        let cgSide = CGFloat(self.side * SquareLayer.valueToPointScale)
+        if !cgSide.isFinite {
+            return
+        }
+        
+        let targetRect = CGRect(x: 0, y: 0, width: cgSide, height: cgSide)
+        self.darkSidesLayer.frame = targetRect
+        self.darkSidesLayer.path = pathForSides(length: cgSide, vertical: true)
+        
+        self.lightSidesLayer.frame = targetRect
+        self.lightSidesLayer.path = pathForSides(length: cgSide, vertical: false)
+        
+        let maxDifference = self.area * 0.1
+        let targetArea = self.side * self.side
+        let difference = abs(self.area - targetArea)
+        let percentError = (difference / maxDifference).clamp(lower: 0, upper: 1.0)
+        
+        let cgAreaSide = CGFloat(sqrt(self.area) * SquareLayer.valueToPointScale)
+        let areaRect = CGRect(x: 0, y: 0, width: cgAreaSide, height: cgAreaSide)
+        
+        self.darkAreaLayer.bounds = areaRect
+        self.darkAreaLayer.position = targetRect.center()
+        self.darkAreaLayer.path = pathForSides(length: cgAreaSide, vertical: false)
+        
+        self.lightAreaLayer.frame = areaRect
+        self.lightAreaLayer.path = CGPath(rect: areaRect.insetBy(dx: -lineWidth/2, dy: -lineWidth/2), transform: nil)
+        
+        // We let it get lighter if you overshoot because the too-large square
+        // starts bumping into other things
+        let minOpacity: Double = self.area > targetArea ? 0.15 : 0.3
+        self.lightAreaLayer.opacity = Float(percentError.lerp(lower: 1.0, upper: minOpacity))
+        
+        CATransaction.commit()
+    }
+}
+
+class SquaresToy : UIView, GhostableToy {
+    let sideConnector: Connector
+    let areaConnector: Connector
+    
+    let mainSquare: SquareLayer
+    init(sideConnector: Connector, areaConnector: Connector) {
+        self.sideConnector = sideConnector
+        self.areaConnector = areaConnector
+        self.mainSquare = SquareLayer()
+        
+        super.init(frame: CGRect.zero)
+        
+        self.layer.addSublayer(self.mainSquare.mainLayer)
+        self.isUserInteractionEnabled = false
+    }
+    
+    required init(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    func inputConnectors() -> [Connector] {
+        return [sideConnector]
+    }
+    
+    func outputConnectors() -> [Connector] {
+        return [areaConnector]
+    }
+    
+    override func layoutSublayers(of layer: CALayer) {
+        let center = CGPoint(x: layer.bounds.size.width / 2, y: layer.bounds.size.height * 2 / 3)
+        
+        self.mainSquare.position = center
+        for ghost in self.activeGhosts {
+            ghost.position = center + ghost.centerOffset
+        }
+    }
+    
+    func update(values: [Connector : SimulationContext.ResolvedValue]) {
+        if let side = values[self.sideConnector]?.DoubleValue, side.isFinite {
+            self.mainSquare.side = side
+        }
+        if let area = values[self.areaConnector]?.DoubleValue, area.isFinite {
+            self.mainSquare.area = area
+        }
+    }
+    
+    var activeGhosts: [SquareLayer] = []
+    var reuseGhosts: [SquareLayer] = []
+    
+    func createNewGhost() -> SquareLayer {
+        let ghost: SquareLayer
+        if let oldGhost = reuseGhosts.popLast() {
+            ghost = oldGhost
+        } else {
+            ghost = SquareLayer()
+        }
+        ghost.mainLayer.opacity = 0.35
+        
+        activeGhosts.append(ghost)
+        self.layer.addSublayer(ghost.mainLayer)
+        return ghost
+    }
+    
+    func removeAllGhosts() {
+        for ghost in activeGhosts.reversed() {
+            ghost.mainLayer.removeFromSuperlayer()
+            reuseGhosts.append(ghost)
+        }
+        activeGhosts = []
+    }
+    
+    func updateGhosts(inputStates: [Connector : ConnectorState], resolver: GhostValueResolver) {
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        defer { CATransaction.commit() }
+        
+        removeAllGhosts()
+        
+        let driverConnector = self.sideConnector
+        guard let driverState = inputStates[driverConnector] else {
+            return
+        }
+        let driverValue = driverState.Value.DoubleValue
+        
+        func side(at index: Int) -> Double {
+            return pow(1.3, Double(index)) * driverValue
+        }
+        
+        let range = 4
+        for offsetIndex in -range...range {
+            if offsetIndex == 0 {
+                continue
+            }
+            
+            let offsetDriverValue = side(at: offsetIndex)
+            
+            if offsetDriverValue <= 0 || !offsetDriverValue.isFinite {
+                continue
+            }
+            
+            let ghostValues = resolver(inputValues: [driverConnector: offsetDriverValue])
+            
+            guard let area = ghostValues[self.areaConnector]?.DoubleValue,
+                area.isFinite else {
+                    continue
+            }
+            
+            let ghost = self.createNewGhost()
+            ghost.simulationContext = ghostValues
+            ghost.area = area
+            ghost.side = offsetDriverValue
+            
+            // We need to space this out so it accounts for the main square's width, it's own width, and the
+            // width of each ghost in between
+            let spacing: Double = 15
+            let offsetDirection: Int = offsetIndex > 0 ? 1 : -1
+            let halfWidths = (driverValue + offsetDriverValue) / 2 * SquareLayer.valueToPointScale
+            var xOffset = Double(offsetDirection) * (halfWidths + spacing)
+            
+            // Figure the size of each ghost between this ghost and the real square, and account for its size
+            var inBetweenGhostIndex = offsetIndex - offsetDirection
+            while inBetweenGhostIndex != 0 {
+                xOffset += Double(offsetDirection) * (side(at: inBetweenGhostIndex) * SquareLayer.valueToPointScale + spacing)
+                inBetweenGhostIndex -= offsetDirection
+            }
+            
+            ghost.centerOffset = CGPoint(x: CGFloat(xOffset), y: 0)
+        }
+        self.layer.layoutIfNeeded()
+    }
+    
+    func ghostState(at point: CGPoint) -> ResolvedValues? {
+        for ghost in activeGhosts where ghost.mainLayer.frame.contains(point) {
+            return ghost.simulationContext
+        }
+        return nil
+    }
+}
 
 class PythagorasToy : UIView, Toy {
     
@@ -607,7 +876,7 @@ class PythagorasToy : UIView, Toy {
         let darkCSegments = [
             CGPoint(x: -c/2, y: c/2), CGPoint(x: c/2, y: c/2),
             CGPoint(x: -c/2, y: -c/2), CGPoint(x: c/2, y: -c/2)
-            ]
+        ]
         context.setStrokeColor(cColor)
         context.strokeLineSegments(between: darkCSegments, count: darkCSegments.count)
         

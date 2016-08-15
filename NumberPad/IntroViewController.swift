@@ -19,6 +19,7 @@ class IntroViewController: UIViewController {
         if let path = Bundle.main.path(forResource: "bridger_normalized", ofType: "json") {
             loadData(path: path)
         }
+        // TODO: Set all buttons to be aspectFill
     }
     
     func loadData(path: String) {
@@ -60,14 +61,14 @@ class IntroViewController: UIViewController {
         diameterLabel.scale = -1
         diameterLabel.name = "diameter"
         diameterLabel.sizeToFit()
-        diameterLabel.center = CGPoint(x: 200, y: self.view.frame.size.height - 300)
+        diameterLabel.center = CGPoint(x: self.view.frame.size.width / 2, y: 230)
         
         let circumferenceConnector = Connector()
         let circumferenceLabel = ConnectorLabel(connector: circumferenceConnector)
         circumferenceLabel.scale = -1
         circumferenceLabel.name = "circumference"
         circumferenceLabel.sizeToFit()
-        circumferenceLabel.center = CGPoint(x: 200, y: self.view.frame.size.height - 180)
+        circumferenceLabel.center = CGPoint(x: self.view.frame.size.width / 2, y: 150)
         
         let initialDiameter: Double = 10
         
@@ -131,6 +132,39 @@ class IntroViewController: UIViewController {
         
         canvas.addConnectorLabel(label: cLabel, topPriority: false, automaticallyConnect: false)
         canvas.selectConnectorLabelAndSetToValue(connectorLabel: cLabel, value: 13)
+        
+        self.navigationController?.pushViewController(canvas, animated: true)
+    }
+    
+    @IBAction func startSquareDemo(sender: AnyObject) {
+        
+        let canvas = configureNewCanvas()
+        
+        let sideConnector = Connector()
+        let sideLabel = ConnectorLabel(connector: sideConnector)
+        sideLabel.scale = -1
+        sideLabel.name = "🛢"
+        sideLabel.sizeToFit()
+        sideLabel.center = CGPoint(x: 60, y: 150)
+        
+        let squareConnector = Connector()
+        let squareLabel = ConnectorLabel(connector: squareConnector)
+        squareLabel.scale = 0
+        squareLabel.name = "🔷"
+        squareLabel.sizeToFit()
+        squareLabel.center = CGPoint(x: self.view.bounds.size.width - 60, y: 150)
+        
+        canvas.addConnectorLabel(label: sideLabel, topPriority: false, automaticallyConnect: false)
+        canvas.selectConnectorLabelAndSetToValue(connectorLabel: sideLabel, value: 9)
+        
+        let newToy = SquaresToy(sideConnector: sideConnector, areaConnector: squareConnector)
+        canvas.view.addSubview(newToy)
+        newToy.frame = self.view.bounds
+        newToy.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        canvas.toys.append(newToy)
+        
+        canvas.addConnectorLabel(label: squareLabel, topPriority: false, automaticallyConnect: false)
+        canvas.selectConnectorLabelAndSetToValue(connectorLabel: squareLabel, value: 40)
         
         self.navigationController?.pushViewController(canvas, animated: true)
     }
