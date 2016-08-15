@@ -1645,9 +1645,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         self.dismiss(animated: true, completion: nil)
     }
     
-    
-    func animationController(forPresentedController presented: UIViewController, presenting: UIViewController, sourceController source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        
+    func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
         let animator = NameCanvasAnimator()
         animator.presenting = true
         return animator

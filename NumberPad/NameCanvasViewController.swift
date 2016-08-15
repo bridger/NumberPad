@@ -19,7 +19,7 @@ class NameCanvasAnimator: NSObject, UIViewControllerAnimatedTransitioning {
         return 0.2
     }
 
-    @objc(animateTransition:) func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
+    func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
         guard let toViewController = transitionContext.viewController(forKey: UITransitionContextToViewControllerKey),
             let fromViewController = transitionContext.viewController(forKey: UITransitionContextFromViewControllerKey) else {
                 return
