@@ -15,7 +15,7 @@ class Stroke {
     
     init(){
         layer = CAShapeLayer()
-        layer.strokeColor = UIColor.black().cgColor
+        layer.strokeColor = UIColor.black.cgColor
         layer.lineWidth = 2
         layer.fillColor = nil
     }
@@ -27,9 +27,9 @@ class Stroke {
         let path = CGMutablePath()
         for (index, point) in points.enumerated() {
             if index == 0 {
-                path.moveTo(nil, x: point.x, y: point.y)
+                path.move(to: point)
             } else {
-                path.addLineTo(nil, x: point.x, y: point.y)
+                path.addLine(to: point)
             }
         }
         layer.path = path;
@@ -58,7 +58,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
         
         let strokeRecognizer = StrokeGestureRecognizer()
         self.scrollView.addGestureRecognizer(strokeRecognizer)
-        strokeRecognizer.addTarget(self, action: Selector("handleStroke:"))
+        strokeRecognizer.addTarget(self, action: #selector(ViewController.handleStroke(recognizer:)))
         
         for index in 0..<self.labelSelector.numberOfSegments {
             if self.labelSelector.titleForSegment(at: index) == "Test" {
@@ -145,7 +145,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
     // If any one stroke can't be classified, this will return nil
     func readStringFromStrokes(strokes: [[CGPoint]]) -> String? {
         if let classifiedLabels = self.digitClassifier.classifyMultipleDigits(strokes: strokes) {
-            return classifiedLabels.reduce("", combine: +)
+            return classifiedLabels.reduce("", +)
         } else {
             return nil
         }

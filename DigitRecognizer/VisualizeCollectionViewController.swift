@@ -34,7 +34,7 @@ class ImageCell: UICollectionViewCell {
         indexLabel.sizeToFit()
         indexLabel.frame = CGRect(x: 0, y:  self.contentView.bounds.height  - indexLabel.frame.size.height, width:  self.contentView.bounds.width, height: indexLabel.frame.height)
         self.contentView.addSubview(indexLabel)
-        indexLabel.textColor = UIColor.gray()
+        indexLabel.textColor = UIColor.gray
     }
     
     override func prepareForReuse() {
