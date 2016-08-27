@@ -12,7 +12,7 @@ import DigitRecognizerSDK
 // This is a function passed into updateGhostState. The toy will call this for various different values
 // for the input connectors and it should return the resolved value for all of the output connectors
 typealias ResolvedValues = [Connector: SimulationContext.ResolvedValue]
-typealias GhostValueResolver = (inputValues: [Connector: Double]) -> ResolvedValues
+typealias GhostValueResolver = ([Connector: Double]) -> ResolvedValues
 
 // This method is called with the value of the current input connector and a lambda which can solve for
 // the output connector values given
@@ -101,7 +101,7 @@ class MotionToy : UIView, SelectableToy, GhostableToy {
             let valueOffset = Double(offset) * pow(10.0, Double(driverState.Scale + 1))
             let offsetDriverValue = driverState.Value.DoubleValue + valueOffset
             
-            let ghostValues = resolver(inputValues: [self.driverConnector: offsetDriverValue])
+            let ghostValues = resolver([self.driverConnector: offsetDriverValue])
             
             guard let xPosition = ghostValues[self.xConnector]?.DoubleValue,
                 let yPosition = ghostValues[self.yConnector]?.DoubleValue,
@@ -267,8 +267,8 @@ class CircleLayer {
             self.mainLayer.position = position
             
             let diameterPath = CGMutablePath()
-            diameterPath.moveTo(nil, x: 0, y: cgRadius)
-            diameterPath.addLineTo(nil, x: cgDiameter, y: cgRadius)
+            diameterPath.move(to: CGPoint(x: 0, y: cgRadius))
+            diameterPath.addLine(to: CGPoint(x: cgDiameter, y: cgRadius))
             self.diameterLayer.path = diameterPath
         }
         
@@ -280,7 +280,7 @@ class CircleLayer {
             let circumferencePath = CGMutablePath()
             let angle = -CGFloat(circumference * CircleLayer.valueToPointScale) / cgRadius
             let clockwise = angle < 0
-            circumferencePath.addArc(nil, x: cgRadius, y: cgRadius, radius: cgRadius, startAngle: 0, endAngle: angle, clockwise: clockwise)
+            circumferencePath.addArc(center: CGPoint(x: cgRadius, y: cgRadius), radius: cgRadius, startAngle: 0, endAngle: angle, clockwise: clockwise)
             return circumferencePath
         }
         
@@ -403,7 +403,7 @@ class CirclesToy : UIView, GhostableToy {
                 continue
             }
             
-            let ghostValues = resolver(inputValues: [driverConnector: offsetDriverValue])
+            let ghostValues = resolver([driverConnector: offsetDriverValue])
             
             guard let circumference = ghostValues[self.circumferenceConnector]?.DoubleValue,
                 circumference.isFinite else {
@@ -530,10 +530,10 @@ class SquareLayer {
                 ),
             ]
             let path = CGMutablePath()
-            path.moveTo(nil,    x: segments[0].x, y: segments[0].y)
-            path.addLineTo(nil, x: segments[1].x, y: segments[1].y)
-            path.moveTo(nil,    x: segments[2].x, y: segments[2].y)
-            path.addLineTo(nil, x: segments[3].x, y: segments[3].y)
+            path.move(to: segments[0])
+            path.addLine(to: segments[1])
+            path.move(to: segments[2])
+            path.addLine(to: segments[3])
             return path
         }
         
@@ -673,7 +673,7 @@ class SquaresToy : UIView, GhostableToy {
                 continue
             }
             
-            let ghostValues = resolver(inputValues: [driverConnector: offsetDriverValue])
+            let ghostValues = resolver([driverConnector: offsetDriverValue])
             
             guard let area = ghostValues[self.areaConnector]?.DoubleValue,
                 area.isFinite else {
@@ -775,8 +775,8 @@ class PythagorasToy : UIView, Toy {
         let lineWidth: CGFloat = 4
         @discardableResult func drawLine(startPoint: CGPoint, delta: CGPoint, color: CGColor) -> CGPoint {
             let endPoint = CGPoint(x: startPoint.x + delta.x, y: startPoint.y + delta.y)
-            context.moveTo(x: startPoint.x, y: startPoint.y)
-            context.addLineTo(x: endPoint.x, y: endPoint.y)
+            context.move(to: startPoint)
+            context.addLine(to: endPoint)
             context.setLineWidth(lineWidth)
             context.setLineCap(.round)
             context.setStrokeColor(color)
@@ -878,7 +878,7 @@ class PythagorasToy : UIView, Toy {
             CGPoint(x: -c/2, y: -c/2), CGPoint(x: c/2, y: -c/2)
         ]
         context.setStrokeColor(cColor)
-        context.strokeLineSegments(between: darkCSegments, count: darkCSegments.count)
+        context.strokeLineSegments(between: darkCSegments)
         
         
         context.restoreGState()

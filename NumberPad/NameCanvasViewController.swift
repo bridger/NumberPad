@@ -20,8 +20,8 @@ class NameCanvasAnimator: NSObject, UIViewControllerAnimatedTransitioning {
     }
 
     func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
-        guard let toViewController = transitionContext.viewController(forKey: UITransitionContextToViewControllerKey),
-            let fromViewController = transitionContext.viewController(forKey: UITransitionContextFromViewControllerKey) else {
+        guard let toViewController = transitionContext.viewController(forKey: .to),
+            let fromViewController = transitionContext.viewController(forKey: .from) else {
                 return
         }
         let containerView = transitionContext.containerView
@@ -81,7 +81,7 @@ class NameCanvasViewController: UIViewController {
         
         self.label = UILabel()
         self.view.addAutoLayoutSubview(subview: self.label)
-        self.label.font = UIFont.preferredFont(forTextStyle: UIFontTextStyleHeadline)
+        self.label.font = UIFont.preferredFont(forTextStyle: .headline)
         self.label.textColor = UIColor.textColor()
         self.label.text = "Draw a name"
         
@@ -216,10 +216,10 @@ class NameCanvasViewController: UIViewController {
             for point in stroke.points {
                 
                 if firstPoint {
-                    graphicsContext.moveTo(x: point.x, y: point.y)
+                    graphicsContext.move(to: point)
                     firstPoint = false
                 } else {
-                    graphicsContext.addLineTo(x: point.x, y: point.y)
+                    graphicsContext.addLine(to: point)
                 }
             }
             

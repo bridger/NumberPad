@@ -325,13 +325,13 @@ public class TrailingSuperviewConstraintToken: NSObject, ConstraintAble, ViewCon
 
 let RequiredPriority: Float = 1000 // For some reason, the linker can't find UILayoutPriorityRequired. Not sure what I am doing wrong
 
-prefix operator | {}
+prefix operator |
 prefix public func | (tokenArray: [ViewContainingToken]) -> [LeadingSuperviewConstraintToken] {
     // |[view]
     return [LeadingSuperviewConstraintToken(viewContainer: tokenArray[0], space: 0)]
 }
 
-postfix operator | {}
+postfix operator |
 postfix public func | (tokenArray: [ViewContainingToken]) -> [TrailingSuperviewConstraintToken] {
     // [view]|
     return [TrailingSuperviewConstraintToken(viewContainer: tokenArray[0], space: 0)]
@@ -384,13 +384,13 @@ func - (left: LeadingSuperviewAndSpaceToken, right: [ViewContainingToken]) -> [L
     return [LeadingSuperviewConstraintToken(viewContainer: right[0], space: left.space)]
 }
 
-postfix operator -| {}
+postfix operator -|
 postfix func -| (constant: ConstantToken) -> TrailingSuperviewAndSpaceToken {
     // 5-|
     return TrailingSuperviewAndSpaceToken(space: constant)
 }
 
-prefix operator |- {}
+prefix operator |-
 prefix func |- (constant: ConstantToken) -> LeadingSuperviewAndSpaceToken {
     // |-5
     return LeadingSuperviewAndSpaceToken(space: constant, relation: .equal)

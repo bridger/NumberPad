@@ -9,8 +9,8 @@
 import UIKit
 
 
-func delay(after: Double, closure: () -> Void) {
-    DispatchQueue.main.asyncAfter(deadline: .now() + after, execute: closure)
+func delay(after: Double, closure: @escaping () -> Void) {
+    DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + after, execute: closure)
 }
 
 func euclidianDistanceSquared(a: CGPoint, b: CGPoint) -> CGFloat {

@@ -28,7 +28,7 @@ func insertionIndexOf<T>(array: [T], elem: T, isOrderedBefore: (T, T) -> Bool) -
 public struct SortedMinArray<Value: Comparable, Element> {
     public typealias ValueTuple = (value: Value, element: Element)
     
-    private var contents: [ValueTuple] = []
+    fileprivate var contents: [ValueTuple] = []
     let capacity: Int
     
     public init(capacity: Int) {

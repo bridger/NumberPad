@@ -88,9 +88,9 @@ public func visualizeNormalizedStrokes(strokes: DTWDigitClassifier.DigitStrokes,
             
             if firstPoint {
                 firstPoint = false
-                ctx.moveTo(x: transformedPoint.x, y: transformedPoint.y)
+                ctx.move(to: transformedPoint)
             } else {
-                ctx.addLineTo(x: transformedPoint.x, y: transformedPoint.y)
+                ctx.addLine(to: transformedPoint)
             }
         }
         ctx.setStrokeColor(UIColor.white.cgColor)

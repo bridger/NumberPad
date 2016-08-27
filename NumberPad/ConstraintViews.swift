@@ -302,7 +302,7 @@ class ConstraintView: UIView {
     func connectorPorts() -> [ConnectorPort] {
         fatalError("This method must be overriden")
     }
-    func connectorPortForDrag(at location: CGPoint, connectorIsVisible: @noescape(Connector) -> Bool) -> ConnectorPort? {
+    func connectorPortForDrag(at location: CGPoint, connectorIsVisible: (Connector) -> Bool) -> ConnectorPort? {
         fatalError("This method must be overriden")
     }
     func connect(_ port: ConnectorPort, to target: Connector) {
@@ -315,7 +315,7 @@ class ConstraintView: UIView {
         fatalError("This method must be overriden")
     }
     
-    private func addSentinelConnector(to target: InternalConnectorPort) {
+    fileprivate func addSentinelConnector(to target: InternalConnectorPort) {
         self.connect(target, to: Connector())
     }
     
@@ -369,7 +369,7 @@ class MultiInputOutputConstraintView: ConstraintView {
         return [outputPort as ConnectorPort]
     }
     
-    override func connectorPortForDrag(at location: CGPoint, connectorIsVisible: @noescape(Connector) -> Bool) -> ConnectorPort? {
+    override func connectorPortForDrag(at location: CGPoint, connectorIsVisible: (Connector) -> Bool) -> ConnectorPort? {
         if euclidianDistanceSquared(a: outputPort.center, b: location) < 18*18 {
             return outputPort
         } else if euclidianDistanceSquared(a: inputPorts[0].center, b: location) < 18*18 {
@@ -710,7 +710,7 @@ class ExponentView: ConstraintView {
         return [exponentInput, resultOutput, baseInput]
     }
     
-    override func connectorPortForDrag(at location: CGPoint, connectorIsVisible: @noescape(Connector) -> Bool) -> ConnectorPort? {
+    override func connectorPortForDrag(at location: CGPoint, connectorIsVisible: (Connector) -> Bool) -> ConnectorPort? {
         for internalPort in internalConnectorPorts() {
             let cutoffSquared: CGFloat = (internalPort === basePort) ? 900 : 400
             if euclidianDistanceSquared(a: internalPort.center, b: location) < cutoffSquared {

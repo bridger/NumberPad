@@ -31,9 +31,9 @@ class Stroke {
             let path = CGMutablePath()
             for (index, point) in points.enumerated() {
                 if index == 0 {
-                    path.moveTo(nil, x: point.x, y: point.y)
+                    path.move(to: point)
                 } else {
-                    path.addLineTo(nil, x: point.x, y: point.y)
+                    path.addLine(to: point)
                 }
             }
             layer.path = path;

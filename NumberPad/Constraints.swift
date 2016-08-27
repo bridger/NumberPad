@@ -45,7 +45,7 @@ class SimulationContext {
         }
     }
     
-    init(connectorResolvedCallback: (Connector, ResolvedValue) -> Void, connectorConflictCallback: (Connector, ResolvedValue) -> Void) {
+    init(connectorResolvedCallback: @escaping (Connector, ResolvedValue) -> Void, connectorConflictCallback: @escaping (Connector, ResolvedValue) -> Void) {
         self.connectorResolvedCallback = connectorResolvedCallback
         self.connectorConflictCallback = connectorConflictCallback
     }
@@ -60,7 +60,7 @@ func functionExpression(functionName: String, arguments: [DDExpression]) -> DDEx
 }
 
 func constantExpression(number: Double) -> DDExpression {
-    return DDExpression.number(with: number)!
+    return DDExpression.number(with: number as NSNumber)!
 }
 
 class Constraint {
@@ -151,7 +151,7 @@ class Connector: CustomDebugStringConvertible {
     
     var debugDescription: String {
         get {
-            return "<Connector: \(unsafeAddress(of: self)) debugValue = \(debugValue)>"
+            return "<Connector: \(Unmanaged.passUnretained(self).toOpaque()) debugValue = \(debugValue)>"
         }
     }
 }

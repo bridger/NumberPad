@@ -206,7 +206,7 @@ public class DTWDigitClassifier {
         let filename = NSURL(fileURLWithPath: path).lastPathComponent
         if let data = NSData(contentsOfFile: path) {
             do {
-                let json: AnyObject = try JSONSerialization.jsonObject(with: data as Data, options: [])
+                let json = try JSONSerialization.jsonObject(with: data as Data, options: [])
                 if let jsonLibrary = json as? [String: JSONCompatibleLibrary] {
                     return jsonLibrary
                 } else {
