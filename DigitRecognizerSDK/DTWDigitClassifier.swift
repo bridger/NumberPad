@@ -19,6 +19,16 @@ public func euclidianDistanceSquared(a: CGPoint, b: CGPoint) -> CGFloat {
     return dx*dx + dy*dy
 }
 
+public struct ImageSize {
+    public var width: UInt
+    public var height: UInt
+    
+    public init(width: UInt, height: UInt) {
+        self.width = width
+        self.height = height
+    }
+}
+
 public class DTWDigitClassifier {
     public typealias DigitStrokes = [[CGPoint]]
     public typealias DigitLabel = String

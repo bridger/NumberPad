@@ -30,6 +30,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if let path = Bundle.main.path(forResource: "bridger_train", ofType: "json") {
             loadData(path: path)
         }
+        
+        let ubyteName = self.documentsDirectory().appendingPathComponent("bridger-train")!
+        saveAsBinary(library: self.digitClassifier.normalizedPrototypeLibrary, filepath: ubyteName.path)
+        
         //saveMisclassified()
         
         return true
@@ -93,6 +97,60 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         
         return nil
+    }
+    
+    func saveAsBinary(library: DTWDigitClassifier.PrototypeLibrary, filepath: String) {
+        let imageFilePath = filepath + "-images"
+        guard let imageFile = OutputStream(toFileAtPath: imageFilePath, append: false) else {
+            fatalError("Couldn't open output file")
+        }
+        imageFile.open()
+        defer { imageFile.close() }
+        
+        guard let labelsFile = OutputStream(toFileAtPath: filepath + "-labels", append: false) else {
+            fatalError("Couldn't open output file")
+        }
+        labelsFile.open()
+        defer { labelsFile.close() }
+        
+        let imageSize = ImageSize(width: 28, height: 28)
+        var bitmapData = Array<UInt8>(repeating: 0, count: Int(imageSize.width * imageSize.height))
+        bitmapData[0] = 0 // To silence the "never mutated" warning
+        let bitmapPointer = UnsafeMutableRawPointer(mutating: bitmapData)
+        var labelToWrite = Array<UInt8>(repeating: 0, count: 1)
+        
+        let labelStringToByte: [DTWDigitClassifier.DigitLabel : UInt8] = [
+            "1" : 1,
+            "2" : 2,
+            "3" : 3,
+            "4" : 4,
+            "5" : 5,
+            "6" : 6,
+            "7" : 7,
+            "8" : 8,
+            "9" : 9,
+            "0" : 0,
+        ]
+        
+        var writeCount = 0
+        writeloop: for (label, samples) in library {
+            guard let byteLabel = labelStringToByte[label] else {
+                continue
+            }
+            
+            labelToWrite[0] = byteLabel
+            
+            for digit in samples {
+                guard renderToContext(normalizedStrokes: digit, size: imageSize, data: bitmapPointer) != nil else {
+                    fatalError("Couldn't render image")
+                }
+                labelsFile.write(labelToWrite, maxLength: 1)
+                imageFile.write(bitmapData, maxLength: bitmapData.count)
+                
+                writeCount += 1
+            }
+        }
+        print("Wrote \(writeCount) binary images to \(imageFilePath)")
     }
     
     

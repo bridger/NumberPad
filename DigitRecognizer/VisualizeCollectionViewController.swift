@@ -59,7 +59,7 @@ class VisualizeCollectionViewController: UICollectionViewController {
         self.collectionView!.register(ImageCell.self, forCellWithReuseIdentifier: reuseIdentifier)
     }
     
-    let prototypeSize = CGSize(width: 140, height: 140)
+    let prototypeSize = CGSize(width: 56, height: 56)
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -88,11 +88,11 @@ class VisualizeCollectionViewController: UICollectionViewController {
         
         let label = self.digitLabels[indexPath.section]
         if let prototype = digitClassifier.normalizedPrototypeLibrary[label]?[indexPath.row] {
-            let image = visualizeNormalizedStrokes(strokes: prototype, imageSize: self.prototypeSize)
+            let image = renderToImage(normalizedStrokes: prototype, size: ImageSize(width: 28, height: 28))
             cell.imageView.image = image
             cell.imageView.layer.borderWidth = 1
             
-            cell.indexLabel.text = "\(indexPath.row)"
+            cell.indexLabel.text = "" // "\(indexPath.row)"
         }
         return cell
     }
