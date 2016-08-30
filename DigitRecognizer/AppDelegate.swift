@@ -27,12 +27,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey : Any]? = nil) -> Bool {
-        if let path = Bundle.main.path(forResource: "bridger_train", ofType: "json") {
+        if let path = Bundle.main.path(forResource: "bridger_all", ofType: "json") {
             loadData(path: path)
         }
         
-        let ubyteName = self.documentsDirectory().appendingPathComponent("bridger-train")!
-        saveAsBinary(library: self.digitClassifier.normalizedPrototypeLibrary, filepath: ubyteName.path)
+        let ubyteName = self.documentsDirectory().appendingPathComponent("numberpad")!
+        saveAsBinary(library: self.digitClassifier.normalizedPrototypeLibrary, filepath: ubyteName.path, testPercentage: 0.25)
         
         //saveMisclassified()
         
@@ -72,7 +72,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func loadData(path: String) {
         if let jsonLibrary = DTWDigitClassifier.jsonLibraryFromFile(path: path) {
-            self.digitClassifier.loadData(jsonData: jsonLibrary, loadNormalizedData: false)
+            self.digitClassifier.loadData(jsonData: jsonLibrary, loadNormalizedData: false, clearExistingLibrary: false)
         }
     }
     
@@ -99,19 +99,31 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return nil
     }
     
-    func saveAsBinary(library: DTWDigitClassifier.PrototypeLibrary, filepath: String) {
-        let imageFilePath = filepath + "-images"
-        guard let imageFile = OutputStream(toFileAtPath: imageFilePath, append: false) else {
+    func saveAsBinary(library: DTWDigitClassifier.PrototypeLibrary, filepath: String, testPercentage: CGFloat) {
+        guard let trainImagesFile = OutputStream(toFileAtPath: filepath + "-images-train", append: false) else {
             fatalError("Couldn't open output file")
         }
-        imageFile.open()
-        defer { imageFile.close() }
+        trainImagesFile.open()
+        defer { trainImagesFile.close() }
         
-        guard let labelsFile = OutputStream(toFileAtPath: filepath + "-labels", append: false) else {
+        guard let trainLabelsFile = OutputStream(toFileAtPath: filepath + "-labels-train", append: false) else {
             fatalError("Couldn't open output file")
         }
-        labelsFile.open()
-        defer { labelsFile.close() }
+        trainLabelsFile.open()
+        defer { trainLabelsFile.close() }
+        
+        
+        guard let testImagesFile = OutputStream(toFileAtPath: filepath + "-images-test", append: false) else {
+            fatalError("Couldn't open output file")
+        }
+        testImagesFile.open()
+        defer { testImagesFile.close() }
+        
+        guard let testLabelsFile = OutputStream(toFileAtPath: filepath + "-labels-test", append: false) else {
+            fatalError("Couldn't open output file")
+        }
+        testLabelsFile.open()
+        defer { testLabelsFile.close() }
         
         let imageSize = ImageSize(width: 28, height: 28)
         var bitmapData = Array<UInt8>(repeating: 0, count: Int(imageSize.width * imageSize.height))
@@ -132,7 +144,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             "0" : 0,
         ]
         
-        var writeCount = 0
+        var trainWriteCount = 0
+        var testWriteCount = 0
         writeloop: for (label, samples) in library {
             guard let byteLabel = labelStringToByte[label] else {
                 continue
@@ -144,18 +157,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 guard renderToContext(normalizedStrokes: digit, size: imageSize, data: bitmapPointer) != nil else {
                     fatalError("Couldn't render image")
                 }
-                labelsFile.write(labelToWrite, maxLength: 1)
-                imageFile.write(bitmapData, maxLength: bitmapData.count)
-                
-                writeCount += 1
+                if (CGFloat(arc4random_uniform(1000)) / 1000.0 <= testPercentage) {
+                    testLabelsFile.write(labelToWrite, maxLength: 1)
+                    testImagesFile.write(bitmapData, maxLength: bitmapData.count)
+                    testWriteCount += 1
+                } else {
+                    trainLabelsFile.write(labelToWrite, maxLength: 1)
+                    trainImagesFile.write(bitmapData, maxLength: bitmapData.count)
+                    trainWriteCount += 1
+                }
             }
         }
-        print("Wrote \(writeCount) binary images to \(imageFilePath)")
+        print("Wrote \(trainWriteCount) training and \(testWriteCount) testing binary images to \(filepath)")
     }
     
     
     func saveMisclassified() {
-        
         let testDataPath = Bundle.main.path(forResource: "bridger_test", ofType: "json")!
         let testDataJson = DTWDigitClassifier.jsonLibraryFromFile(path: testDataPath)!["rawData"]!
         let testData = DTWDigitClassifier.jsonToLibrary(json: testDataJson)

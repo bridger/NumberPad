@@ -19,7 +19,6 @@
 		AE5554661A5CB9D3007DCF1D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE5554651A5CB9D3007DCF1D /* AppDelegate.swift */; };
 		AE5554681A5CB9D3007DCF1D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE5554671A5CB9D3007DCF1D /* ViewController.swift */; };
 		AE55546D1A5CB9D3007DCF1D /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AE55546C1A5CB9D3007DCF1D /* Images.xcassets */; };
-		AE5554881A5CBAE1007DCF1D /* bridger_train.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD2481A5494B7007D1500 /* bridger_train.json */; };
 		AE5554C61A5CBBF7007DCF1D /* DigitRecognizerSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = AE5554C51A5CBBF7007DCF1D /* DigitRecognizerSDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AE5554CC1A5CBBF7007DCF1D /* DigitRecognizerSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE5554C11A5CBBF7007DCF1D /* DigitRecognizerSDK.framework */; };
 		AE5554D51A5CBBF7007DCF1D /* DigitRecognizerSDKTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE5554D41A5CBBF7007DCF1D /* DigitRecognizerSDKTests.swift */; };
@@ -29,9 +28,6 @@
 		AE5554E31A5CBC25007DCF1D /* DTWDigitClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3DD2331A52100E007D1500 /* DTWDigitClassifierTests.swift */; };
 		AE5554E51A5CBC31007DCF1D /* SortedMinArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3DD2401A537C0A007D1500 /* SortedMinArray.swift */; };
 		AE5554E91A5CBC4C007DCF1D /* SortedMinArrayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3DD2431A544C02007D1500 /* SortedMinArrayTests.swift */; };
-		AE5554EC1A5CBC63007DCF1D /* bridger_test.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD2471A5494B7007D1500 /* bridger_test.json */; };
-		AE5554ED1A5CBC6A007DCF1D /* bridger_train.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD2481A5494B7007D1500 /* bridger_train.json */; };
-		AE5554EE1A5CBC6E007DCF1D /* bridger_train.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD2481A5494B7007D1500 /* bridger_train.json */; };
 		AE5554F01A5CBC78007DCF1D /* ujipenchars2_test.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD23B1A52785D007D1500 /* ujipenchars2_test.json */; };
 		AE5554F11A5CBC7E007DCF1D /* ujipenchars2_train.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD23C1A52785D007D1500 /* ujipenchars2_train.json */; };
 		AE5554F21A5CBC86007DCF1D /* ujipenchars2.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD2391A52784A007D1500 /* ujipenchars2.json */; };
@@ -48,7 +44,6 @@
 		AE890D111A68AB5B00E604C4 /* VisualizeCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE890D101A68AB5B00E604C4 /* VisualizeCollectionViewController.swift */; };
 		AE890D121A68D33F00E604C4 /* ujipenchars2_test.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD23B1A52785D007D1500 /* ujipenchars2_test.json */; };
 		AE890D131A68D33F00E604C4 /* ujipenchars2_train.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD23C1A52785D007D1500 /* ujipenchars2_train.json */; };
-		AE890D141A699A0400E604C4 /* bridger_test.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD2471A5494B7007D1500 /* bridger_test.json */; };
 		AE890D161A699E7E00E604C4 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE890D151A699E7E00E604C4 /* Utils.swift */; };
 		AE890D181A69DA0300E604C4 /* bridger_normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = AE890D171A69DA0300E604C4 /* bridger_normalized.json */; };
 		AEA7F36C1A7DBFE0008A07E4 /* libc++.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AEA7F36B1A7DBFE0008A07E4 /* libc++.dylib */; };
@@ -85,6 +80,7 @@
 		AECB34FC1A6B1F460034A2AB /* NumberSlideView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AECB34FB1A6B1F460034A2AB /* NumberSlideView.swift */; };
 		AEDB570F1B45CDD10065A4DD /* UIColor+Additions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEDB570E1B45CDD10065A4DD /* UIColor+Additions.swift */; };
 		AEF546551A7AD6DF00E72D0B /* bridger_normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = AE890D171A69DA0300E604C4 /* bridger_normalized.json */; };
+		D0725BCD1D75310100118B5F /* bridger_all.json in Resources */ = {isa = PBXBuildFile; fileRef = D0725BCC1D75310100118B5F /* bridger_all.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -165,8 +161,6 @@
 		AE3DD23C1A52785D007D1500 /* ujipenchars2_train.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = ujipenchars2_train.json; path = Data/ujipenchars2_train.json; sourceTree = SOURCE_ROOT; };
 		AE3DD2401A537C0A007D1500 /* SortedMinArray.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SortedMinArray.swift; sourceTree = "<group>"; };
 		AE3DD2431A544C02007D1500 /* SortedMinArrayTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SortedMinArrayTests.swift; sourceTree = "<group>"; };
-		AE3DD2471A5494B7007D1500 /* bridger_test.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = bridger_test.json; path = Data/bridger_test.json; sourceTree = SOURCE_ROOT; };
-		AE3DD2481A5494B7007D1500 /* bridger_train.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = bridger_train.json; path = Data/bridger_train.json; sourceTree = SOURCE_ROOT; };
 		AE5554611A5CB9D3007DCF1D /* DigitRecognizer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DigitRecognizer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE5554641A5CB9D3007DCF1D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AE5554651A5CB9D3007DCF1D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = AppDelegate.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
@@ -255,6 +249,7 @@
 		AECB34F31A6AEC540034A2AB /* NumberPad-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NumberPad-Bridging-Header.h"; sourceTree = "<group>"; };
 		AECB34FB1A6B1F460034A2AB /* NumberSlideView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = NumberSlideView.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		AEDB570E1B45CDD10065A4DD /* UIColor+Additions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIColor+Additions.swift"; sourceTree = "<group>"; };
+		D0725BCC1D75310100118B5F /* bridger_all.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = bridger_all.json; path = Data/bridger_all.json; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -556,9 +551,8 @@
 		AEC9EEBD1A3CDC4A002C7B08 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				D0725BCC1D75310100118B5F /* bridger_all.json */,
 				AE890D171A69DA0300E604C4 /* bridger_normalized.json */,
-				AE3DD2471A5494B7007D1500 /* bridger_test.json */,
-				AE3DD2481A5494B7007D1500 /* bridger_train.json */,
 				AE3DD23B1A52785D007D1500 /* ujipenchars2_test.json */,
 				AE3DD23C1A52785D007D1500 /* ujipenchars2_train.json */,
 				AE3DD2391A52784A007D1500 /* ujipenchars2.json */,
@@ -760,13 +754,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				AE5554F31A5CBC89007DCF1D /* ujipenchars2.json in Resources */,
-				AE5554881A5CBAE1007DCF1D /* bridger_train.json in Resources */,
 				AEF546551A7AD6DF00E72D0B /* bridger_normalized.json in Resources */,
 				AE890D131A68D33F00E604C4 /* ujipenchars2_train.json in Resources */,
+				D0725BCD1D75310100118B5F /* bridger_all.json in Resources */,
 				AE55546D1A5CB9D3007DCF1D /* Images.xcassets in Resources */,
 				AE5554F91A5CE08C007DCF1D /* Main.storyboard in Resources */,
 				AE890D121A68D33F00E604C4 /* ujipenchars2_test.json in Resources */,
-				AE890D141A699A0400E604C4 /* bridger_test.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -783,9 +776,7 @@
 			files = (
 				AE5554F21A5CBC86007DCF1D /* ujipenchars2.json in Resources */,
 				AE5554F01A5CBC78007DCF1D /* ujipenchars2_test.json in Resources */,
-				AE5554ED1A5CBC6A007DCF1D /* bridger_train.json in Resources */,
 				AE5554F11A5CBC7E007DCF1D /* ujipenchars2_train.json in Resources */,
-				AE5554EC1A5CBC63007DCF1D /* bridger_test.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -794,7 +785,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				AEC9EEC71A3CDC4A002C7B08 /* Images.xcassets in Resources */,
-				AE5554EE1A5CBC6E007DCF1D /* bridger_train.json in Resources */,
 				AE890D181A69DA0300E604C4 /* bridger_normalized.json in Resources */,
 				AE5554F41A5CBC8B007DCF1D /* ujipenchars2.json in Resources */,
 				AE5554FC1A5CE0A5007DCF1D /* Main.storyboard in Resources */,

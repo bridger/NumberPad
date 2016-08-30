@@ -254,37 +254,35 @@ public class DTWDigitClassifier {
         return newLibrary
     }
     
-    public func loadData(jsonData: [String: JSONCompatibleLibrary], loadNormalizedData: Bool) {
-        // Clear the existing library
-        //self.normalizedPrototypeLibrary = [:]
-        self.rawPrototypeLibrary = [:]
-        var loadedNormalizedData = false
-        
-        if let jsonData = jsonData["rawData"] {
-            self.rawPrototypeLibrary = DTWDigitClassifier.jsonToLibrary(json: jsonData)
+    public func loadData(jsonData: [String: JSONCompatibleLibrary], loadNormalizedData: Bool, clearExistingLibrary: Bool = true) {
+        if (clearExistingLibrary) {
+            self.normalizedPrototypeLibrary = [:]
+            self.rawPrototypeLibrary = [:]
         }
-        if loadNormalizedData {
-            if let jsonData = jsonData["normalizedData"] {
-                self.normalizedPrototypeLibrary = DTWDigitClassifier.jsonToLibrary(json: jsonData)
-                loadedNormalizedData = true
+        
+        // TODO: Remove the saving / restoring of normalized data when we use
+        if loadNormalizedData, let jsonData = jsonData["normalizedData"] {
+            for (label, prototypes) in DTWDigitClassifier.jsonToLibrary(json: jsonData) {
+                self.normalizedPrototypeLibrary[label] = (self.normalizedPrototypeLibrary[label] ?? []) + prototypes
             }
-        }
-        
-        if !loadedNormalizedData {
-            for (label, prototypes) in self.rawPrototypeLibrary {
+        } else if let jsonData = jsonData["rawData"] {
+            let loadedData = DTWDigitClassifier.jsonToLibrary(json: jsonData)
+            
+            for (label, prototypes) in loadedData {
+                self.rawPrototypeLibrary[label] = (self.rawPrototypeLibrary[label] ?? []) + prototypes
+                
                 for (_, prototype) in prototypes.enumerated() {
                     if let normalizedDigit = normalizeDigit(inputDigit: prototype) {
-//                        let totalPoints = normalizedDigit.reduce(0) {(total, stroke) -> Int in
-//                            return total + stroke.count
-//                        }
-//                        println("Normalized digit \(label) to \(totalPoints) points")
+                        //                        let totalPoints = normalizedDigit.reduce(0) {(total, stroke) -> Int in
+                        //                            return total + stroke.count
+                        //                        }
+                        //                        println("Normalized digit \(label) to \(totalPoints) points")
                         addToLibrary(library: &self.normalizedPrototypeLibrary, label: label, digit: normalizedDigit)
                     }
                 }
             }
         }
     }
-    
     
     public func addToLibrary(library: inout PrototypeLibrary, label: DigitLabel, digit: DigitStrokes) {
         if library[label] != nil {
