@@ -14,10 +14,9 @@ struct MisclassifiedRecord: CustomStringConvertible {
     var testLabel: String
     var trainLabel: String
     var testIndex: Int
-    var trainIndex: Int
     
     var description: String {
-        return "(\"\(testLabel)\", \"\(trainLabel)\", \(testIndex), \(trainIndex))"
+        return "(\"\(testLabel)\", \"\(trainLabel)\", \(testIndex))"
     }
 }
 
@@ -62,8 +61,8 @@ class DTWDigitClassifierTests: XCTestCase {
                     } else if classification == nil {
                         labelUnclassified += 1
                     } else {
-                        misclassifieds.append(MisclassifiedRecord(testLabel: label, trainLabel: classification!.Label, testIndex: index, trainIndex: classification!.BestPrototypeIndex) )
-                        print("! Misclassified \(label) as \(classification!.Label). Strokes \(testDigit.count) Indexes \(index) \(classification!.BestPrototypeIndex)")
+                        misclassifieds.append(MisclassifiedRecord(testLabel: label, trainLabel: classification!.Label, testIndex: index) )
+                        print("! Misclassified \(label) as \(classification!.Label). Strokes \(testDigit.count) Indexes \(index)")
                         labelWrong += 1
                     }
                     index += 1

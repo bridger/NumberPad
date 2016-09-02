@@ -8,6 +8,7 @@
 
 import CoreGraphics
 import Foundation
+import Accelerate
 
 public func euclidianDistance(a: CGPoint, b: CGPoint) -> CGFloat {
     return sqrt( euclidianDistanceSquared(a: a, b: b) )
@@ -36,6 +37,8 @@ public class DTWDigitClassifier {
     
     public var normalizedPrototypeLibrary: PrototypeLibrary = [:]
     var rawPrototypeLibrary: PrototypeLibrary = [:]
+    
+    let imageSize = ImageSize(width: 28, height: 28)
     
     public init() {
         
@@ -116,10 +119,328 @@ public class DTWDigitClassifier {
         return labels
     }
     
+    public typealias Classification = (Label: DigitLabel, Confidence: CGFloat)
+
     
+    public func classifyDigit(digit: DigitStrokes) -> Classification? {
+        return nil
+    }
+    
+    public func buildNetwork(digit: DigitStrokes) {
+        let width = Int(imageSize.width)
+        let height = Int(imageSize.height)
+
+        var filterParams = createEmptyBNNSFilterParameters();
+
+        let trainedDataPath = Bundle(for: DTWDigitClassifier.self).path(forResource: "trainedData", ofType: "dat")
+        let trainedDataLength = 13098536
+
+        // open file descriptors in read-only mode to parameter files
+        let data_file = open(trainedDataPath!, O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)
+        assert(data_file != -1, "Error: failed to open output file at \(trainedDataPath)  errno = \(errno)")
+
+        // memory map the parameters
+        let trainedData: UnsafeMutableRawPointer = mmap(nil, trainedDataLength, PROT_READ, MAP_FILE | MAP_SHARED, data_file, 0);
+
+        var input = BNNSImageStackDescriptor(
+            width: width,
+            height: height,
+            channels: 1,
+            row_stride: width,
+            image_stride: width * height,
+            data_type: BNNSDataTypeFloat32,
+            data_scale: 1,
+            data_bias: 0)
+
+        // ****** conv 1 ******** //
+
+        let conv1Weights = BNNSLayerData(
+            data: trainedData + 0,
+            data_type: BNNSDataTypeFloat32,
+            data_scale: 1,
+            data_bias: 0,
+            data_table: nil
+        )
+        let conv1Bias = BNNSLayerData(
+            data: trainedData + 3200,
+            data_type: BNNSDataTypeFloat32,
+            data_scale: 1,
+            data_bias: 0,
+            data_table: nil
+        )
+        
+        var conv1_output = BNNSImageStackDescriptor(
+            width: width,
+            height: height,
+            channels: 32,
+            row_stride: width,
+            image_stride: width * height,
+            data_type: BNNSDataTypeFloat32,
+            data_scale: 1,
+            data_bias: 0)
+
+        var conv1_params = BNNSConvolutionLayerParameters(
+            x_stride: 1,
+            y_stride: 1,
+            x_padding: 2, // TODO: Match 'SAME' algorithm
+            y_padding: 2,
+            k_width: 5,
+            k_height: 5,
+            in_channels: input.channels,
+            out_channels: conv1_output.channels,
+            weights: conv1Weights,
+            bias: conv1Bias,
+            activation: BNNSActivation(
+                function: BNNSActivationFunctionRectifiedLinear,
+                alpha: 0,
+                beta: 0
+            )
+        )
+
+        let conv1 = BNNSFilterCreateConvolutionLayer(&input, &conv1_output, &conv1_params, &filterParams)!
+
+        // ****** pool 1 ******** //
+        
+        let pool1Data = BNNSLayerData(
+            data: nil,
+            data_type: BNNSDataTypeFloat32,
+            data_scale: 1,
+            data_bias: 0,
+            data_table: nil
+        )
+
+        var pool1_output = BNNSImageStackDescriptor(
+            width: width / 2,
+            height: height / 2,
+            channels: 32,
+            row_stride: width / 2,
+            image_stride: (width / 2) * (height / 2),
+            data_type: BNNSDataTypeFloat32,
+            data_scale: 1,
+            data_bias: 0)
+
+        var pool1_parameters = BNNSPoolingLayerParameters(
+            x_stride: 1,
+            y_stride: 1,
+            x_padding: 0,
+            y_padding: 0,
+            k_width: 2,
+            k_height: 2,
+            in_channels: 32,
+            out_channels: 32,
+            pooling_function: BNNSPoolingFunctionMax,
+            bias: pool1Data,
+            activation: BNNSActivation( // TODO: Do pools have activation functions? ????
+                function: BNNSActivationFunctionRectifiedLinear,
+                alpha: 0,
+                beta: 0
+            )
+        )
+
+        let pool1 = BNNSFilterCreatePoolingLayer(&conv1_output, &pool1_output, &pool1_parameters, &filterParams)!
+
+        // ****** conv 2 ******** //
+
+        let conv2Weights = BNNSLayerData(
+            data: trainedData + 3328,
+            data_type: BNNSDataTypeFloat32,
+            data_scale: 1,
+            data_bias: 0,
+            data_table: nil
+        )
+        let conv2Bias = BNNSLayerData(
+            data: trainedData + 208128,
+            data_type: BNNSDataTypeFloat32,
+            data_scale: 1,
+            data_bias: 0,
+            data_table: nil
+        )
+
+        var conv2_output = BNNSImageStackDescriptor(
+            width: width / 2,
+            height: height / 2,
+            channels: 64,
+            row_stride: width / 2,
+            image_stride: (width / 2) * (height / 2),
+            data_type: BNNSDataTypeFloat32,
+            data_scale: 1,
+            data_bias: 0)
+
+        var conv2_parameters = BNNSConvolutionLayerParameters(
+            x_stride: 1,
+            y_stride: 1,
+            x_padding: 2,
+            y_padding: 2,
+            k_width: 5,
+            k_height: 5,
+            in_channels: pool1_output.channels,
+            out_channels: conv2_output.channels,
+            weights: conv2Weights,
+            bias: conv2Bias,
+            activation: BNNSActivation(
+                function: BNNSActivationFunctionRectifiedLinear,
+                alpha: 0, // TODO:
+                beta: 0 // TODO:
+            )
+        )
+
+        let conv2 = BNNSFilterCreateConvolutionLayer(&pool1_output, &conv2_output, &conv2_parameters, &filterParams)!
+
+        // ****** pool 2 ******** //
+
+        let pool2Data = BNNSLayerData(
+            data: nil,
+            data_type: BNNSDataTypeFloat32,
+            data_scale: 1,
+            data_bias: 0,
+            data_table: nil
+        )
+
+        var pool2_output = BNNSImageStackDescriptor(
+            width: width / 4,
+            height: height / 4,
+            channels: 64,
+            row_stride: width / 4,
+            image_stride: (width / 4) * (height / 4),
+            data_type: BNNSDataTypeFloat32,
+            data_scale: 1,
+            data_bias: 0)
+
+        var pool2_parameters = BNNSPoolingLayerParameters(
+            x_stride: 1,
+            y_stride: 1,
+            x_padding: 0,
+            y_padding: 0,
+            k_width: 2,
+            k_height: 2,
+            in_channels: conv2_output.channels,
+            out_channels: pool2_output.channels,
+            pooling_function: BNNSPoolingFunctionMax,
+            bias: pool2Data,
+            activation: BNNSActivation( // TODO: Do pools have activation functions?
+                function: BNNSActivationFunctionRectifiedLinear,
+                alpha: 0,
+                beta: 0
+            )
+        )
+
+        let pool2 = BNNSFilterCreatePoolingLayer(&conv2_output, &pool2_output, &pool2_parameters, &filterParams)!
+
+        // ****** fully connected 1 ******** //
+
+        var fullyConnected_in = BNNSVectorDescriptor(
+            size: pool2_output.width * pool2_output.height * pool2_output.channels,
+            data_type: BNNSDataTypeFloat32,
+            data_scale: 1,
+            data_bias: 0)
+
+        var fullyConnected_out = BNNSVectorDescriptor(
+            size: 1024,
+            data_type: BNNSDataTypeFloat32,
+            data_scale: 1,
+            data_bias: 0)
+
+        let fullyConnected1Weights = BNNSLayerData(
+            data: trainedData + 208384,
+            data_type: BNNSDataTypeFloat32,
+            data_scale: 1,
+            data_bias: 0,
+            data_table: nil
+        )
+
+        let fullyConnected1Bias = BNNSLayerData(
+            data: trainedData + 13053440,
+            data_type: BNNSDataTypeFloat32,
+            data_scale: 1,
+            data_bias: 0,
+            data_table: nil
+        )
+
+        var fullyConnected1_params = BNNSFullyConnectedLayerParameters(
+            in_size: fullyConnected_in.size,
+            out_size: fullyConnected_out.size,
+            weights: fullyConnected1Weights,
+            bias: fullyConnected1Bias,
+            activation: BNNSActivation(
+                function: BNNSActivationFunctionRectifiedLinear,
+                alpha: 0,
+                beta: 0
+        ))
+
+        let fullyConnected1 = BNNSFilterCreateFullyConnectedLayer(&fullyConnected_in, &fullyConnected_out, &fullyConnected1_params, &filterParams)!
+
+        // ****** fully connected 1 ******** //
+
+        var output = BNNSVectorDescriptor(
+            size: 10,
+            data_type: BNNSDataTypeFloat32,
+            data_scale: 1,
+            data_bias: 0)
+
+        let fullyConnected2Weights = BNNSLayerData(
+            data: trainedData + 13057536,
+            data_type: BNNSDataTypeFloat32,
+            data_scale: 1,
+            data_bias: 0,
+            data_table: nil
+        )
+
+        let fullyConnected2Bias = BNNSLayerData(
+            data: trainedData + 13098496,
+            data_type: BNNSDataTypeFloat32,
+            data_scale: 1,
+            data_bias: 0,
+            data_table: nil
+        )
+
+        var fullyConnected2_params = BNNSFullyConnectedLayerParameters(
+            in_size: fullyConnected_out.size,
+            out_size: output.size,
+            weights: fullyConnected2Weights,
+            bias: fullyConnected2Bias,
+            activation: BNNSActivation(
+                function: BNNSActivationFunctionRectifiedLinear,
+                alpha: 0,
+                beta: 0
+        ))
+
+        let fullyConnected2 = BNNSFilterCreateFullyConnectedLayer(&fullyConnected_out, &output, &fullyConnected2_params, &filterParams)!
+
+
+        var dataBuffer1 = Array<Float32>(repeating: 0, count: 25088)
+        dataBuffer1[0] = 0 // To silence "never mutated" warning
+        var dataBuffer2 = Array<Float32>(repeating: 0, count: 6272)
+        dataBuffer2[0] = 0 // To silence "never mutated" warning
+
+        let dataPointer1 = UnsafeMutableRawPointer(mutating: dataBuffer1)
+        let dataPointer2 = UnsafeMutableRawPointer(mutating: dataBuffer2)
+
+        guard renderToContext(normalizedStrokes: digit, size: imageSize, data: dataPointer2) != nil else {
+            fatalError("Couldn't render image")
+        }
+
+        // Convert the int8 to floats
+        let intPointer = dataPointer2.assumingMemoryBound(to: UInt8.self)
+        let imageArray = Array<UInt8>(UnsafeBufferPointer(start: intPointer, count: width * height))
+        for (index, pixel) in imageArray.enumerated() {
+            dataBuffer1[index] = Float32(pixel)
+        }
+
+        BNNSFilterApply(conv1, dataPointer1, dataPointer2)
+        BNNSFilterApply(pool1, dataPointer2, dataPointer1)
+        BNNSFilterApply(conv2, dataPointer1, dataPointer2)
+        BNNSFilterApply(pool2, dataPointer2, dataPointer1)
+        BNNSFilterApply(fullyConnected1, dataPointer1, dataPointer2)
+        BNNSFilterApply(fullyConnected2, dataPointer2, dataPointer1)
+
+        for (index, score) in dataBuffer1[0...9].enumerated() {
+            print("Index \(index) got score \(score)")
+        }
+    }
+
+
     // Returns the label, as well as a confidence in the label
     // Can be called from the background
-    public typealias Classification = (Label: DigitLabel, Confidence: CGFloat, BestPrototypeIndex: Int)
     public func classifyDigit(digit: DigitStrokes, votesCounted: Int = 5, scoreCutoff: CGFloat = 0.8) -> Classification? {
         if let normalizedDigit = normalizeDigit(inputDigit: digit) {
             let serviceGroup = DispatchGroup()
@@ -166,9 +487,9 @@ public class DTWDigitClassifier {
                 }
             }
             if let maxVotedLabel = maxVotedLabel {
-                for (score, (label, index)) in bestMatches {
+                for (score, (label, _)) in bestMatches {
                     if label == maxVotedLabel {
-                        return (maxVotedLabel, score, index)
+                        return (maxVotedLabel, score)
                     }
                 }
             }

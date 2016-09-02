@@ -27,13 +27,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey : Any]? = nil) -> Bool {
+
         if let path = Bundle.main.path(forResource: "bridger_all", ofType: "json") {
             loadData(path: path)
         }
-        
-        let ubyteName = self.documentsDirectory().appendingPathComponent("numberpad")!
-        saveAsBinary(library: self.digitClassifier.normalizedPrototypeLibrary, filepath: ubyteName.path, testPercentage: 0.25)
-        
+        if let path = Bundle.main.path(forResource: "ujipenchars2", ofType: "json") {
+            loadData(path: path)
+        }
+
+        let digitToClassify = self.digitClassifier.normalizedPrototypeLibrary["3"]![2]
+
+        self.digitClassifier.buildNetwork(digit: digitToClassify)
+
+
+        // let ubyteName = self.documentsDirectory().appendingPathComponent("numberpad")!
+        // saveAsBinary(library: self.digitClassifier.normalizedPrototypeLibrary, filepath: ubyteName.path, testPercentage: 0.25)
+
+
         //saveMisclassified()
         
         return true
