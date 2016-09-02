@@ -168,7 +168,7 @@ public class DTWDigitClassifier {
             data_bias: 0,
             data_table: nil
         )
-        
+
         var conv1_output = BNNSImageStackDescriptor(
             width: width,
             height: height,
@@ -182,7 +182,7 @@ public class DTWDigitClassifier {
         var conv1_params = BNNSConvolutionLayerParameters(
             x_stride: 1,
             y_stride: 1,
-            x_padding: 2, // TODO: Match 'SAME' algorithm
+            x_padding: 2,
             y_padding: 2,
             k_width: 5,
             k_height: 5,
@@ -220,8 +220,8 @@ public class DTWDigitClassifier {
             data_bias: 0)
 
         var pool1_parameters = BNNSPoolingLayerParameters(
-            x_stride: 1,
-            y_stride: 1,
+            x_stride: 2,
+            y_stride: 2,
             x_padding: 0,
             y_padding: 0,
             k_width: 2,
@@ -230,8 +230,8 @@ public class DTWDigitClassifier {
             out_channels: 32,
             pooling_function: BNNSPoolingFunctionMax,
             bias: pool1Data,
-            activation: BNNSActivation( // TODO: Do pools have activation functions? ????
-                function: BNNSActivationFunctionRectifiedLinear,
+            activation: BNNSActivation(
+                function: BNNSActivationFunctionIdentity,
                 alpha: 0,
                 beta: 0
             )
@@ -307,8 +307,8 @@ public class DTWDigitClassifier {
             data_bias: 0)
 
         var pool2_parameters = BNNSPoolingLayerParameters(
-            x_stride: 1,
-            y_stride: 1,
+            x_stride: 2,
+            y_stride: 2,
             x_padding: 0,
             y_padding: 0,
             k_width: 2,
@@ -317,8 +317,8 @@ public class DTWDigitClassifier {
             out_channels: pool2_output.channels,
             pooling_function: BNNSPoolingFunctionMax,
             bias: pool2Data,
-            activation: BNNSActivation( // TODO: Do pools have activation functions?
-                function: BNNSActivationFunctionRectifiedLinear,
+            activation: BNNSActivation(
+                function: BNNSActivationFunctionIdentity,
                 alpha: 0,
                 beta: 0
             )
@@ -407,9 +407,9 @@ public class DTWDigitClassifier {
         let fullyConnected2 = BNNSFilterCreateFullyConnectedLayer(&fullyConnected_out, &output, &fullyConnected2_params, &filterParams)!
 
 
-        var dataBuffer1 = Array<Float32>(repeating: 0, count: 25088)
+        var dataBuffer1 = Array<Float32>(repeating: 0, count: 6272)
         dataBuffer1[0] = 0 // To silence "never mutated" warning
-        var dataBuffer2 = Array<Float32>(repeating: 0, count: 6272)
+        var dataBuffer2 = Array<Float32>(repeating: 0, count: 25088)
         dataBuffer2[0] = 0 // To silence "never mutated" warning
 
         let dataPointer1 = UnsafeMutableRawPointer(mutating: dataBuffer1)
@@ -423,7 +423,7 @@ public class DTWDigitClassifier {
         let intPointer = dataPointer2.assumingMemoryBound(to: UInt8.self)
         let imageArray = Array<UInt8>(UnsafeBufferPointer(start: intPointer, count: width * height))
         for (index, pixel) in imageArray.enumerated() {
-            dataBuffer1[index] = Float32(pixel)
+            dataBuffer1[index] = Float32(pixel) / 255.0
         }
 
         BNNSFilterApply(conv1, dataPointer1, dataPointer2)
@@ -433,8 +433,15 @@ public class DTWDigitClassifier {
         BNNSFilterApply(fullyConnected1, dataPointer1, dataPointer2)
         BNNSFilterApply(fullyConnected2, dataPointer2, dataPointer1)
 
+        var highestScore: (Int, Float32)?
         for (index, score) in dataBuffer1[0...9].enumerated() {
             print("Index \(index) got score \(score)")
+            if highestScore?.1 ?? -1 < score {
+                highestScore = (index, score)
+            }
+        }
+        if let highestScore = highestScore {
+            print("Higest score index \(highestScore.0) of \(highestScore.1)")
         }
     }
 

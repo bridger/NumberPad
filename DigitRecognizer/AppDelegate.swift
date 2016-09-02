@@ -35,8 +35,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             loadData(path: path)
         }
 
-        let digitToClassify = self.digitClassifier.normalizedPrototypeLibrary["3"]![2]
+        var digitToClassify = self.digitClassifier.normalizedPrototypeLibrary["3"]![2]
 
+        self.digitClassifier.buildNetwork(digit: digitToClassify)
+
+        digitToClassify = self.digitClassifier.normalizedPrototypeLibrary["5"]![2]
+        self.digitClassifier.buildNetwork(digit: digitToClassify)
+
+        digitToClassify = self.digitClassifier.normalizedPrototypeLibrary["8"]![2]
         self.digitClassifier.buildNetwork(digit: digitToClassify)
 
 
