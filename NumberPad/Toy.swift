@@ -228,7 +228,7 @@ class CircleLayer {
     init() {
         self.mainLayer = CAShapeLayer()
         self.mainLayer.lineWidth = 4
-        self.mainLayer.strokeColor = UIColor.multiplierInputColor().cgColor
+        self.mainLayer.strokeColor = UIColor.multiplierInputColor().withAlphaComponent(0.1).cgColor
         self.mainLayer.fillColor = nil
         
         self.diameterLayer = CAShapeLayer()
@@ -479,7 +479,7 @@ class SquareLayer {
     let lineWidth: CGFloat = 4
     init() {
         let color = UIColor.adderInputColor()
-        let transparentColor = color.withAlphaComponent(0.4)
+        let transparentColor = color.withAlphaComponent(0.2)
         
         self.darkSidesLayer = CAShapeLayer()
         self.darkSidesLayer.lineWidth = lineWidth
@@ -512,6 +512,7 @@ class SquareLayer {
     func update() {
         CATransaction.begin()
         CATransaction.setDisableActions(true)
+        defer {CATransaction.commit()}
         
         func pathForSides(length: CGFloat, vertical: Bool) -> CGPath {
             // This draws a path with two lines on the sides of a square either on
@@ -554,7 +555,11 @@ class SquareLayer {
         let difference = abs(self.area - targetArea)
         let percentError = (difference / maxDifference).clamp(lower: 0, upper: 1.0)
         
-        let cgAreaSide = CGFloat(sqrt(self.area) * SquareLayer.valueToPointScale)
+        var cgAreaSide = CGFloat(sqrt(self.area) * SquareLayer.valueToPointScale)
+        if !cgAreaSide.isFinite {
+            cgAreaSide = 0
+        }
+
         let areaRect = CGRect(x: 0, y: 0, width: cgAreaSide, height: cgAreaSide)
         
         self.darkAreaLayer.bounds = areaRect
@@ -568,8 +573,6 @@ class SquareLayer {
         // starts bumping into other things
         let minOpacity: Double = self.area > targetArea ? 0.15 : 0.3
         self.lightAreaLayer.opacity = Float(percentError.lerp(lower: 1.0, upper: minOpacity))
-        
-        CATransaction.commit()
     }
 }
 
