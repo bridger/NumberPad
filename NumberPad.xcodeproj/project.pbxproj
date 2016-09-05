@@ -84,6 +84,8 @@
 		D083BBF81D7895FB004586D9 /* BNNSHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = D083BBF61D7895FB004586D9 /* BNNSHelpers.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D083BBF91D7895FB004586D9 /* BNNSHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = D083BBF71D7895FB004586D9 /* BNNSHelpers.m */; };
 		D092123C1D75354000A39091 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D092123B1D75354000A39091 /* Accelerate.framework */; };
+		D0A75E381D7A798D00A57F67 /* DigitRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A75E371D7A798D00A57F67 /* DigitRecognizer.swift */; };
+		D0A75E3C1D7A7B5000A57F67 /* DigitSampleLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A75E3B1D7A7B5000A57F67 /* DigitSampleLibrary.swift */; };
 		D0A793B51D788A1200E4A099 /* trainedData.dat in Resources */ = {isa = PBXBuildFile; fileRef = D0A793B41D788A1200E4A099 /* trainedData.dat */; };
 /* End PBXBuildFile section */
 
@@ -259,6 +261,8 @@
 		D083BBF61D7895FB004586D9 /* BNNSHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BNNSHelpers.h; sourceTree = "<group>"; };
 		D083BBF71D7895FB004586D9 /* BNNSHelpers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BNNSHelpers.m; sourceTree = "<group>"; };
 		D092123B1D75354000A39091 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
+		D0A75E371D7A798D00A57F67 /* DigitRecognizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DigitRecognizer.swift; sourceTree = "<group>"; };
+		D0A75E3B1D7A7B5000A57F67 /* DigitSampleLibrary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DigitSampleLibrary.swift; sourceTree = "<group>"; };
 		D0A793B41D788A1200E4A099 /* trainedData.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = trainedData.dat; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -312,6 +316,7 @@
 			isa = PBXGroup;
 			children = (
 				AE5554651A5CB9D3007DCF1D /* AppDelegate.swift */,
+				D0A75E3B1D7A7B5000A57F67 /* DigitSampleLibrary.swift */,
 				AE5554671A5CB9D3007DCF1D /* ViewController.swift */,
 				AE890D101A68AB5B00E604C4 /* VisualizeCollectionViewController.swift */,
 				AE5554F71A5CE08C007DCF1D /* Main.storyboard */,
@@ -350,6 +355,7 @@
 			isa = PBXGroup;
 			children = (
 				AE04E7531A4DE6F40077D2E3 /* DTWDigitClassifier.swift */,
+				D0A75E371D7A798D00A57F67 /* DigitRecognizer.swift */,
 				D083BBF61D7895FB004586D9 /* BNNSHelpers.h */,
 				D083BBF71D7895FB004586D9 /* BNNSHelpers.m */,
 				AE3DD2401A537C0A007D1500 /* SortedMinArray.swift */,
@@ -729,6 +735,7 @@
 				TargetAttributes = {
 					AE5554601A5CB9D3007DCF1D = {
 						CreatedOnToolsVersion = 6.1.1;
+						DevelopmentTeam = DW543M2N27;
 						LastSwiftMigration = 0800;
 					};
 					AE5554C01A5CBBF7007DCF1D = {
@@ -838,6 +845,7 @@
 				AE5554681A5CB9D3007DCF1D /* ViewController.swift in Sources */,
 				AE890D111A68AB5B00E604C4 /* VisualizeCollectionViewController.swift in Sources */,
 				AE5554661A5CB9D3007DCF1D /* AppDelegate.swift in Sources */,
+				D0A75E3C1D7A7B5000A57F67 /* DigitSampleLibrary.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -848,6 +856,7 @@
 				AE890D161A699E7E00E604C4 /* Utils.swift in Sources */,
 				AE5554E11A5CBC19007DCF1D /* DTWDigitClassifier.swift in Sources */,
 				D083BBF91D7895FB004586D9 /* BNNSHelpers.m in Sources */,
+				D0A75E381D7A798D00A57F67 /* DigitRecognizer.swift in Sources */,
 				AE5554E51A5CBC31007DCF1D /* SortedMinArray.swift in Sources */,
 				AE890D0F1A68970800E604C4 /* CGPoint+Extensions.swift in Sources */,
 				AE5554F51A5CBD25007DCF1D /* StrokeGestureRecognizer.swift in Sources */,
@@ -979,6 +988,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = DW543M2N27;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -997,6 +1007,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = DW543M2N27;
 				INFOPLIST_FILE = DigitRecognizer/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";

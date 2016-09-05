@@ -40,12 +40,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
     var scrollView: UIScrollView!
     var currentStroke: Stroke?
     var previousStrokes: [Stroke] = []
-    var digitClassifier: DTWDigitClassifier!
+    var digitClassifier: DigitRecognizer!
     @IBOutlet weak var labelSelector: UISegmentedControl!
     @IBOutlet weak var resultLabel: UILabel!
     
     required init(coder aDecoder: NSCoder) {
-        self.digitClassifier = DTWDigitClassifier()
+        self.digitClassifier = DigitRecognizer()
         super.init(coder: aDecoder)!
     }
     
@@ -126,7 +126,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
                                 }
                                 self.clearStrokes(sender: nil)
                                 
-                                self.digitClassifier.learnDigit(label: currentLabel, digit: lastDigit)
                                 if let classification = self.digitClassifier.classifyDigit(digit: lastDigit) {
                                     self.resultLabel.text = classification.Label
                                 } else {
@@ -144,11 +143,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
     
     // If any one stroke can't be classified, this will return nil
     func readStringFromStrokes(strokes: [[CGPoint]]) -> String? {
-        if let classifiedLabels = self.digitClassifier.classifyMultipleDigits(strokes: strokes) {
-            return classifiedLabels.reduce("", +)
-        } else {
-            return nil
-        }
+        return nil
+        //if let classifiedLabels = self.digitClassifier.classifyMultipleDigits(strokes: strokes) {
+        //    return classifiedLabels.reduce("", +)
+        //} else {
+        //    return nil
+        //}
     }
     
     

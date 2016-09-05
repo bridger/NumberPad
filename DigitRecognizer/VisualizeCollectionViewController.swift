@@ -48,13 +48,13 @@ class ImageCell: UICollectionViewCell {
 
 class VisualizeCollectionViewController: UICollectionViewController {
     
-    var digitClassifier: DTWDigitClassifier!
-    var digitLabels: [DTWDigitClassifier.DigitLabel] = []
+    var digitLibrary: DigitSampleLibrary!
+    var digitLabels: [DigitSampleLibrary.DigitLabel] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.digitClassifier = AppDelegate.sharedAppDelegate().digitClassifier
-        self.digitLabels = Array(digitClassifier.normalizedPrototypeLibrary.keys)
+        self.digitLibrary = AppDelegate.sharedAppDelegate().library
+        self.digitLabels = Array(digitLibrary.samples.keys)
         
         self.collectionView!.register(ImageCell.self, forCellWithReuseIdentifier: reuseIdentifier)
     }
@@ -63,7 +63,6 @@ class VisualizeCollectionViewController: UICollectionViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.digitLabels = Array(digitClassifier.normalizedPrototypeLibrary.keys)
         if let layout = self.collectionViewLayout as? UICollectionViewFlowLayout {
             layout.itemSize = prototypeSize
             layout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 10, right: 0)
@@ -75,20 +74,22 @@ class VisualizeCollectionViewController: UICollectionViewController {
     // MARK: UICollectionViewDataSource
     
     override func numberOfSections(in: UICollectionView) -> Int {
-        return digitClassifier.normalizedPrototypeLibrary.count
+        self.digitLabels = Array(digitLibrary.samples.keys)
+        return self.digitLabels.count
     }
     
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         let label = self.digitLabels[section]
-        return digitClassifier.normalizedPrototypeLibrary[label]?.count ?? 0
+        return digitLibrary.samples[label]?.count ?? 0
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! ImageCell
         
         let label = self.digitLabels[indexPath.section]
-        if let prototype = digitClassifier.normalizedPrototypeLibrary[label]?[indexPath.row] {
-            let image = renderToImage(normalizedStrokes: prototype, size: ImageSize(width: 28, height: 28))
+        if let prototype = digitLibrary.samples[label]?[indexPath.row] {
+            let strokes = DigitRecognizer.normalizeDigit(inputDigit: prototype.strokes) ?? []
+            let image = renderToImage(normalizedStrokes: strokes, size: ImageSize(width: 28, height: 28))
             cell.imageView.image = image
             cell.imageView.layer.borderWidth = 1
             

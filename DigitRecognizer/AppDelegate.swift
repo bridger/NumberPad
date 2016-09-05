@@ -20,37 +20,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     let onlySaveNormalizedData = false
     
     var window: UIWindow?
-    var digitClassifier: DTWDigitClassifier = DTWDigitClassifier()
+    var library: DigitSampleLibrary = DigitSampleLibrary()
+    var digitClassifier: DigitRecognizer = DigitRecognizer()
     
     class func sharedAppDelegate() -> AppDelegate {
         return UIApplication.shared.delegate as! AppDelegate
     }
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey : Any]? = nil) -> Bool {
-
-        if let path = Bundle.main.path(forResource: "bridger_all", ofType: "json") {
-            loadData(path: path)
+        if let lastSave = newestSavedData() {
+            let path = self.documentsDirectory().appendingPathComponent(lastSave)!.path
+            loadData(path: path, legacyBatchID: "unknown")
+        } else {
+            loadData(path: Bundle.main.path(forResource: "bridger_all", ofType: "json")!, legacyBatchID: "bridger")
+            loadData(path: Bundle.main.path(forResource: "ujipenchars2", ofType: "json")!, legacyBatchID: "ujipen2")
         }
-        if let path = Bundle.main.path(forResource: "ujipenchars2", ofType: "json") {
-            loadData(path: path)
-        }
-
-        var digitToClassify = self.digitClassifier.normalizedPrototypeLibrary["3"]![2]
-
-        self.digitClassifier.buildNetwork(digit: digitToClassify)
-
-        digitToClassify = self.digitClassifier.normalizedPrototypeLibrary["5"]![2]
-        self.digitClassifier.buildNetwork(digit: digitToClassify)
-
-        digitToClassify = self.digitClassifier.normalizedPrototypeLibrary["8"]![2]
-        self.digitClassifier.buildNetwork(digit: digitToClassify)
-
-
-        // let ubyteName = self.documentsDirectory().appendingPathComponent("numberpad")!
-        // saveAsBinary(library: self.digitClassifier.normalizedPrototypeLibrary, filepath: ubyteName.path, testPercentage: 0.25)
-
-
-        //saveMisclassified()
         
         return true
     }
@@ -65,7 +49,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func saveData() {
-        let dataToSave = self.digitClassifier.dataToSave(saveRawData: !onlySaveNormalizedData, saveNormalizedData: true)
+        let dataToSave = self.library.jsonDataToSave()
         
         let saveNumber: Int
         if let lastSave = newestSavedData(), let lastNumber = Int(lastSave.substring(from: filePrefix.endIndex))  {
@@ -86,9 +70,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
     
-    func loadData(path: String) {
+    func loadData(path: String, legacyBatchID: String) {
         if let jsonLibrary = DTWDigitClassifier.jsonLibraryFromFile(path: path) {
-            self.digitClassifier.loadData(jsonData: jsonLibrary, loadNormalizedData: false, clearExistingLibrary: false)
+            self.library.loadData(jsonData: jsonLibrary, legacyBatchID: legacyBatchID)
         }
     }
     
@@ -147,23 +131,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let bitmapPointer = UnsafeMutableRawPointer(mutating: bitmapData)
         var labelToWrite = Array<UInt8>(repeating: 0, count: 1)
         
-        let labelStringToByte: [DTWDigitClassifier.DigitLabel : UInt8] = [
-            "1" : 1,
-            "2" : 2,
-            "3" : 3,
-            "4" : 4,
-            "5" : 5,
-            "6" : 6,
-            "7" : 7,
-            "8" : 8,
-            "9" : 9,
-            "0" : 0,
-        ]
-        
         var trainWriteCount = 0
         var testWriteCount = 0
         writeloop: for (label, samples) in library {
-            guard let byteLabel = labelStringToByte[label] else {
+            guard let byteLabel = self.digitClassifier.labelStringToByte[label] else {
                 continue
             }
             
@@ -185,59 +156,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
         }
         print("Wrote \(trainWriteCount) training and \(testWriteCount) testing binary images to \(filepath)")
-    }
-    
-    
-    func saveMisclassified() {
-        let testDataPath = Bundle.main.path(forResource: "bridger_test", ofType: "json")!
-        let testDataJson = DTWDigitClassifier.jsonLibraryFromFile(path: testDataPath)!["rawData"]!
-        let testData = DTWDigitClassifier.jsonToLibrary(json: testDataJson)
-        let randomNumber = arc4random() % 500
-        let documentDirectory = documentsDirectory().appendingPathComponent("\(randomNumber)")!
-        do {
-            try FileManager.default.createDirectory(at: documentDirectory, withIntermediateDirectories: true, attributes: nil)
-        } catch _ {
-        }
-
-        let imageSize = CGSize(width: 200, height: 200)
-        
-        for (testLabel, trainLabel, testIndex, trainIndex) in [("3", "5", 17, 22), ("3", "5", 28, 12), ("7", "+", 8, 24), ("9", "4", 7, 29), ("9", "0", 13, 21), ("5", "1", 1, 3)] {
-            
-            let testStroke = testData[testLabel]![testIndex]
-            let normalizedTestStroke = self.digitClassifier.normalizeDigit(inputDigit: testStroke)
-            let trainStroke = self.digitClassifier.normalizedPrototypeLibrary[trainLabel]![trainIndex]
-            
-            let testStrokeImage = visualizeNormalizedStrokes(strokes: normalizedTestStroke!, imageSize: imageSize)
-            let trainStrokeImage = visualizeNormalizedStrokes(strokes: trainStroke, imageSize: imageSize)
-            
-            func safeName(name: String) -> String {
-                if name == "+" {
-                    return "plus"
-                } else if name == "/" {
-                    return "slash"
-                } else if name == "-" {
-                    return "minus"
-                }
-                return name
-            }
-            
-            let baseName = "\(safeName(name: testLabel)) as \(safeName(name: trainLabel)) indexes \(testIndex) \(trainIndex)"
-            let testFileName = documentDirectory.appendingPathComponent(baseName + " - Test.png")
-            let trainFileName = documentDirectory.appendingPathComponent(baseName + " - Train.png")
-            
-            do {
-                try UIImagePNGRepresentation(testStrokeImage)!.write(to: testFileName, options: [])
-            } catch let error as NSError {
-                print("Unable to write file \(testFileName) + \(error)")
-            }
-            do {
-                try UIImagePNGRepresentation(trainStrokeImage)!.write(to: trainFileName, options: [])
-            } catch let error as NSError {
-                print("Unable to write file \(trainFileName) + \(error)")
-            }
-        }
-        
-        print("Finished writing to \(documentDirectory)")
     }
     
 }
