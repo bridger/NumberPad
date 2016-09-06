@@ -41,6 +41,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func applicationWillResignActive(_ application: UIApplication) {
         saveData()
+        saveImagesAsBinary(library: library.samples, folder: self.documentsDirectory(), testPercentage: 0.1)
     }
     
     func documentsDirectory() -> NSURL {
@@ -75,8 +76,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             self.library.loadData(jsonData: jsonLibrary, legacyBatchID: legacyBatchID)
         }
     }
-    
-    
+
     func newestSavedData() -> String? {
         let contents: [String]?
         do {
@@ -99,27 +99,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return nil
     }
     
-    func saveAsBinary(library: DigitSampleLibrary.PrototypeLibrary, filepath: String, testPercentage: CGFloat) {
-        guard let trainImagesFile = OutputStream(toFileAtPath: filepath + "-images-train", append: false) else {
+    func saveImagesAsBinary(library: DigitSampleLibrary.PrototypeLibrary, folder: NSURL, testPercentage: CGFloat) {
+        guard let trainImagesFile = OutputStream(toFileAtPath: folder.appendingPathComponent("digit-recognizer-images-train")!.path, append: false) else {
             fatalError("Couldn't open output file")
         }
         trainImagesFile.open()
         defer { trainImagesFile.close() }
         
-        guard let trainLabelsFile = OutputStream(toFileAtPath: filepath + "-labels-train", append: false) else {
+        guard let trainLabelsFile = OutputStream(toFileAtPath: folder.appendingPathComponent("digit-recognizer-labels-train")!.path, append: false) else {
             fatalError("Couldn't open output file")
         }
         trainLabelsFile.open()
         defer { trainLabelsFile.close() }
         
         
-        guard let testImagesFile = OutputStream(toFileAtPath: filepath + "-images-test", append: false) else {
+        guard let testImagesFile = OutputStream(toFileAtPath: folder.appendingPathComponent("digit-recognizer-images-test")!.path, append: false) else {
             fatalError("Couldn't open output file")
         }
         testImagesFile.open()
         defer { testImagesFile.close() }
         
-        guard let testLabelsFile = OutputStream(toFileAtPath: filepath + "-labels-test", append: false) else {
+        guard let testLabelsFile = OutputStream(toFileAtPath: folder.appendingPathComponent("digit-recognizer-labels-test")!.path, append: false) else {
             fatalError("Couldn't open output file")
         }
         testLabelsFile.open()
@@ -135,27 +135,46 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         var testWriteCount = 0
         writeloop: for (label, samples) in library {
             guard let byteLabel = self.digitRecognizer.labelStringToByte[label] else {
-                continue
+                fatalError("Unknown label in library: \(label)")
             }
             
             labelToWrite[0] = byteLabel
-            
+
             for digit in samples {
-                guard renderToContext(normalizedStrokes: digit.strokes, size: imageSize, data: bitmapPointer) != nil else {
-                    fatalError("Couldn't render image")
+                guard let normalizedStrokes = DigitRecognizer.normalizeDigit(inputDigit: digit.strokes) else {
+                    continue
                 }
-                if (CGFloat(arc4random_uniform(1000)) / 1000.0 <= testPercentage) {
+                let train_batch = CGFloat(arc4random_uniform(1000)) / 1000.0 > testPercentage
+
+                if (train_batch) {
+                    let positiveAngles = 8 // this many on the positive and also the negative side
+                    var maxAngle = 0.22 / CGFloat(positiveAngles)
+                    if (label == "/" || label == "1") {
+                        maxAngle /= 2
+                    }
+
+                    for angleBatch in -positiveAngles...positiveAngles {
+                        let angle = CGFloat(angleBatch) * maxAngle
+
+                        guard renderToContext(normalizedStrokes: normalizedStrokes, size: imageSize, angle: angle, data: bitmapPointer) != nil else {
+                            fatalError("Couldn't render image")
+                        }
+                        trainLabelsFile.write(labelToWrite, maxLength: 1)
+                        trainImagesFile.write(bitmapData, maxLength: bitmapData.count)
+                        trainWriteCount += 1
+                    }
+
+                } else {
+                    guard renderToContext(normalizedStrokes: normalizedStrokes, size: imageSize, data: bitmapPointer) != nil else {
+                        fatalError("Couldn't render image")
+                    }
                     testLabelsFile.write(labelToWrite, maxLength: 1)
                     testImagesFile.write(bitmapData, maxLength: bitmapData.count)
                     testWriteCount += 1
-                } else {
-                    trainLabelsFile.write(labelToWrite, maxLength: 1)
-                    trainImagesFile.write(bitmapData, maxLength: bitmapData.count)
-                    trainWriteCount += 1
                 }
             }
         }
-        print("Wrote \(trainWriteCount) training and \(testWriteCount) testing binary images to \(filepath)")
+        print("Wrote \(trainWriteCount) training and \(testWriteCount) testing binary images to \(folder.path!)")
     }
     
 }

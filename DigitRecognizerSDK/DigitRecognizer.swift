@@ -25,6 +25,7 @@ public class DigitRecognizer {
     public let imageSize = ImageSize(width: 28, height: 28)
 
     public let labelStringToByte: [DigitLabel : UInt8] = [
+        "0" : 0,
         "1" : 1,
         "2" : 2,
         "3" : 3,
@@ -34,7 +35,13 @@ public class DigitRecognizer {
         "7" : 7,
         "8" : 8,
         "9" : 9,
-        "0" : 0,
+        "x" : 10,
+        "/" : 11,
+        "+" : 12,
+        "-" : 13,
+        "?" : 14,
+        "^" : 15,
+        "e" : 16,
         ]
 
     public lazy var byteToLabelString: [UInt8 : DigitLabel] = {
@@ -69,7 +76,7 @@ public class DigitRecognizer {
         BNNSFilterApply(fullyConnected2, dataPointer2, dataPointer1)
 
         var highestScore: (Int, Float32)?
-        for (index, score) in dataBuffer1[0...9].enumerated() {
+        for (index, score) in dataBuffer1[0..<labelStringToByte.count].enumerated() {
             if highestScore?.1 ?? -1 < score {
                 highestScore = (index, score)
             }
@@ -111,7 +118,7 @@ public class DigitRecognizer {
             let lastStroke = classificationQueue[classificationQueue.count - 2]
             // Check to see if this stroke and the last stroke touched
             let overlapDistance = min(lastStroke.max, maxX) - max(lastStroke.min, minX)
-            if overlapDistance > 0 {
+            if overlapDistance >= 0 {
                 let smallestWidth = min(lastStroke.max - lastStroke.min, maxX - minX)
                 let overlapPercent = max(overlapDistance, 1) / max(smallestWidth, 1)
 
@@ -152,7 +159,7 @@ public class DigitRecognizer {
                         // Comparing the confidence score of the two single stroke classifications vs the double stroke
                         // classificaiton is tricky. I'm not sure the numbers are even on the same scale necessarily.
                         // The heuristic here is to favor the double stroke if the strokes overlap a lot on the x axis.
-                        let overlapBonus = 0.5 + doubleClass.overlap
+                        let overlapBonus = 0.7 + doubleClass.overlap
                         if min(singleClass.Confidence, nextSingle.Confidence) < doubleClass.classification.Confidence * overlapBonus {
                             classifyAsDouble = true
                         }
@@ -288,7 +295,7 @@ public class DigitRecognizer {
         var filterParams = createEmptyBNNSFilterParameters();
 
         let trainedDataPath = Bundle(for: DigitRecognizer.self).path(forResource: "trainedData", ofType: "dat")
-        let trainedDataLength = 13098536
+        let trainedDataLength = 13127236
 
         // open file descriptors in read-only mode to parameter files
         let data_file = open(trainedDataPath!, O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)
@@ -297,17 +304,7 @@ public class DigitRecognizer {
         // memory map the parameters
         trainedData = mmap(nil, trainedDataLength, PROT_READ, MAP_FILE | MAP_SHARED, data_file, 0);
 
-        var input = BNNSImageStackDescriptor(
-            width: width,
-            height: height,
-            channels: 1,
-            row_stride: width,
-            image_stride: width * height,
-            data_type: BNNSDataTypeFloat32,
-            data_scale: 1,
-            data_bias: 0)
-
-        // ****** conv 1 ******** //
+        // ****** trained layer data ******** //
 
         let conv1Weights = BNNSLayerData(
             data: trainedData + 0,
@@ -323,6 +320,65 @@ public class DigitRecognizer {
             data_bias: 0,
             data_table: nil
         )
+
+        let conv2Weights = BNNSLayerData(
+            data: trainedData + 3328,
+            data_type: BNNSDataTypeFloat32,
+            data_scale: 1,
+            data_bias: 0,
+            data_table: nil
+        )
+        let conv2Bias = BNNSLayerData(
+            data: trainedData + 208128,
+            data_type: BNNSDataTypeFloat32,
+            data_scale: 1,
+            data_bias: 0,
+            data_table: nil
+        )
+
+        let fullyConnected1Weights = BNNSLayerData(
+            data: trainedData + 208384,
+            data_type: BNNSDataTypeFloat32,
+            data_scale: 1,
+            data_bias: 0,
+            data_table: nil
+        )
+
+        let fullyConnected1Bias = BNNSLayerData(
+            data: trainedData + 13053440,
+            data_type: BNNSDataTypeFloat32,
+            data_scale: 1,
+            data_bias: 0,
+            data_table: nil
+        )
+
+        let fullyConnected2Weights = BNNSLayerData(
+            data: trainedData + 13057536,
+            data_type: BNNSDataTypeFloat32,
+            data_scale: 1,
+            data_bias: 0,
+            data_table: nil
+        )
+
+        let fullyConnected2Bias = BNNSLayerData(
+            data: trainedData + 13127168,
+            data_type: BNNSDataTypeFloat32,
+            data_scale: 1,
+            data_bias: 0,
+            data_table: nil
+        )
+
+        // ****** conv 1 ******** //
+
+        var input = BNNSImageStackDescriptor(
+            width: width,
+            height: height,
+            channels: 1,
+            row_stride: width,
+            image_stride: width * height,
+            data_type: BNNSDataTypeFloat32,
+            data_scale: 1,
+            data_bias: 0)
 
         var conv1_output = BNNSImageStackDescriptor(
             width: width,
@@ -395,21 +451,6 @@ public class DigitRecognizer {
         pool1 = BNNSFilterCreatePoolingLayer(&conv1_output, &pool1_output, &pool1_parameters, &filterParams)!
 
         // ****** conv 2 ******** //
-
-        let conv2Weights = BNNSLayerData(
-            data: trainedData + 3328,
-            data_type: BNNSDataTypeFloat32,
-            data_scale: 1,
-            data_bias: 0,
-            data_table: nil
-        )
-        let conv2Bias = BNNSLayerData(
-            data: trainedData + 208128,
-            data_type: BNNSDataTypeFloat32,
-            data_scale: 1,
-            data_bias: 0,
-            data_table: nil
-        )
 
         var conv2_output = BNNSImageStackDescriptor(
             width: width / 2,
@@ -495,22 +536,6 @@ public class DigitRecognizer {
             data_scale: 1,
             data_bias: 0)
 
-        let fullyConnected1Weights = BNNSLayerData(
-            data: trainedData + 208384,
-            data_type: BNNSDataTypeFloat32,
-            data_scale: 1,
-            data_bias: 0,
-            data_table: nil
-        )
-
-        let fullyConnected1Bias = BNNSLayerData(
-            data: trainedData + 13053440,
-            data_type: BNNSDataTypeFloat32,
-            data_scale: 1,
-            data_bias: 0,
-            data_table: nil
-        )
-
         var fullyConnected1_params = BNNSFullyConnectedLayerParameters(
             in_size: fullyConnected_in.size,
             out_size: fullyConnected_out.size,
@@ -527,26 +552,11 @@ public class DigitRecognizer {
         // ****** fully connected 1 ******** //
 
         var output = BNNSVectorDescriptor(
-            size: 10,
+            size: self.labelStringToByte.count,
             data_type: BNNSDataTypeFloat32,
             data_scale: 1,
             data_bias: 0)
 
-        let fullyConnected2Weights = BNNSLayerData(
-            data: trainedData + 13057536,
-            data_type: BNNSDataTypeFloat32,
-            data_scale: 1,
-            data_bias: 0,
-            data_table: nil
-        )
-
-        let fullyConnected2Bias = BNNSLayerData(
-            data: trainedData + 13098496,
-            data_type: BNNSDataTypeFloat32,
-            data_scale: 1,
-            data_bias: 0,
-            data_table: nil
-        )
 
         var fullyConnected2_params = BNNSFullyConnectedLayerParameters(
             in_size: fullyConnected_out.size,

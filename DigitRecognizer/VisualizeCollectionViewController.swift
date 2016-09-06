@@ -49,12 +49,14 @@ class ImageCell: UICollectionViewCell {
 class VisualizeCollectionViewController: UICollectionViewController {
     
     var digitLibrary: DigitSampleLibrary!
+    var digitRecognizer: DigitRecognizer!
     var digitLabels: [DigitSampleLibrary.DigitLabel] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
         self.digitLibrary = AppDelegate.sharedAppDelegate().library
         self.digitLabels = Array(digitLibrary.samples.keys)
+        self.digitRecognizer = AppDelegate.sharedAppDelegate().digitRecognizer
         
         self.collectionView!.register(ImageCell.self, forCellWithReuseIdentifier: reuseIdentifier)
     }
@@ -92,8 +94,21 @@ class VisualizeCollectionViewController: UICollectionViewController {
             let image = renderToImage(normalizedStrokes: strokes, size: ImageSize(width: 28, height: 28))
             cell.imageView.image = image
             cell.imageView.layer.borderWidth = 1
+
+            digitRecognizer.clearClassificationQueue()
+            for stroke in prototype.strokes {
+                digitRecognizer.addStrokeToClassificationQueue(stroke: stroke)
+            }
+            var displayLabel = "unknown"
+            var correct = false
+
+            if let recognized = digitRecognizer.recognizeStrokesInQueue() {
+                displayLabel = recognized.reduce("", +)
+                correct = displayLabel == label
+            }
             
-            cell.indexLabel.text = "" // "\(indexPath.row)"
+            cell.indexLabel.text = displayLabel
+            cell.imageView.layer.borderColor = correct ? UIColor.darkGray.cgColor : UIColor.red.cgColor
         }
         return cell
     }

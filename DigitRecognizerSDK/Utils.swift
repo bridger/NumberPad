@@ -126,14 +126,17 @@ public func renderToImage(normalizedStrokes: DigitRecognizer.DigitStrokes, size:
 }
 
 
-public func renderToContext(normalizedStrokes: DigitRecognizer.DigitStrokes, size: ImageSize, data: UnsafeMutableRawPointer? = nil) -> CGContext? {
+public func renderToContext(normalizedStrokes: DigitRecognizer.DigitStrokes, size: ImageSize, angle: CGFloat = 0, data: UnsafeMutableRawPointer? = nil) -> CGContext? {
     guard let ctx = CGContext(data: data, width: Int(size.width), height: Int(size.height), bitsPerComponent: 8, bytesPerRow: Int(size.width), space: CGColorSpaceCreateDeviceGray(), bitmapInfo: CGImageAlphaInfo.none.rawValue) else {
         return nil
     }
-    
+
+    let cosAngle = cos(angle)
+    let sinAngle = sin(angle)
     let transformPointLambda: (CGPoint) -> CGPoint = { point -> CGPoint in
-        return CGPoint(x: (point.x * 0.8 + 0.5) * CGFloat(size.width),
-                       y: CGFloat(size.height) - (point.y * 0.8 + 0.5) * CGFloat(size.height))
+        let rotated = CGPoint(x: cosAngle * point.x + sinAngle * point.y, y: cosAngle * point.y + sinAngle * point.x)
+        return CGPoint(x: (rotated.x * 0.8 + 0.5) * CGFloat(size.width),
+                       y: CGFloat(size.height) - (rotated.y * 0.8 + 0.5) * CGFloat(size.height))
     }
     
     ctx.setFillColor(UIColor.black.cgColor)
@@ -152,7 +155,7 @@ public func renderToContext(normalizedStrokes: DigitRecognizer.DigitStrokes, siz
             }
         }
         ctx.setStrokeColor(UIColor.white.cgColor)
-        ctx.setLineWidth(2)
+        ctx.setLineWidth(1.5)
         ctx.strokePath()
     }
     
