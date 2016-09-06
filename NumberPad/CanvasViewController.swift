@@ -11,13 +11,13 @@ import DigitRecognizerSDK
 
 class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlideViewDelegate, NameCanvasDelegate, UIViewControllerTransitioningDelegate {
     
-    init(digitClassifier: DTWDigitClassifier) {
-        self.digitClassifier = digitClassifier
+    init(digitRecognizer: DigitRecognizer) {
+        self.digitRecognizer = digitRecognizer
         super.init(nibName: nil, bundle: nil)
     }
     
     required init?(coder aDecoder: NSCoder) {
-        self.digitClassifier = DTWDigitClassifier()
+        self.digitRecognizer = DigitRecognizer()
         super.init(coder: aDecoder)
     }
     
@@ -49,7 +49,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
     
     var strokeRecognizer: StrokeGestureRecognizer!
     var unprocessedStrokes: [Stroke] = []
-    var digitClassifier: DTWDigitClassifier
+    var digitRecognizer: DigitRecognizer
     
     let connectorZPosition: CGFloat = -1
     let constraintZPosition: CGFloat = -2
@@ -463,7 +463,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             } else if let constraintView = self.constraintViewAtPoint(point: point) {
                 touchInfo.constraintView = (constraintView, constraintView.center - point, nil)
             }
-            
+
             let touchID = touchTracker.id(for: touch)
             self.touches[touchID] = touchInfo
             
@@ -480,7 +480,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             }
             
             if let lastStroke = self.unprocessedStrokes.last, let lastStrokeLastPoint = lastStroke.points.last {
-                if euclidianDistance(a: lastStrokeLastPoint, b: point) > 150 {
+                if lastStrokeLastPoint.distanceTo(point: point) > 150 {
                     // This was far away from the last stroke, so we process that stroke
                     processStrokes()
                 }
@@ -773,6 +773,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                         }
                     }
                 }
+                digitRecognizer.addStrokeToClassificationQueue(stroke: touchInfo.currentStroke.points)
                 unprocessedStrokes.append(touchInfo.currentStroke)
                 
             case .MakeConnection:
@@ -1079,149 +1080,148 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         }
         return nil
     }
-    
-    func processStrokes() {
-        let unprocessedStrokesCopy = self.unprocessedStrokes
-        self.unprocessedStrokes.removeAll(keepingCapacity: false)
-        
-        DispatchQueue.global(qos: .userInitiated).async {
-            var allStrokes: DTWDigitClassifier.DigitStrokes = []
-            for previousStroke in unprocessedStrokesCopy {
-                allStrokes.append(previousStroke.points)
-            }
-            let classifiedLabels = self.digitClassifier.classifyMultipleDigits(strokes: allStrokes)
-            
-            DispatchQueue.main.async {
-                if let classifiedLabels = classifiedLabels {
-                    // Find the bounding rect of all of the strokes
-                    var topLeft: CGPoint?
-                    var bottomRight: CGPoint?
-                    for stroke in allStrokes {
-                        for point in stroke {
-                            if let capturedTopLeft = topLeft {
-                                topLeft = CGPoint(x: min(capturedTopLeft.x, point.x), y: min(capturedTopLeft.y, point.y));
-                            } else {
-                                topLeft = point
-                            }
-                            if let capturedBottomRight = bottomRight {
-                                bottomRight = CGPoint(x: max(capturedBottomRight.x, point.x), y: max(capturedBottomRight.y, point.y));
-                            } else {
-                                bottomRight = point
-                            }
-                        }
-                    }
-                    // Figure out where to put the new component
-                    var centerPoint = self.scrollView.convert(self.view.center, from: self.view)
-                    if let topLeft = topLeft {
-                        if let bottomRight = bottomRight {
-                            centerPoint = CGPoint(x: (topLeft.x + bottomRight.x) / 2.0, y: (topLeft.y + bottomRight.y) / 2.0)
-                        }
-                    }
-                    
-                    var combinedLabels = classifiedLabels.reduce("", +)
-                    var isPercent = false
-                    if classifiedLabels.count > 1 && combinedLabels.hasSuffix("/") {
-                        combinedLabels = combinedLabels.substring(to: combinedLabels.index(before: combinedLabels.endIndex))
-                        isPercent = true
-                    }
-                    var writtenValue: Double?
-                    if let writtenNumber = Int(combinedLabels) {
-                        writtenValue = Double(writtenNumber)
-                    } else if combinedLabels == "e" {
-                        writtenValue = Double(M_E)
-                    }
-                    if writtenValue != nil && isPercent {
-                        writtenValue = writtenValue! / 100.0
-                    }
-                    
-                    if combinedLabels == "?" {
-                        let newConnector = Connector()
-                        let newLabel = ConnectorLabel(connector: newConnector)
-                        newLabel.sizeToFit()
-                        newLabel.center = centerPoint
-                        
-                        self.addConnectorLabel(label: newLabel, topPriority: false)
-                        self.selectedConnectorLabel = newLabel
-                        
-                    } else if combinedLabels == "x" || combinedLabels == "/" {
-                        // We recognized a multiply or divide!
-                        let newMultiplier = Multiplier()
-                        let newView = MultiplierView(multiplier: newMultiplier)
-                        newView.layout(withConnectorPositions: [:])
-                        newView.center = centerPoint
-                        let inputs = newView.inputConnectorPorts()
-                        let outputs = newView.outputConnectorPorts()
-                        if combinedLabels == "x" {
-                            self.addConstraintView(constraintView: newView, firstInputPort: inputs[0], secondInputPort: inputs[1], outputPort: outputs[0])
-                        } else if combinedLabels == "/" {
-                            newView.showOperatorFor(output: inputs[0])
-                            self.addConstraintView(constraintView: newView, firstInputPort: outputs[0], secondInputPort: inputs[0], outputPort: inputs[1])
-                        } else {
-                            self.addConstraintView(constraintView: newView, firstInputPort: nil, secondInputPort: nil, outputPort: nil)
-                        }
-                        
-                    } else if combinedLabels == "+" || combinedLabels == "-" || combinedLabels == "1-" || combinedLabels == "-1" { // The last is a hack for a common misclassification
-                        // We recognized an add or subtract!
-                        let newAdder = Adder()
-                        let newView = AdderView(adder: newAdder)
-                        newView.layout(withConnectorPositions: [:])
-                        newView.center = centerPoint
-                        let inputs = newView.inputConnectorPorts()
-                        let outputs = newView.outputConnectorPorts()
-                        if combinedLabels == "+" || combinedLabels == "1-" || combinedLabels == "-1" {
-                            let inputs = newView.inputConnectorPorts()
-                            self.addConstraintView(constraintView: newView, firstInputPort: inputs[0], secondInputPort: inputs[1], outputPort: outputs[0])
-                        } else if combinedLabels == "-" {
-                            newView.showOperatorFor(output: inputs[0])
-                            self.addConstraintView(constraintView: newView, firstInputPort: outputs[0], secondInputPort: inputs[0], outputPort: inputs[1])
-                        } else {
-                            self.addConstraintView(constraintView: newView, firstInputPort: nil, secondInputPort: nil, outputPort: nil)
-                        }
-                        
-                    } else if combinedLabels == "^" {
-                        let newExponent = Exponent()
-                        let newView = ExponentView(exponent: newExponent)
-                        newView.layout(withConnectorPositions: [:])
-                        newView.center = centerPoint
-                        
-                        self.addConstraintView(constraintView: newView, firstInputPort: newView.basePort, secondInputPort: newView.exponentPort, outputPort: newView.resultPort)
-                        
-                    } else if let writtenValue = writtenValue {
-                        // We recognized a number!
-                        let newConnector = Connector()
-                        let newLabel = ConnectorLabel(connector: newConnector)
-                        newLabel.sizeToFit()
-                        newLabel.center = centerPoint
-                        newLabel.isPercent = isPercent
-                        
-                        let scale: Int16
-                        if isPercent {
-                            scale = -3
-                        } else if combinedLabels == "e" {
-                            scale = -4
-                        } else {
-                            scale = self.defaultScaleForNewValue(value: writtenValue)
-                        }
-                        newLabel.scale = scale
-                        
-                        self.addConnectorLabel(label: newLabel, topPriority: true)
-                        self.selectConnectorLabelAndSetToValue(connectorLabel: newLabel, value: writtenValue)
-                        
-                    } else {
-                        print("Unable to parse written text: \(combinedLabels)")
-                    }
-                    self.updateDisplay();
-                } else {
-                    print("Unable to recognize all \(allStrokes.count) strokes")
-                }
-                
-                for stroke in unprocessedStrokesCopy {
-                    stroke.layer.removeFromSuperlayer()
-                }
-            }
+
+    override func viewWillAppear(_ animated: Bool) {
+        for stroke in self.unprocessedStrokes {
+            stroke.layer.removeFromSuperlayer()
         }
+        self.digitRecognizer.clearClassificationQueue()
     }
     
+    func processStrokes() {
+        // Find the bounding rect of all of the strokes
+        var topLeft: CGPoint?
+        var bottomRight: CGPoint?
+        for stroke in self.unprocessedStrokes {
+            for point in stroke.points {
+                if let capturedTopLeft = topLeft {
+                    topLeft = CGPoint(x: min(capturedTopLeft.x, point.x), y: min(capturedTopLeft.y, point.y));
+                } else {
+                    topLeft = point
+                }
+                if let capturedBottomRight = bottomRight {
+                    bottomRight = CGPoint(x: max(capturedBottomRight.x, point.x), y: max(capturedBottomRight.y, point.y));
+                } else {
+                    bottomRight = point
+                }
+            }
+            stroke.layer.removeFromSuperlayer()
+        }
+        let strokeCount = self.unprocessedStrokes.count
+
+        let classifiedLabels = self.digitRecognizer.recognizeStrokesInQueue()
+
+        self.unprocessedStrokes.removeAll(keepingCapacity: false)
+        self.digitRecognizer.clearClassificationQueue()
+
+        if let classifiedLabels = classifiedLabels {
+
+            // Figure out where to put the new component
+            var centerPoint = self.scrollView.convert(self.view.center, from: self.view)
+            if let topLeft = topLeft {
+                if let bottomRight = bottomRight {
+                    centerPoint = CGPoint(x: (topLeft.x + bottomRight.x) / 2.0, y: (topLeft.y + bottomRight.y) / 2.0)
+                }
+            }
+
+            var combinedLabels = classifiedLabels.reduce("", +)
+            var isPercent = false
+            if classifiedLabels.count > 1 && combinedLabels.hasSuffix("/") {
+                combinedLabels = combinedLabels.substring(to: combinedLabels.index(before: combinedLabels.endIndex))
+                isPercent = true
+            }
+            var writtenValue: Double?
+            if let writtenNumber = Int(combinedLabels) {
+                writtenValue = Double(writtenNumber)
+            } else if combinedLabels == "e" {
+                writtenValue = Double(M_E)
+            }
+            if writtenValue != nil && isPercent {
+                writtenValue = writtenValue! / 100.0
+            }
+
+            if combinedLabels == "?" {
+                let newConnector = Connector()
+                let newLabel = ConnectorLabel(connector: newConnector)
+                newLabel.sizeToFit()
+                newLabel.center = centerPoint
+
+                self.addConnectorLabel(label: newLabel, topPriority: false)
+                self.selectedConnectorLabel = newLabel
+
+            } else if combinedLabels == "x" || combinedLabels == "/" {
+                // We recognized a multiply or divide!
+                let newMultiplier = Multiplier()
+                let newView = MultiplierView(multiplier: newMultiplier)
+                newView.layout(withConnectorPositions: [:])
+                newView.center = centerPoint
+                let inputs = newView.inputConnectorPorts()
+                let outputs = newView.outputConnectorPorts()
+                if combinedLabels == "x" {
+                    self.addConstraintView(constraintView: newView, firstInputPort: inputs[0], secondInputPort: inputs[1], outputPort: outputs[0])
+                } else if combinedLabels == "/" {
+                    newView.showOperatorFor(output: inputs[0])
+                    self.addConstraintView(constraintView: newView, firstInputPort: outputs[0], secondInputPort: inputs[0], outputPort: inputs[1])
+                } else {
+                    self.addConstraintView(constraintView: newView, firstInputPort: nil, secondInputPort: nil, outputPort: nil)
+                }
+
+            } else if combinedLabels == "+" || combinedLabels == "-" || combinedLabels == "1-" || combinedLabels == "-1" { // The last is a hack for a common misclassification
+                // We recognized an add or subtract!
+                let newAdder = Adder()
+                let newView = AdderView(adder: newAdder)
+                newView.layout(withConnectorPositions: [:])
+                newView.center = centerPoint
+                let inputs = newView.inputConnectorPorts()
+                let outputs = newView.outputConnectorPorts()
+                if combinedLabels == "+" || combinedLabels == "1-" || combinedLabels == "-1" {
+                    let inputs = newView.inputConnectorPorts()
+                    self.addConstraintView(constraintView: newView, firstInputPort: inputs[0], secondInputPort: inputs[1], outputPort: outputs[0])
+                } else if combinedLabels == "-" {
+                    newView.showOperatorFor(output: inputs[0])
+                    self.addConstraintView(constraintView: newView, firstInputPort: outputs[0], secondInputPort: inputs[0], outputPort: inputs[1])
+                } else {
+                    self.addConstraintView(constraintView: newView, firstInputPort: nil, secondInputPort: nil, outputPort: nil)
+                }
+
+            } else if combinedLabels == "^" {
+                let newExponent = Exponent()
+                let newView = ExponentView(exponent: newExponent)
+                newView.layout(withConnectorPositions: [:])
+                newView.center = centerPoint
+
+                self.addConstraintView(constraintView: newView, firstInputPort: newView.basePort, secondInputPort: newView.exponentPort, outputPort: newView.resultPort)
+
+            } else if let writtenValue = writtenValue {
+                // We recognized a number!
+                let newConnector = Connector()
+                let newLabel = ConnectorLabel(connector: newConnector)
+                newLabel.sizeToFit()
+                newLabel.center = centerPoint
+                newLabel.isPercent = isPercent
+
+                let scale: Int16
+                if isPercent {
+                    scale = -3
+                } else if combinedLabels == "e" {
+                    scale = -4
+                } else {
+                    scale = self.defaultScaleForNewValue(value: writtenValue)
+                }
+                newLabel.scale = scale
+
+                self.addConnectorLabel(label: newLabel, topPriority: true)
+                self.selectConnectorLabelAndSetToValue(connectorLabel: newLabel, value: writtenValue)
+
+            } else {
+                print("Unable to parse written text: \(combinedLabels)")
+            }
+            self.updateDisplay();
+        } else {
+            print("Unable to recognize all \(strokeCount) strokes")
+        }
+    }
+
     func defaultScaleForNewValue(value: Double) -> Int16 {
         if abs(value) < 3 {
             return -2
@@ -1233,14 +1233,14 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             return -1
         }
     }
-    
+
     func numberSlideView(numberSlideView _: NumberSlideView, didSelectNewValue newValue: NSDecimalNumber, scale: Int16) {
         if let selectedConnectorLabel = self.selectedConnectorLabel {
             selectedConnectorLabel.scale = scale
             self.updateDisplay(values: [selectedConnectorLabel.connector : newValue.doubleValue], needsSolving: true, selectNewConnectorLabel: false)
         }
     }
-    
+
     func numberSlideView(numberSlideView _: NumberSlideView, didSelectNewScale scale: Int16) {
         if let selectedConnectorLabel = self.selectedConnectorLabel {
             selectedConnectorLabel.scale = scale

@@ -48,7 +48,7 @@ public class DigitRecognizer {
     public typealias Classification = (Label: DigitLabel, Confidence: CGFloat)
     public func classifyDigit(digit: DigitStrokes) -> Classification? {
         guard let normalizedStroke = DigitRecognizer.normalizeDigit(inputDigit: digit) else {
-            fatalError("Could not normalize stroke")
+            return nil
         }
         guard renderToContext(normalizedStrokes: normalizedStroke, size: imageSize, data: dataPointer2) != nil else {
             fatalError("Couldn't render image")
@@ -70,24 +70,111 @@ public class DigitRecognizer {
 
         var highestScore: (Int, Float32)?
         for (index, score) in dataBuffer1[0...9].enumerated() {
-            // print("Index \(index) got score \(score)")
             if highestScore?.1 ?? -1 < score {
                 highestScore = (index, score)
             }
         }
         if let highestScore = highestScore, let label = byteToLabelString[UInt8(highestScore.0)] {
-            print("Higest score index \(highestScore.0) of \(highestScore.1)")
             return (Label: label, Confidence: CGFloat(highestScore.1))
         } else {
             return nil
         }
     }
 
-    public func addStrokeToClassificationQueue(stroke: [CGPoint]) {
-
+    struct StrokeToClassify {
+        var stroke: [CGPoint]
+        var min: CGFloat
+        var max: CGFloat
     }
+
+    var classificationQueue = [StrokeToClassify]()
+    var singleStrokeClassifications = [Classification?]()
+    var doubleStrokeClassifications = [(classification: Classification, overlap: CGFloat)?]()
+    public func addStrokeToClassificationQueue(stroke: [CGPoint]) {
+        guard stroke.count > 0 else {
+            return
+        }
+
+        var minX = stroke[0].x
+        var maxX = stroke[0].x
+        for point in stroke {
+            minX = min(point.x, minX)
+            maxX = max(point.x, maxX)
+        }
+
+        classificationQueue.append(StrokeToClassify(stroke: stroke, min: minX, max: maxX))
+        singleStrokeClassifications.append(self.classifyDigit(digit: [stroke]))
+
+        if classificationQueue.count > 1 {
+            var twoStrokeClassification: (Classification, CGFloat)?
+
+            let lastStroke = classificationQueue[classificationQueue.count - 2]
+            // Check to see if this stroke and the last stroke touched
+            let overlapDistance = min(lastStroke.max, maxX) - max(lastStroke.min, minX)
+            if overlapDistance > 0 {
+                let smallestWidth = min(lastStroke.max - lastStroke.min, maxX - minX)
+                let overlapPercent = max(overlapDistance, 1) / max(smallestWidth, 1)
+
+                if let classification = classifyDigit(digit: [lastStroke.stroke, stroke]) {
+                    twoStrokeClassification = (classification, overlapPercent)
+                }
+
+            }
+            doubleStrokeClassifications.append(twoStrokeClassification)
+        }
+    }
+
+    public func clearClassificationQueue() {
+        classificationQueue.removeAll()
+        singleStrokeClassifications.removeAll()
+        doubleStrokeClassifications.removeAll()
+    }
+
+    // This is pretty cheap to call, the work is done upfront in addStrokeToClassificationQueue
     public func recognizeStrokesInQueue() -> [DigitLabel]? {
-        return nil
+        var labels = [DigitLabel]()
+        // print("Classifying using \nSingle: \(singleStrokeClassifications) \nDouble: \(doubleStrokeClassifications)\n\n")
+
+        var index = 0
+        while index < singleStrokeClassifications.count {
+            let singleClass = singleStrokeClassifications[index]
+
+            var classifyAsDouble: Bool = false
+            var doubleClass: (classification: Classification, overlap: CGFloat)?
+
+            if index + 1 < singleStrokeClassifications.count {
+                doubleClass = doubleStrokeClassifications[index]
+                if let doubleClass = doubleClass {
+                    // Decide if we should count both of these strokes as one digit or not
+                    let nextSingle = singleStrokeClassifications[index + 1]
+
+                    if let singleClass = singleClass, let nextSingle = nextSingle {
+                        // Comparing the confidence score of the two single stroke classifications vs the double stroke
+                        // classificaiton is tricky. I'm not sure the numbers are even on the same scale necessarily.
+                        // The heuristic here is to favor the double stroke if the strokes overlap a lot on the x axis.
+                        let overlapBonus = 0.5 + doubleClass.overlap
+                        if min(singleClass.Confidence, nextSingle.Confidence) < doubleClass.classification.Confidence * overlapBonus {
+                            classifyAsDouble = true
+                        }
+                    } else {
+                        // Either this stroke or the next couldn't be classified by itself, so we must use the double
+                        classifyAsDouble = true
+                    }
+                }
+            }
+
+            if classifyAsDouble, let doubleClass = doubleClass {
+                labels.append(doubleClass.classification.Label)
+                index += 2
+            } else if let singleClass = singleClass {
+                labels.append(singleClass.Label)
+                index += 1
+            } else {
+                return nil
+            }
+        }
+
+        return labels
     }
 
     public class func normalizeDigit(inputDigit: DigitStrokes) -> DigitStrokes? {
@@ -100,7 +187,7 @@ public class DigitRecognizer {
             var totalDistance: CGFloat = 0
             for point in stroke {
                 if let lastPoint = lastPoint {
-                    totalDistance += euclidianDistance(a: lastPoint, b: point)
+                    totalDistance += lastPoint.distanceTo(point: point)
                 }
                 lastPoint = point
             }
@@ -117,7 +204,7 @@ public class DigitRecognizer {
             totalDistance = 0
             for point in stroke {
                 if let lastPoint = lastPoint {
-                    let nextDistance = euclidianDistance(a: lastPoint, b: point)
+                    let nextDistance = lastPoint.distanceTo(point: point)
                     let newTotalDistance = totalDistance + nextDistance
                     while distanceCovered + distancePerPoint < newTotalDistance {
                         distanceCovered += distancePerPoint
@@ -200,7 +287,7 @@ public class DigitRecognizer {
 
         var filterParams = createEmptyBNNSFilterParameters();
 
-        let trainedDataPath = Bundle(for: DTWDigitClassifier.self).path(forResource: "trainedData", ofType: "dat")
+        let trainedDataPath = Bundle(for: DigitRecognizer.self).path(forResource: "trainedData", ofType: "dat")
         let trainedDataLength = 13098536
 
         // open file descriptors in read-only mode to parameter files

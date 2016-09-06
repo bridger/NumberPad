@@ -11,14 +11,11 @@ import DigitRecognizerSDK
 
 class IntroViewController: UIViewController {
     
-    let digitClassifier = DTWDigitClassifier()
+    let digitRecognizer = DigitRecognizer()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        if let path = Bundle.main.path(forResource: "bridger_normalized", ofType: "json") {
-            loadData(path: path)
-        }
         // Set all buttons to be aspectFit. This is kind of a hack because
         // I couldn't find the property in IB
         for subview in self.view.subviews.flatMap({ $0.subviews} ) {
@@ -27,15 +24,9 @@ class IntroViewController: UIViewController {
             }
         }
     }
-    
-    func loadData(path: String) {
-        if let jsonLibrary = DTWDigitClassifier.jsonLibraryFromFile(path: path) {
-            self.digitClassifier.loadData(jsonData: jsonLibrary, loadNormalizedData: true)
-        }
-    }
 
     func configureNewCanvas() -> CanvasViewController {
-        let canvas = CanvasViewController(digitClassifier: self.digitClassifier)
+        let canvas = CanvasViewController(digitRecognizer: self.digitRecognizer)
         canvas.view.clipsToBounds = true
         
         let backButton = UIButton()

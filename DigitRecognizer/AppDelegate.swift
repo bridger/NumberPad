@@ -21,7 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     var window: UIWindow?
     var library: DigitSampleLibrary = DigitSampleLibrary()
-    var digitClassifier: DigitRecognizer = DigitRecognizer()
+    var digitRecognizer: DigitRecognizer = DigitRecognizer()
     
     class func sharedAppDelegate() -> AppDelegate {
         return UIApplication.shared.delegate as! AppDelegate
@@ -71,7 +71,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func loadData(path: String, legacyBatchID: String) {
-        if let jsonLibrary = DTWDigitClassifier.jsonLibraryFromFile(path: path) {
+        if let jsonLibrary = DigitSampleLibrary.jsonLibraryFromFile(path: path) {
             self.library.loadData(jsonData: jsonLibrary, legacyBatchID: legacyBatchID)
         }
     }
@@ -99,7 +99,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return nil
     }
     
-    func saveAsBinary(library: DTWDigitClassifier.PrototypeLibrary, filepath: String, testPercentage: CGFloat) {
+    func saveAsBinary(library: DigitSampleLibrary.PrototypeLibrary, filepath: String, testPercentage: CGFloat) {
         guard let trainImagesFile = OutputStream(toFileAtPath: filepath + "-images-train", append: false) else {
             fatalError("Couldn't open output file")
         }
@@ -134,14 +134,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         var trainWriteCount = 0
         var testWriteCount = 0
         writeloop: for (label, samples) in library {
-            guard let byteLabel = self.digitClassifier.labelStringToByte[label] else {
+            guard let byteLabel = self.digitRecognizer.labelStringToByte[label] else {
                 continue
             }
             
             labelToWrite[0] = byteLabel
             
             for digit in samples {
-                guard renderToContext(normalizedStrokes: digit, size: imageSize, data: bitmapPointer) != nil else {
+                guard renderToContext(normalizedStrokes: digit.strokes, size: imageSize, data: bitmapPointer) != nil else {
                     fatalError("Couldn't render image")
                 }
                 if (CGFloat(arc4random_uniform(1000)) / 1000.0 <= testPercentage) {

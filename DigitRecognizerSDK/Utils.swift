@@ -70,7 +70,7 @@ public func shortestDistanceSquaredToLineSegmentFromPoint(segmentStart: CGPoint,
     }
 }
 
-public func visualizeNormalizedStrokes(strokes: DTWDigitClassifier.DigitStrokes, imageSize: CGSize) -> UIImage {
+public func visualizeNormalizedStrokes(strokes: DigitRecognizer.DigitStrokes, imageSize: CGSize) -> UIImage {
     
     UIGraphicsBeginImageContextWithOptions(imageSize, true, 0)
     guard let ctx = UIGraphicsGetCurrentContext() else {
@@ -112,7 +112,7 @@ public func visualizeNormalizedStrokes(strokes: DTWDigitClassifier.DigitStrokes,
     return image
 }
 
-public func renderToImage(normalizedStrokes: DTWDigitClassifier.DigitStrokes, size: ImageSize, data: UnsafeMutableRawPointer? = nil) -> UIImage? {
+public func renderToImage(normalizedStrokes: DigitRecognizer.DigitStrokes, size: ImageSize, data: UnsafeMutableRawPointer? = nil) -> UIImage? {
     
     guard let ctx = renderToContext(normalizedStrokes: normalizedStrokes, size: size, data: data) else {
         return nil
@@ -126,7 +126,7 @@ public func renderToImage(normalizedStrokes: DTWDigitClassifier.DigitStrokes, si
 }
 
 
-public func renderToContext(normalizedStrokes: DTWDigitClassifier.DigitStrokes, size: ImageSize, data: UnsafeMutableRawPointer? = nil) -> CGContext? {
+public func renderToContext(normalizedStrokes: DigitRecognizer.DigitStrokes, size: ImageSize, data: UnsafeMutableRawPointer? = nil) -> CGContext? {
     guard let ctx = CGContext(data: data, width: Int(size.width), height: Int(size.height), bitsPerComponent: 8, bytesPerRow: Int(size.width), space: CGColorSpaceCreateDeviceGray(), bitmapInfo: CGImageAlphaInfo.none.rawValue) else {
         return nil
     }

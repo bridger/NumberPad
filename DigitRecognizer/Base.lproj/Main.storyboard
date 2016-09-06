@@ -110,7 +110,7 @@
                                     <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>
-                                    <action selector="clearStrokes:" destination="BYZ-38-t0r" eventType="touchUpInside" id="dCG-v9-neJ"/>
+                                    <action selector="clearStrokesWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="rRO-NQ-m0V"/>
                                 </connections>
                             </button>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="zcm-Or-enl">

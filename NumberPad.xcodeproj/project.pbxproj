@@ -24,15 +24,10 @@
 		AE5554D51A5CBBF7007DCF1D /* DigitRecognizerSDKTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE5554D41A5CBBF7007DCF1D /* DigitRecognizerSDKTests.swift */; };
 		AE5554D81A5CBBF7007DCF1D /* DigitRecognizerSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE5554C11A5CBBF7007DCF1D /* DigitRecognizerSDK.framework */; };
 		AE5554D91A5CBBF7007DCF1D /* DigitRecognizerSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = AE5554C11A5CBBF7007DCF1D /* DigitRecognizerSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		AE5554E11A5CBC19007DCF1D /* DTWDigitClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE04E7531A4DE6F40077D2E3 /* DTWDigitClassifier.swift */; };
-		AE5554E31A5CBC25007DCF1D /* DTWDigitClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3DD2331A52100E007D1500 /* DTWDigitClassifierTests.swift */; };
+		AE5554E31A5CBC25007DCF1D /* DigitRecognizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3DD2331A52100E007D1500 /* DigitRecognizerTests.swift */; };
 		AE5554E51A5CBC31007DCF1D /* SortedMinArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3DD2401A537C0A007D1500 /* SortedMinArray.swift */; };
 		AE5554E91A5CBC4C007DCF1D /* SortedMinArrayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3DD2431A544C02007D1500 /* SortedMinArrayTests.swift */; };
-		AE5554F01A5CBC78007DCF1D /* ujipenchars2_test.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD23B1A52785D007D1500 /* ujipenchars2_test.json */; };
-		AE5554F11A5CBC7E007DCF1D /* ujipenchars2_train.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD23C1A52785D007D1500 /* ujipenchars2_train.json */; };
-		AE5554F21A5CBC86007DCF1D /* ujipenchars2.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD2391A52784A007D1500 /* ujipenchars2.json */; };
 		AE5554F31A5CBC89007DCF1D /* ujipenchars2.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD2391A52784A007D1500 /* ujipenchars2.json */; };
-		AE5554F41A5CBC8B007DCF1D /* ujipenchars2.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD2391A52784A007D1500 /* ujipenchars2.json */; };
 		AE5554F51A5CBD25007DCF1D /* StrokeGestureRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EEDF1A3CEB3A002C7B08 /* StrokeGestureRecognizer.swift */; };
 		AE5554F91A5CE08C007DCF1D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AE5554F71A5CE08C007DCF1D /* Main.storyboard */; };
 		AE5554FC1A5CE0A5007DCF1D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AE5554FA1A5CE0A5007DCF1D /* Main.storyboard */; };
@@ -42,10 +37,7 @@
 		AE890D0D1A65AFAE00E604C4 /* Launch Screen.xib in Resources */ = {isa = PBXBuildFile; fileRef = AE890D0B1A65AFAE00E604C4 /* Launch Screen.xib */; };
 		AE890D0F1A68970800E604C4 /* CGPoint+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE890D0E1A68970800E604C4 /* CGPoint+Extensions.swift */; };
 		AE890D111A68AB5B00E604C4 /* VisualizeCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE890D101A68AB5B00E604C4 /* VisualizeCollectionViewController.swift */; };
-		AE890D121A68D33F00E604C4 /* ujipenchars2_test.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD23B1A52785D007D1500 /* ujipenchars2_test.json */; };
-		AE890D131A68D33F00E604C4 /* ujipenchars2_train.json in Resources */ = {isa = PBXBuildFile; fileRef = AE3DD23C1A52785D007D1500 /* ujipenchars2_train.json */; };
 		AE890D161A699E7E00E604C4 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE890D151A699E7E00E604C4 /* Utils.swift */; };
-		AE890D181A69DA0300E604C4 /* bridger_normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = AE890D171A69DA0300E604C4 /* bridger_normalized.json */; };
 		AEA7F36C1A7DBFE0008A07E4 /* libc++.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AEA7F36B1A7DBFE0008A07E4 /* libc++.dylib */; };
 		AEA7F36E1A7DBFEC008A07E4 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEA7F36D1A7DBFEC008A07E4 /* CoreBluetooth.framework */; };
 		AEA7F3701A7DBFF3008A07E4 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEA7F36F1A7DBFF3008A07E4 /* CoreGraphics.framework */; };
@@ -79,13 +71,14 @@
 		AEC9EED61A3CDC4A002C7B08 /* NumberPadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EED51A3CDC4A002C7B08 /* NumberPadTests.swift */; };
 		AECB34FC1A6B1F460034A2AB /* NumberSlideView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AECB34FB1A6B1F460034A2AB /* NumberSlideView.swift */; };
 		AEDB570F1B45CDD10065A4DD /* UIColor+Additions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEDB570E1B45CDD10065A4DD /* UIColor+Additions.swift */; };
-		AEF546551A7AD6DF00E72D0B /* bridger_normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = AE890D171A69DA0300E604C4 /* bridger_normalized.json */; };
+		D028BB4B1D7F2E4000AD98FB /* DigitSampleLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = D028BB4A1D7F2E4000AD98FB /* DigitSampleLibrary.swift */; };
+		D028BB501D7F3B1700AD98FB /* bridger_test.json in Resources */ = {isa = PBXBuildFile; fileRef = D028BB4F1D7F3B1700AD98FB /* bridger_test.json */; };
+		D03685F81D7E1F9100EA667E /* Launch Screen.xib in Resources */ = {isa = PBXBuildFile; fileRef = D03685F71D7E1F9100EA667E /* Launch Screen.xib */; };
 		D0725BCD1D75310100118B5F /* bridger_all.json in Resources */ = {isa = PBXBuildFile; fileRef = D0725BCC1D75310100118B5F /* bridger_all.json */; };
 		D083BBF81D7895FB004586D9 /* BNNSHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = D083BBF61D7895FB004586D9 /* BNNSHelpers.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D083BBF91D7895FB004586D9 /* BNNSHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = D083BBF71D7895FB004586D9 /* BNNSHelpers.m */; };
 		D092123C1D75354000A39091 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D092123B1D75354000A39091 /* Accelerate.framework */; };
 		D0A75E381D7A798D00A57F67 /* DigitRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A75E371D7A798D00A57F67 /* DigitRecognizer.swift */; };
-		D0A75E3C1D7A7B5000A57F67 /* DigitSampleLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A75E3B1D7A7B5000A57F67 /* DigitSampleLibrary.swift */; };
 		D0A793B51D788A1200E4A099 /* trainedData.dat in Resources */ = {isa = PBXBuildFile; fileRef = D0A793B41D788A1200E4A099 /* trainedData.dat */; };
 /* End PBXBuildFile section */
 
@@ -153,7 +146,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		AE04E7531A4DE6F40077D2E3 /* DTWDigitClassifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DTWDigitClassifier.swift; sourceTree = "<group>"; };
 		AE064B6A1A64679200A10381 /* Constraints.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constraints.swift; sourceTree = "<group>"; };
 		AE064B6D1A646A6300A10381 /* ConstraintViews.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = ConstraintViews.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		AE064B6F1A646FB200A10381 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
@@ -161,7 +153,7 @@
 		AE0EF4501B40EF82000DFFE2 /* Toy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = Toy.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		AE1CA0731A8C651B00CC1FDA /* SwiftAutoLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftAutoLayout.swift; sourceTree = "<group>"; };
 		AE1CA0751A8C652A00CC1FDA /* VisualFormat.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VisualFormat.swift; sourceTree = "<group>"; };
-		AE3DD2331A52100E007D1500 /* DTWDigitClassifierTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DTWDigitClassifierTests.swift; sourceTree = "<group>"; };
+		AE3DD2331A52100E007D1500 /* DigitRecognizerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DigitRecognizerTests.swift; sourceTree = "<group>"; };
 		AE3DD2391A52784A007D1500 /* ujipenchars2.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = ujipenchars2.json; path = Data/ujipenchars2.json; sourceTree = SOURCE_ROOT; };
 		AE3DD23B1A52785D007D1500 /* ujipenchars2_test.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = ujipenchars2_test.json; path = Data/ujipenchars2_test.json; sourceTree = SOURCE_ROOT; };
 		AE3DD23C1A52785D007D1500 /* ujipenchars2_train.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = ujipenchars2_train.json; path = Data/ujipenchars2_train.json; sourceTree = SOURCE_ROOT; };
@@ -255,6 +247,9 @@
 		AECB34F31A6AEC540034A2AB /* NumberPad-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NumberPad-Bridging-Header.h"; sourceTree = "<group>"; };
 		AECB34FB1A6B1F460034A2AB /* NumberSlideView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = NumberSlideView.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		AEDB570E1B45CDD10065A4DD /* UIColor+Additions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIColor+Additions.swift"; sourceTree = "<group>"; };
+		D028BB4A1D7F2E4000AD98FB /* DigitSampleLibrary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DigitSampleLibrary.swift; sourceTree = "<group>"; };
+		D028BB4F1D7F3B1700AD98FB /* bridger_test.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = bridger_test.json; path = Data/bridger_test.json; sourceTree = SOURCE_ROOT; };
+		D03685F71D7E1F9100EA667E /* Launch Screen.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = "Launch Screen.xib"; sourceTree = "<group>"; };
 		D05CD0211D768684005C5B7D /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
 		D05CD0221D768684005C5B7D /* MetalPerformanceShaders.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalPerformanceShaders.framework; path = System/Library/Frameworks/MetalPerformanceShaders.framework; sourceTree = SDKROOT; };
 		D0725BCC1D75310100118B5F /* bridger_all.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = bridger_all.json; path = Data/bridger_all.json; sourceTree = SOURCE_ROOT; };
@@ -262,7 +257,6 @@
 		D083BBF71D7895FB004586D9 /* BNNSHelpers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BNNSHelpers.m; sourceTree = "<group>"; };
 		D092123B1D75354000A39091 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		D0A75E371D7A798D00A57F67 /* DigitRecognizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DigitRecognizer.swift; sourceTree = "<group>"; };
-		D0A75E3B1D7A7B5000A57F67 /* DigitSampleLibrary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DigitSampleLibrary.swift; sourceTree = "<group>"; };
 		D0A793B41D788A1200E4A099 /* trainedData.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = trainedData.dat; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -316,9 +310,9 @@
 			isa = PBXGroup;
 			children = (
 				AE5554651A5CB9D3007DCF1D /* AppDelegate.swift */,
-				D0A75E3B1D7A7B5000A57F67 /* DigitSampleLibrary.swift */,
 				AE5554671A5CB9D3007DCF1D /* ViewController.swift */,
 				AE890D101A68AB5B00E604C4 /* VisualizeCollectionViewController.swift */,
+				D03685F71D7E1F9100EA667E /* Launch Screen.xib */,
 				AE5554F71A5CE08C007DCF1D /* Main.storyboard */,
 				AE55546C1A5CB9D3007DCF1D /* Images.xcassets */,
 				AE5554631A5CB9D3007DCF1D /* Supporting Files */,
@@ -354,8 +348,8 @@
 		AE5554C21A5CBBF7007DCF1D /* DigitRecognizerSDK */ = {
 			isa = PBXGroup;
 			children = (
-				AE04E7531A4DE6F40077D2E3 /* DTWDigitClassifier.swift */,
 				D0A75E371D7A798D00A57F67 /* DigitRecognizer.swift */,
+				D028BB4A1D7F2E4000AD98FB /* DigitSampleLibrary.swift */,
 				D083BBF61D7895FB004586D9 /* BNNSHelpers.h */,
 				D083BBF71D7895FB004586D9 /* BNNSHelpers.m */,
 				AE3DD2401A537C0A007D1500 /* SortedMinArray.swift */,
@@ -380,7 +374,8 @@
 		AE5554D11A5CBBF7007DCF1D /* DigitRecognizerSDKTests */ = {
 			isa = PBXGroup;
 			children = (
-				AE3DD2331A52100E007D1500 /* DTWDigitClassifierTests.swift */,
+				D028BB4F1D7F3B1700AD98FB /* bridger_test.json */,
+				AE3DD2331A52100E007D1500 /* DigitRecognizerTests.swift */,
 				AE3DD2431A544C02007D1500 /* SortedMinArrayTests.swift */,
 				AE5554D41A5CBBF7007DCF1D /* DigitRecognizerSDKTests.swift */,
 				AE5554D21A5CBBF7007DCF1D /* Supporting Files */,
@@ -789,12 +784,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				AE5554F31A5CBC89007DCF1D /* ujipenchars2.json in Resources */,
-				AEF546551A7AD6DF00E72D0B /* bridger_normalized.json in Resources */,
-				AE890D131A68D33F00E604C4 /* ujipenchars2_train.json in Resources */,
 				D0725BCD1D75310100118B5F /* bridger_all.json in Resources */,
 				AE55546D1A5CB9D3007DCF1D /* Images.xcassets in Resources */,
+				D03685F81D7E1F9100EA667E /* Launch Screen.xib in Resources */,
 				AE5554F91A5CE08C007DCF1D /* Main.storyboard in Resources */,
-				AE890D121A68D33F00E604C4 /* ujipenchars2_test.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -810,9 +803,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AE5554F21A5CBC86007DCF1D /* ujipenchars2.json in Resources */,
-				AE5554F01A5CBC78007DCF1D /* ujipenchars2_test.json in Resources */,
-				AE5554F11A5CBC7E007DCF1D /* ujipenchars2_train.json in Resources */,
+				D028BB501D7F3B1700AD98FB /* bridger_test.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -821,8 +812,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				AEC9EEC71A3CDC4A002C7B08 /* Images.xcassets in Resources */,
-				AE890D181A69DA0300E604C4 /* bridger_normalized.json in Resources */,
-				AE5554F41A5CBC8B007DCF1D /* ujipenchars2.json in Resources */,
 				AE5554FC1A5CE0A5007DCF1D /* Main.storyboard in Resources */,
 				AE890D0D1A65AFAE00E604C4 /* Launch Screen.xib in Resources */,
 			);
@@ -845,7 +834,6 @@
 				AE5554681A5CB9D3007DCF1D /* ViewController.swift in Sources */,
 				AE890D111A68AB5B00E604C4 /* VisualizeCollectionViewController.swift in Sources */,
 				AE5554661A5CB9D3007DCF1D /* AppDelegate.swift in Sources */,
-				D0A75E3C1D7A7B5000A57F67 /* DigitSampleLibrary.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -854,8 +842,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				AE890D161A699E7E00E604C4 /* Utils.swift in Sources */,
-				AE5554E11A5CBC19007DCF1D /* DTWDigitClassifier.swift in Sources */,
 				D083BBF91D7895FB004586D9 /* BNNSHelpers.m in Sources */,
+				D028BB4B1D7F2E4000AD98FB /* DigitSampleLibrary.swift in Sources */,
 				D0A75E381D7A798D00A57F67 /* DigitRecognizer.swift in Sources */,
 				AE5554E51A5CBC31007DCF1D /* SortedMinArray.swift in Sources */,
 				AE890D0F1A68970800E604C4 /* CGPoint+Extensions.swift in Sources */,
@@ -867,7 +855,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AE5554E31A5CBC25007DCF1D /* DTWDigitClassifierTests.swift in Sources */,
+				AE5554E31A5CBC25007DCF1D /* DigitRecognizerTests.swift in Sources */,
 				AE5554D51A5CBBF7007DCF1D /* DigitRecognizerSDKTests.swift in Sources */,
 				AE5554E91A5CBC4C007DCF1D /* SortedMinArrayTests.swift in Sources */,
 			);
@@ -1039,7 +1027,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.bridgermaxwell.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
@@ -1063,7 +1051,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.bridgermaxwell.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
@@ -1074,6 +1062,7 @@
 		AE5554DF1A5CBBF7007DCF1D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(inherited)",
@@ -1083,6 +1072,7 @@
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = DigitRecognizerSDKTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.bridgermaxwell.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1094,11 +1084,13 @@
 		AE5554E01A5CBBF7007DCF1D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = DigitRecognizerSDKTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.bridgermaxwell.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
