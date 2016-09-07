@@ -11,9 +11,15 @@ import DigitRecognizerSDK
 
 let reuseIdentifier = "ImageCell"
 
+protocol ImageCellDelegate : NSObjectProtocol {
+    func cellWasDoubleTapped(_ cell: ImageCell)
+}
+
 class ImageCell: UICollectionViewCell {
     let imageView: UIImageView = UIImageView()
     let indexLabel: UILabel = UILabel()
+
+    weak var delegate: ImageCellDelegate?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -30,23 +36,32 @@ class ImageCell: UICollectionViewCell {
         self.contentView.addSubview(imageView)
         imageView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         
-        indexLabel.text = "Mj"
+        indexLabel.text = "PLACEHOLDER"
         indexLabel.sizeToFit()
         indexLabel.frame = CGRect(x: 0, y:  self.contentView.bounds.height  - indexLabel.frame.size.height, width:  self.contentView.bounds.width, height: indexLabel.frame.height)
         self.contentView.addSubview(indexLabel)
-        indexLabel.textColor = UIColor.gray
+        indexLabel.textColor = UIColor.red
+
+        let doubleTapRecognizer = UITapGestureRecognizer(target: self, action: #selector(ImageCell.doubleTapped))
+        doubleTapRecognizer.numberOfTapsRequired = 2
+        self.addGestureRecognizer(doubleTapRecognizer)
     }
-    
+
+    func doubleTapped() {
+        if let delegate = self.delegate {
+            delegate.cellWasDoubleTapped(self)
+        }
+    }
+
     override func prepareForReuse() {
         super.prepareForReuse()
         imageView.image = nil
         indexLabel.text = ""
     }
-    
 }
 
 
-class VisualizeCollectionViewController: UICollectionViewController {
+class VisualizeCollectionViewController: UICollectionViewController, ImageCellDelegate {
     
     var digitLibrary: DigitSampleLibrary!
     var digitRecognizer: DigitRecognizer!
@@ -87,6 +102,7 @@ class VisualizeCollectionViewController: UICollectionViewController {
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! ImageCell
+        cell.delegate = self
         
         let label = self.digitLabels[indexPath.section]
         if let prototype = digitLibrary.samples[label]?[indexPath.row] {
@@ -99,19 +115,34 @@ class VisualizeCollectionViewController: UICollectionViewController {
             for stroke in prototype.strokes {
                 digitRecognizer.addStrokeToClassificationQueue(stroke: stroke)
             }
-            var displayLabel = "unknown"
-            var correct = false
+            var errorLabel = "unknown"
 
             if let recognized = digitRecognizer.recognizeStrokesInQueue() {
-                displayLabel = recognized.reduce("", +)
-                correct = displayLabel == label
+                let recognizedLabel = recognized.reduce("", +)
+                if recognizedLabel == label {
+                    errorLabel = "" // Correct, don't show anything
+                } else {
+                    errorLabel = recognizedLabel
+                }
             }
             
-            cell.indexLabel.text = displayLabel
-            cell.imageView.layer.borderColor = correct ? UIColor.darkGray.cgColor : UIColor.red.cgColor
+            cell.indexLabel.text = errorLabel
         }
         return cell
     }
+
+    func cellWasDoubleTapped(_ cell: ImageCell) {
+        guard let indexPath = self.collectionView?.indexPath(for: cell) else {
+            return
+        }
+
+        // Delete the sample at this index path
+        let label = self.digitLabels[indexPath.section]
+        if digitLibrary.removeFromLibrary(label: label, index: indexPath.row) {
+            self.collectionView?.deleteItems(at: [indexPath])
+        }
+    }
+
     
     // MARK: UICollectionViewDelegate
     

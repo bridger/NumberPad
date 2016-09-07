@@ -114,14 +114,18 @@ public class DigitSampleLibrary {
         }
     }
 
-    /*
-    public func addToLibrary(library: inout PrototypeLibrary, label: DigitLabel, digit: DigitStrokes) {
-        if library[label] != nil {
-            library[label]!.append(digit)
-        } else {
-            library[label] = []
+    public func addToLibrary(label: DigitLabel, digit: DigitStrokes, batchID: String) {
+        if samples[label] == nil {
+            samples[label] = []
         }
+        samples[label]!.append(DigitSample(strokes: digit, batchID: batchID))
     }
-    */
 
+    public func removeFromLibrary(label: DigitLabel, index: Int) -> Bool {
+        if let sampleCount = samples[label]?.count, sampleCount > index {
+            samples[label]!.remove(at: index)
+            return true
+        }
+        return false
+    }
 }

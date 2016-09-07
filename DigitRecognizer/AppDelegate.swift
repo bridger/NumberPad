@@ -41,7 +41,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func applicationWillResignActive(_ application: UIApplication) {
         saveData()
-        saveImagesAsBinary(library: library.samples, folder: self.documentsDirectory(), testPercentage: 0.1)
+        #if (arch(i386) || arch(x86_64))
+            saveImagesAsBinary(library: library.samples, folder: self.documentsDirectory(), testPercentage: 0.1)
+        #endif
     }
     
     func documentsDirectory() -> NSURL {
@@ -55,9 +57,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let saveNumber: Int
         if let lastSave = newestSavedData(), let lastNumber = Int(lastSave.substring(from: filePrefix.endIndex))  {
             saveNumber = lastNumber + 1
-        }
-        else
-        {
+        } else {
             saveNumber = 1
         }
         
@@ -84,18 +84,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         } catch _ {
             contents = nil
         }
-        if contents != nil {
-            if let contents = contents {
-                let filtered = contents.filter({ string in
-                    return string.hasPrefix(filePrefix)
-                }).sorted(by: { (string1, string2) in
-                    return string1.compare(string2) == ComparisonResult.orderedAscending
-                })
-                
-                return filtered.last
-            }
+        if let contents = contents {
+            let filtered = contents.filter({ string in
+                return string.hasPrefix(filePrefix)
+            }).sorted(by: { (string1, string2) in
+                return string1.localizedStandardCompare(string2) == ComparisonResult.orderedAscending
+            })
+            
+            return filtered.last
         }
-        
+
         return nil
     }
     

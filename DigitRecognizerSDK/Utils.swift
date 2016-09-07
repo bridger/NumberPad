@@ -155,7 +155,7 @@ public func renderToContext(normalizedStrokes: DigitRecognizer.DigitStrokes, siz
             }
         }
         ctx.setStrokeColor(UIColor.white.cgColor)
-        ctx.setLineWidth(1.5)
+        ctx.setLineWidth(2)
         ctx.strokePath()
     }
     

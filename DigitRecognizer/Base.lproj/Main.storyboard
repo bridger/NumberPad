@@ -38,11 +38,11 @@
                                         <rect key="frame" x="0.0" y="64" width="1024" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="DdU-Gv-OCq" id="qOo-Ct-LcA">
-                                            <frame key="frameInset" width="1024" height="43.5"/>
+                                            <frame key="frameInset" width="1024" height="43"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" text="Classify" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="tbM-Gf-8D4">
-                                                    <frame key="frameInset" minX="176" width="672" height="43.5"/>
+                                                    <frame key="frameInset" minX="176" width="672" height="43"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -58,11 +58,11 @@
                                         <rect key="frame" x="0.0" y="108" width="1024" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="j8p-C6-KMW" id="yqb-HD-vRM">
-                                            <frame key="frameInset" width="1024" height="43.5"/>
+                                            <frame key="frameInset" width="1024" height="43"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" text="Visualize" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="ye7-GT-MgH">
-                                                    <frame key="frameInset" minX="176" width="672" height="43.5"/>
+                                                    <frame key="frameInset" minX="176" width="672" height="43"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -139,15 +139,23 @@
                                 </segments>
                                 <connections>
                                     <action selector="clearStrokesWithSender:" destination="BYZ-38-t0r" eventType="valueChanged" id="L9D-YA-3y7"/>
+                                    <action selector="updateSampleCountLabelWithSender:" destination="BYZ-38-t0r" eventType="valueChanged" id="tdc-fc-cDy"/>
                                 </connections>
                             </segmentedControl>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kUE-5r-qRO">
+                                <fontDescription key="fontDescription" type="system" pointSize="30"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="gbp-We-gyq" firstAttribute="baseline" secondItem="uef-pn-d3r" secondAttribute="baseline" id="0SR-k9-8cS"/>
+                            <constraint firstItem="kUE-5r-qRO" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailingMargin" id="0yO-hN-8R2"/>
                             <constraint firstItem="zcm-Or-enl" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="4Dy-7j-aUI"/>
+                            <constraint firstItem="gbp-We-gyq" firstAttribute="leading" secondItem="zcm-Or-enl" secondAttribute="leading" id="QWX-kk-fes"/>
                             <constraint firstItem="uef-pn-d3r" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="VU3-h8-6Yk"/>
-                            <constraint firstItem="gbp-We-gyq" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailingMargin" id="ki5-CJ-F4b"/>
+                            <constraint firstItem="gbp-We-gyq" firstAttribute="top" secondItem="zcm-Or-enl" secondAttribute="bottom" constant="8" symbolic="YES" id="Z9A-xi-gWG"/>
+                            <constraint firstItem="kUE-5r-qRO" firstAttribute="baseline" secondItem="uef-pn-d3r" secondAttribute="baseline" id="obE-4s-F50"/>
                             <constraint firstAttribute="bottom" secondItem="uef-pn-d3r" secondAttribute="bottom" constant="20" symbolic="YES" id="rqz-ef-SwC"/>
                             <constraint firstItem="zcm-Or-enl" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="8" id="rtO-nk-dig"/>
                         </constraints>
@@ -155,6 +163,7 @@
                     <connections>
                         <outlet property="labelSelector" destination="zcm-Or-enl" id="pjl-Zw-p5y"/>
                         <outlet property="resultLabel" destination="uef-pn-d3r" id="Nsc-CS-Jwd"/>
+                        <outlet property="sampleCountLabel" destination="kUE-5r-qRO" id="qZ3-ge-Ehl"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>

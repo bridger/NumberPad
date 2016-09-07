@@ -1166,7 +1166,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                     self.addConstraintView(constraintView: newView, firstInputPort: nil, secondInputPort: nil, outputPort: nil)
                 }
 
-            } else if combinedLabels == "+" || combinedLabels == "-" || combinedLabels == "1-" || combinedLabels == "-1" { // The last is a hack for a common misclassification
+            } else if combinedLabels == "+" || combinedLabels == "-" {
                 // We recognized an add or subtract!
                 let newAdder = Adder()
                 let newView = AdderView(adder: newAdder)
@@ -1174,7 +1174,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 newView.center = centerPoint
                 let inputs = newView.inputConnectorPorts()
                 let outputs = newView.outputConnectorPorts()
-                if combinedLabels == "+" || combinedLabels == "1-" || combinedLabels == "-1" {
+                if combinedLabels == "+" {
                     let inputs = newView.inputConnectorPorts()
                     self.addConstraintView(constraintView: newView, firstInputPort: inputs[0], secondInputPort: inputs[1], outputPort: outputs[0])
                 } else if combinedLabels == "-" {

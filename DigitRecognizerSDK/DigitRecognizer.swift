@@ -162,6 +162,10 @@ public class DigitRecognizer {
                         let overlapBonus = 0.7 + doubleClass.overlap
                         if min(singleClass.Confidence, nextSingle.Confidence) < doubleClass.classification.Confidence * overlapBonus {
                             classifyAsDouble = true
+                        } else if doubleClass.overlap > 0.75
+                            && ["-", "1"] == [singleClass.Label, nextSingle.Label].sorted() {
+                            // Recognizing "+" as "1-" or "-1" is a common misclassification
+                            classifyAsDouble = true
                         }
                     } else {
                         // Either this stroke or the next couldn't be classified by itself, so we must use the double
