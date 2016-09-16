@@ -70,7 +70,7 @@ public func shortestDistanceSquaredToLineSegmentFromPoint(segmentStart: CGPoint,
     }
 }
 
-public func visualizeNormalizedStrokes(strokes: DTWDigitClassifier.DigitStrokes, imageSize: CGSize) -> UIImage {
+public func visualizeNormalizedStrokes(strokes: DigitRecognizer.DigitStrokes, imageSize: CGSize) -> UIImage {
     
     UIGraphicsBeginImageContextWithOptions(imageSize, true, 0)
     guard let ctx = UIGraphicsGetCurrentContext() else {
@@ -110,5 +110,55 @@ public func visualizeNormalizedStrokes(strokes: DTWDigitClassifier.DigitStrokes,
     UIGraphicsEndImageContext()
     
     return image
+}
+
+public func renderToImage(normalizedStrokes: DigitRecognizer.DigitStrokes, size: ImageSize, data: UnsafeMutableRawPointer? = nil) -> UIImage? {
+    
+    guard let ctx = renderToContext(normalizedStrokes: normalizedStrokes, size: size, data: data) else {
+        return nil
+    }
+    
+    if let cgImage = ctx.makeImage() {
+        return UIImage(cgImage: cgImage, scale: 1, orientation: .up)
+    } else {
+        return nil
+    }
+}
+
+
+public func renderToContext(normalizedStrokes: DigitRecognizer.DigitStrokes, size: ImageSize, angle: CGFloat = 0, data: UnsafeMutableRawPointer? = nil) -> CGContext? {
+    guard let ctx = CGContext(data: data, width: Int(size.width), height: Int(size.height), bitsPerComponent: 8, bytesPerRow: Int(size.width), space: CGColorSpaceCreateDeviceGray(), bitmapInfo: CGImageAlphaInfo.none.rawValue) else {
+        return nil
+    }
+
+    let cosAngle = cos(angle)
+    let sinAngle = sin(angle)
+    let transformPointLambda: (CGPoint) -> CGPoint = { point -> CGPoint in
+        let rotated = CGPoint(x: cosAngle * point.x + sinAngle * point.y, y: cosAngle * point.y + sinAngle * point.x)
+        return CGPoint(x: (rotated.x * 0.8 + 0.5) * CGFloat(size.width),
+                       y: CGFloat(size.height) - (rotated.y * 0.8 + 0.5) * CGFloat(size.height))
+    }
+    
+    ctx.setFillColor(UIColor.black.cgColor)
+    ctx.fill(CGRect(x: 0, y: 0, width: CGFloat(size.width), height: CGFloat(size.height)))
+    
+    for stroke in normalizedStrokes {
+        var firstPoint = true
+        for point in stroke {
+            let transformedPoint = transformPointLambda(point)
+            
+            if firstPoint {
+                firstPoint = false
+                ctx.move(to: transformedPoint)
+            } else {
+                ctx.addLine(to: transformedPoint)
+            }
+        }
+        ctx.setStrokeColor(UIColor.white.cgColor)
+        ctx.setLineWidth(2)
+        ctx.strokePath()
+    }
+    
+    return ctx
 }
 
