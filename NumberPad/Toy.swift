@@ -30,6 +30,8 @@ protocol GhostableToy: Toy {
     func updateGhosts(inputStates: [Connector: ConnectorState], resolver: GhostValueResolver)
     
     func ghostState(at point: CGPoint) -> ResolvedValues?
+
+    var ghostsHidden: Bool { get set }
 }
 
 protocol SelectableToy: Toy {
@@ -49,7 +51,7 @@ class MotionToy : UIView, SelectableToy, GhostableToy {
     let image: UIImage
     let imageView: UIImageView
     var yOffset: CGFloat = 0
-    
+
     init(image: UIImage, xConnector: Connector, yConnector: Connector, driverConnector: Connector) {
         self.xConnector = xConnector
         self.yConnector = yConnector
@@ -157,7 +159,7 @@ class MotionToy : UIView, SelectableToy, GhostableToy {
     class GhostView: UIImageView {
         var simulationContext: ResolvedValues? = nil
     }
-    
+
     var activeGhosts: [GhostView] = []
     var reuseGhosts: [GhostView] = []
     
@@ -173,6 +175,7 @@ class MotionToy : UIView, SelectableToy, GhostableToy {
         ghost.alpha = CGFloat(alpha)
         
         activeGhosts.append(ghost)
+        ghost.isHidden = ghostsHidden
         return ghost
     }
     
@@ -183,7 +186,15 @@ class MotionToy : UIView, SelectableToy, GhostableToy {
         }
         activeGhosts = []
     }
-    
+
+    var ghostsHidden: Bool = false {
+        didSet {
+            for ghost in activeGhosts + reuseGhosts {
+                ghost.isHidden = ghostsHidden
+            }
+        }
+    }
+
     var selected: Bool = false {
         didSet {
             if selected {
@@ -351,7 +362,7 @@ class CirclesToy : UIView, GhostableToy {
     
     var activeGhosts: [CircleLayer] = []
     var reuseGhosts: [CircleLayer] = []
-    
+
     func createNewGhost() -> CircleLayer {
         let ghost: CircleLayer
         if let oldGhost = reuseGhosts.popLast() {
@@ -360,6 +371,7 @@ class CirclesToy : UIView, GhostableToy {
             ghost = CircleLayer()
         }
         ghost.mainLayer.opacity = 0.35
+        ghost.mainLayer.isHidden = ghostsHidden
         
         activeGhosts.append(ghost)
         self.layer.addSublayer(ghost.mainLayer)
@@ -373,7 +385,15 @@ class CirclesToy : UIView, GhostableToy {
         }
         activeGhosts = []
     }
-    
+
+    var ghostsHidden: Bool = false {
+        didSet {
+            for ghost in activeGhosts + reuseGhosts {
+                ghost.mainLayer.isHidden = ghostsHidden
+            }
+        }
+    }
+
     func updateGhosts(inputStates: [Connector : ConnectorState], resolver: GhostValueResolver) {
         CATransaction.begin()
         CATransaction.setDisableActions(true)
@@ -633,6 +653,7 @@ class SquaresToy : UIView, GhostableToy {
             ghost = SquareLayer()
         }
         ghost.mainLayer.opacity = 0.35
+        ghost.mainLayer.isHidden = ghostsHidden
         
         activeGhosts.append(ghost)
         self.layer.addSublayer(ghost.mainLayer)
@@ -646,7 +667,15 @@ class SquaresToy : UIView, GhostableToy {
         }
         activeGhosts = []
     }
-    
+
+    var ghostsHidden: Bool = false {
+        didSet {
+            for ghost in activeGhosts + reuseGhosts {
+                ghost.mainLayer.isHidden = ghostsHidden
+            }
+        }
+    }
+
     func updateGhosts(inputStates: [Connector : ConnectorState], resolver: GhostValueResolver) {
         CATransaction.begin()
         CATransaction.setDisableActions(true)

@@ -42,10 +42,22 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         valuePicker.autoresizingMask = [.flexibleWidth, .flexibleTopMargin]
         self.view.addSubview(valuePicker)
         self.selectedConnectorLabel = nil
+
+        ghostButton = UIButton(type: .custom)
+        ghostButton.setTitle("Show Ghosts 👻", for: .normal)
+        ghostButton.setTitle("Hide Ghosts 👻", for: .selected)
+        ghostButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 18)
+        ghostButton.setTitleColor(UIColor.blue, for: [])
+        ghostButton.isHidden = true
+        self.view.addAutoLayoutSubview(subview: ghostButton)
+        self.view.addHorizontalConstraints([ghostButton]-6-|)
+        self.view.addVerticalConstraints(|-15-[ghostButton])
+        ghostButton.addTarget(self, action: #selector(CanvasViewController.ghostButtonTapped), for: .touchUpInside)
     }
     
     var scrollView: UIScrollView!
     var valuePicker: NumberSlideView!
+    var ghostButton: UIButton!
     
     var strokeRecognizer: StrokeGestureRecognizer!
     var unprocessedStrokes: [Stroke] = []
@@ -1600,7 +1612,18 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         self.scrollView.contentSize = CGSize(width: maxX, height: maxY + self.view.bounds.height)
     }
     
-    var toys: [Toy] = []
+    var toys: [Toy] = [] {
+        didSet {
+            var hasGhosts = false
+            for toy in toys {
+                if let toy = toy as? GhostableToy {
+                    hasGhosts = true
+                    toy.ghostsHidden = !showGhosts
+                }
+            }
+            ghostButton.isHidden = !hasGhosts
+        }
+    }
     
     func connectorIsForToy(connector: Connector) -> Bool {
         for toy in self.toys {
@@ -1609,6 +1632,21 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             }
         }
         return false
+    }
+
+    var showGhosts: Bool = false {
+        didSet {
+            ghostButton?.isSelected = showGhosts
+            for toy in self.toys {
+                if let toy = toy as? GhostableToy {
+                    toy.ghostsHidden = !showGhosts
+                }
+            }
+        }
+    }
+
+    func ghostButtonTapped() {
+        showGhosts = !showGhosts
     }
     
     var nameCanvas: NameCanvasViewController?
