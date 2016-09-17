@@ -14,7 +14,7 @@
     if (self) {
         self.backgroundColor = [UIColor clearColor];
         self.opaque = NO;
-        
+        self.userInteractionEnabled = false;
     }
     return self;
 }
