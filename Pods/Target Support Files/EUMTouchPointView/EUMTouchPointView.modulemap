@@ -1,0 +1,6 @@
+framework module EUMTouchPointView {
+  umbrella header "EUMTouchPointView-umbrella.h"
+
+  export *
+  module * { export * }
+}

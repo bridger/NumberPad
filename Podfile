@@ -6,6 +6,7 @@ target 'NumberPad' do
   use_frameworks!
 
   # Pods for NumberPad
+  pod 'EUMTouchPointView'
   
   target 'NumberPadTests' do
     inherit! :search_paths

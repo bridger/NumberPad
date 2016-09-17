@@ -24,30 +24,52 @@
 				</array>
 			</dict>
 		</dict>
-		<key>0AADA334A4C9CA3565E6AA2598D1BDB2</key>
+		<key>043B6AAE0AA73900D2C89C776E8B9E72</key>
 		<dict>
-			<key>buildConfigurationList</key>
-			<string>E57A4FEA5B9A97FB327FFE4812A1D3DD</string>
-			<key>buildPhases</key>
-			<array>
-				<string>64B4FE35D6BC2C4A30614B42C4310BF4</string>
-				<string>E567F7BB6F63CFCF5F81B4D0029B0702</string>
-				<string>854303CAFDD3E0F900E3145FFBC5AB16</string>
-			</array>
-			<key>buildRules</key>
-			<array/>
-			<key>dependencies</key>
-			<array/>
+			<key>explicitFileType</key>
+			<string>wrapper.framework</string>
+			<key>includeInIndex</key>
+			<string>0</string>
 			<key>isa</key>
-			<string>PBXNativeTarget</string>
+			<string>PBXFileReference</string>
 			<key>name</key>
-			<string>Pods-NumberPad</string>
-			<key>productName</key>
-			<string>Pods-NumberPad</string>
-			<key>productReference</key>
-			<string>95ABFE227925F4E85056B4A1D8F686E5</string>
-			<key>productType</key>
-			<string>com.apple.product-type.framework</string>
+			<string>Pods_NumberPadTests.framework</string>
+			<key>path</key>
+			<string>Pods-NumberPadTests.framework</string>
+			<key>sourceTree</key>
+			<string>BUILT_PRODUCTS_DIR</string>
+		</dict>
+		<key>0820ADBE257E2991B7D3E09CEB4FFB4C</key>
+		<dict>
+			<key>baseConfigurationReference</key>
+			<string>1937978447B0143424AE6535B5BE2F72</string>
+			<key>buildSettings</key>
+			<dict>
+				<key>CONFIGURATION_BUILD_DIR</key>
+				<string>$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/EUMTouchPointView</string>
+				<key>ENABLE_STRICT_OBJC_MSGSEND</key>
+				<string>YES</string>
+				<key>GCC_NO_COMMON_BLOCKS</key>
+				<string>YES</string>
+				<key>INFOPLIST_FILE</key>
+				<string>Target Support Files/EUMTouchPointView/ResourceBundle-EUMTouchPointView-Info.plist</string>
+				<key>IPHONEOS_DEPLOYMENT_TARGET</key>
+				<string>8.0</string>
+				<key>PRODUCT_NAME</key>
+				<string>EUMTouchPointView</string>
+				<key>SDKROOT</key>
+				<string>iphoneos</string>
+				<key>SKIP_INSTALL</key>
+				<string>YES</string>
+				<key>TARGETED_DEVICE_FAMILY</key>
+				<string>1,2</string>
+				<key>WRAPPER_EXTENSION</key>
+				<string>bundle</string>
+			</dict>
+			<key>isa</key>
+			<string>XCBuildConfiguration</string>
+			<key>name</key>
+			<string>Debug</string>
 		</dict>
 		<key>0BED7478D52F881C7826CA2EC271BCA4</key>
 		<dict>
@@ -130,12 +152,116 @@
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
-		<key>1428C0F8012AA3A5DA05D71B275D2407</key>
+		<key>15CF45868A50972BA817E9627A6CBF4A</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>2E21F7865F23DEFDDD31F319CEA74BAA</string>
+				<string>B9EFE80559EA29B923B1B72E2FF7E02E</string>
+				<string>950B2D2B2E92821DFBAAB1871FDD25D9</string>
+				<string>043B6AAE0AA73900D2C89C776E8B9E72</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>name</key>
+			<string>Products</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>18F5DDC451BA7D3BEE3D3BE601EDC6FA</key>
 		<dict>
 			<key>fileRef</key>
-			<string>CEC22C73C1608DFA5D5D78BDCB218219</string>
+			<string>E7B48B5AEA076BA060B4244929C25BEB</string>
 			<key>isa</key>
 			<string>PBXBuildFile</string>
+			<key>settings</key>
+			<dict>
+				<key>ATTRIBUTES</key>
+				<array>
+					<string>Public</string>
+				</array>
+			</dict>
+		</dict>
+		<key>19295EAE695F378F9503CBA3D22211DC</key>
+		<dict>
+			<key>baseConfigurationReference</key>
+			<string>BB0951F63C18ACE77E69C6816BE0F342</string>
+			<key>buildSettings</key>
+			<dict>
+				<key>CODE_SIGN_IDENTITY[sdk=iphoneos*]</key>
+				<string>iPhone Developer</string>
+				<key>CURRENT_PROJECT_VERSION</key>
+				<string>1</string>
+				<key>DEBUG_INFORMATION_FORMAT</key>
+				<string>dwarf-with-dsym</string>
+				<key>DEFINES_MODULE</key>
+				<string>YES</string>
+				<key>DYLIB_COMPATIBILITY_VERSION</key>
+				<string>1</string>
+				<key>DYLIB_CURRENT_VERSION</key>
+				<string>1</string>
+				<key>DYLIB_INSTALL_NAME_BASE</key>
+				<string>@rpath</string>
+				<key>ENABLE_STRICT_OBJC_MSGSEND</key>
+				<string>YES</string>
+				<key>GCC_NO_COMMON_BLOCKS</key>
+				<string>YES</string>
+				<key>INFOPLIST_FILE</key>
+				<string>Target Support Files/Pods-NumberPad/Info.plist</string>
+				<key>INSTALL_PATH</key>
+				<string>$(LOCAL_LIBRARY_DIR)/Frameworks</string>
+				<key>IPHONEOS_DEPLOYMENT_TARGET</key>
+				<string>10.0</string>
+				<key>LD_RUNPATH_SEARCH_PATHS</key>
+				<array>
+					<string>$(inherited)</string>
+					<string>@executable_path/Frameworks</string>
+					<string>@loader_path/Frameworks</string>
+				</array>
+				<key>MACH_O_TYPE</key>
+				<string>staticlib</string>
+				<key>MODULEMAP_FILE</key>
+				<string>Target Support Files/Pods-NumberPad/Pods-NumberPad.modulemap</string>
+				<key>MTL_ENABLE_DEBUG_INFO</key>
+				<string>NO</string>
+				<key>OTHER_LDFLAGS</key>
+				<string></string>
+				<key>OTHER_LIBTOOLFLAGS</key>
+				<string></string>
+				<key>PODS_ROOT</key>
+				<string>$(SRCROOT)</string>
+				<key>PRODUCT_BUNDLE_IDENTIFIER</key>
+				<string>org.cocoapods.${PRODUCT_NAME:rfc1034identifier}</string>
+				<key>PRODUCT_NAME</key>
+				<string>Pods_NumberPad</string>
+				<key>SDKROOT</key>
+				<string>iphoneos</string>
+				<key>SKIP_INSTALL</key>
+				<string>YES</string>
+				<key>TARGETED_DEVICE_FAMILY</key>
+				<string>1,2</string>
+				<key>VERSIONING_SYSTEM</key>
+				<string>apple-generic</string>
+				<key>VERSION_INFO_PREFIX</key>
+				<string></string>
+			</dict>
+			<key>isa</key>
+			<string>XCBuildConfiguration</string>
+			<key>name</key>
+			<string>Release</string>
+		</dict>
+		<key>1937978447B0143424AE6535B5BE2F72</key>
+		<dict>
+			<key>includeInIndex</key>
+			<string>1</string>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>text.xcconfig</string>
+			<key>path</key>
+			<string>EUMTouchPointView.xcconfig</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
 		</dict>
 		<key>1B4A5B64D5F8C9B7AA8C52AAC255E53F</key>
 		<dict>
@@ -175,6 +301,33 @@
 			<key>isa</key>
 			<string>XCConfigurationList</string>
 		</dict>
+		<key>22BA625091EB8B4F86317D9905D2F1B0</key>
+		<dict>
+			<key>buildActionMask</key>
+			<string>2147483647</string>
+			<key>files</key>
+			<array>
+				<string>8307F0818D65A5692CE5ED96BC82B0C8</string>
+			</array>
+			<key>isa</key>
+			<string>PBXSourcesBuildPhase</string>
+			<key>runOnlyForDeploymentPostprocessing</key>
+			<string>0</string>
+		</dict>
+		<key>232F5D8E34DDBAE711A7F96889A5385B</key>
+		<dict>
+			<key>fileRef</key>
+			<string>99F45F9D3E52D6F9323AE835D33B37D3</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+			<key>settings</key>
+			<dict>
+				<key>ATTRIBUTES</key>
+				<array>
+					<string>Public</string>
+				</array>
+			</dict>
+		</dict>
 		<key>2462BE874B8AD73AC9BFA6A56954873A</key>
 		<dict>
 			<key>includeInIndex</key>
@@ -187,6 +340,17 @@
 			<string>Pods-NumberPad-dummy.m</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
+		</dict>
+		<key>25FC489F28EE3E56C67CF08988984521</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXTargetDependency</string>
+			<key>name</key>
+			<string>EUMTouchPointView-EUMTouchPointView</string>
+			<key>target</key>
+			<string>B1483D90493F768249EAEFC19D3102FB</string>
+			<key>targetProxy</key>
+			<string>5C629BCF127A2ED0E747EBE35D4862C3</string>
 		</dict>
 		<key>297015BA8246659F87394C32A9B7BDC9</key>
 		<dict>
@@ -212,6 +376,21 @@
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
+		<key>2A9983DC4D423D5D5DBA8EBAE203B828</key>
+		<dict>
+			<key>includeInIndex</key>
+			<string>1</string>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.c.objc</string>
+			<key>name</key>
+			<string>UITouch+EUMUITouch.m</string>
+			<key>path</key>
+			<string>Pod/Classes/UITouch+EUMUITouch.m</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
 		<key>2D8E8EC45A3A1A1D94AE762CB5028504</key>
 		<dict>
 			<key>buildConfigurations</key>
@@ -225,6 +404,80 @@
 			<string>Release</string>
 			<key>isa</key>
 			<string>XCConfigurationList</string>
+		</dict>
+		<key>2E21F7865F23DEFDDD31F319CEA74BAA</key>
+		<dict>
+			<key>explicitFileType</key>
+			<string>wrapper.cfbundle</string>
+			<key>includeInIndex</key>
+			<string>0</string>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>name</key>
+			<string>EUMTouchPointView.bundle</string>
+			<key>path</key>
+			<string>EUMTouchPointView.bundle</string>
+			<key>sourceTree</key>
+			<string>BUILT_PRODUCTS_DIR</string>
+		</dict>
+		<key>2ECA88EFACAEF0A2C4AB25504A4771F7</key>
+		<dict>
+			<key>buildConfigurations</key>
+			<array>
+				<string>9300C7D3BC4C1CEB66B0DA0DBFA9C6BE</string>
+				<string>19295EAE695F378F9503CBA3D22211DC</string>
+			</array>
+			<key>defaultConfigurationIsVisible</key>
+			<string>0</string>
+			<key>defaultConfigurationName</key>
+			<string>Release</string>
+			<key>isa</key>
+			<string>XCConfigurationList</string>
+		</dict>
+		<key>3701FFBD4583577D289924A7A0C56178</key>
+		<dict>
+			<key>includeInIndex</key>
+			<string>1</string>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.c.objc</string>
+			<key>path</key>
+			<string>EUMTouchPointView-dummy.m</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>37023F58BF8FFBF2EA0224F70B61B981</key>
+		<dict>
+			<key>baseConfigurationReference</key>
+			<string>1937978447B0143424AE6535B5BE2F72</string>
+			<key>buildSettings</key>
+			<dict>
+				<key>CONFIGURATION_BUILD_DIR</key>
+				<string>$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/EUMTouchPointView</string>
+				<key>ENABLE_STRICT_OBJC_MSGSEND</key>
+				<string>YES</string>
+				<key>GCC_NO_COMMON_BLOCKS</key>
+				<string>YES</string>
+				<key>INFOPLIST_FILE</key>
+				<string>Target Support Files/EUMTouchPointView/ResourceBundle-EUMTouchPointView-Info.plist</string>
+				<key>IPHONEOS_DEPLOYMENT_TARGET</key>
+				<string>8.0</string>
+				<key>PRODUCT_NAME</key>
+				<string>EUMTouchPointView</string>
+				<key>SDKROOT</key>
+				<string>iphoneos</string>
+				<key>SKIP_INSTALL</key>
+				<string>YES</string>
+				<key>TARGETED_DEVICE_FAMILY</key>
+				<string>1,2</string>
+				<key>WRAPPER_EXTENSION</key>
+				<string>bundle</string>
+			</dict>
+			<key>isa</key>
+			<string>XCBuildConfiguration</string>
+			<key>name</key>
+			<string>Release</string>
 		</dict>
 		<key>3DCAB2B7CDE207B3958B6CB957FCC758</key>
 		<dict>
@@ -251,6 +504,13 @@
 			<string>Pods-NumberPadTests.release.xcconfig</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
+		</dict>
+		<key>40D5706723F8DAAE82C8CCFDB6148891</key>
+		<dict>
+			<key>fileRef</key>
+			<string>2A9983DC4D423D5D5DBA8EBAE203B828</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
 		</dict>
 		<key>42287DDF97330524BA3EF220F0276DA6</key>
 		<dict>
@@ -323,7 +583,410 @@
 			<key>name</key>
 			<string>Release</string>
 		</dict>
-		<key>44887B3BDC2BA16C28E3BECCB46809D3</key>
+		<key>465C4A847EB148F302E58604C47EC03E</key>
+		<dict>
+			<key>buildActionMask</key>
+			<string>2147483647</string>
+			<key>files</key>
+			<array/>
+			<key>isa</key>
+			<string>PBXSourcesBuildPhase</string>
+			<key>runOnlyForDeploymentPostprocessing</key>
+			<string>0</string>
+		</dict>
+		<key>4977F968B086E096C005A7D8AA77ECAB</key>
+		<dict>
+			<key>includeInIndex</key>
+			<string>1</string>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>text.plist.xml</string>
+			<key>path</key>
+			<string>Info.plist</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>4A8693F58CB35F3BB7FB77439CC33FD9</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>B118504770E9D7AE6ED34A75CA1B8FCD</string>
+				<string>1D3F1FB0D7A2982374FE71C7E9ECCCEB</string>
+				<string>BDF75E117F3187F10E14129F860A8FE1</string>
+				<string>576B2F7CABCE8C323D48E1AA32623FA3</string>
+				<string>2462BE874B8AD73AC9BFA6A56954873A</string>
+				<string>118D26670A1F8ED50F3B2D89FFD514F9</string>
+				<string>C262D879A72F832B39E5AAB0CA4BA919</string>
+				<string>E7B48B5AEA076BA060B4244929C25BEB</string>
+				<string>E0CA0BD2EEE567F14D31E27CADDB6AAA</string>
+				<string>BB0951F63C18ACE77E69C6816BE0F342</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>name</key>
+			<string>Pods-NumberPad</string>
+			<key>path</key>
+			<string>Target Support Files/Pods-NumberPad</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>4AD89871E516CD768D6C153C02C5F263</key>
+		<dict>
+			<key>includeInIndex</key>
+			<string>1</string>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>text.script.sh</string>
+			<key>path</key>
+			<string>Pods-NumberPadTests-frameworks.sh</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>4B3BDF3E66BC9DCA47CA53603620C6FA</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>4A8693F58CB35F3BB7FB77439CC33FD9</string>
+				<string>854D00C8B879D1119B36DB0A8766347A</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>name</key>
+			<string>Targets Support Files</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>4E789CB070A2BB6B9AD2BE4E7DC075F2</key>
+		<dict>
+			<key>buildActionMask</key>
+			<string>2147483647</string>
+			<key>files</key>
+			<array>
+				<string>9E39C31E9B437789218748ADDBE283EB</string>
+				<string>63C984D1781459940168B94859131EFD</string>
+				<string>6C9EE9CED8F46410A6CE611071EE443E</string>
+				<string>40D5706723F8DAAE82C8CCFDB6148891</string>
+			</array>
+			<key>isa</key>
+			<string>PBXSourcesBuildPhase</string>
+			<key>runOnlyForDeploymentPostprocessing</key>
+			<string>0</string>
+		</dict>
+		<key>576B2F7CABCE8C323D48E1AA32623FA3</key>
+		<dict>
+			<key>includeInIndex</key>
+			<string>1</string>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>text.plist.xml</string>
+			<key>path</key>
+			<string>Pods-NumberPad-acknowledgements.plist</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>5C08A00DAF2F0B476DE37327DE8F756A</key>
+		<dict>
+			<key>containerPortal</key>
+			<string>D41D8CD98F00B204E9800998ECF8427E</string>
+			<key>isa</key>
+			<string>PBXContainerItemProxy</string>
+			<key>proxyType</key>
+			<string>1</string>
+			<key>remoteGlobalIDString</key>
+			<string>BC6858A2A9AA16200E79E72082C7DAF0</string>
+			<key>remoteInfo</key>
+			<string>EUMTouchPointView</string>
+		</dict>
+		<key>5C1EA3C82C00E0243716C1E3746C72E5</key>
+		<dict>
+			<key>buildConfigurationList</key>
+			<string>1F14C72E8C8E62FD7793DD966C289575</string>
+			<key>buildPhases</key>
+			<array>
+				<string>811022DCE748FEF5A4177A87CCDBB20B</string>
+				<string>D18E472B29326A302BF166CCEA686A82</string>
+				<string>660E725B4E76A1C5906A157DFD2D6F0D</string>
+			</array>
+			<key>buildRules</key>
+			<array/>
+			<key>dependencies</key>
+			<array/>
+			<key>isa</key>
+			<string>PBXNativeTarget</string>
+			<key>name</key>
+			<string>Pods-NumberPadTests</string>
+			<key>productName</key>
+			<string>Pods-NumberPadTests</string>
+			<key>productReference</key>
+			<string>043B6AAE0AA73900D2C89C776E8B9E72</string>
+			<key>productType</key>
+			<string>com.apple.product-type.framework</string>
+		</dict>
+		<key>5C629BCF127A2ED0E747EBE35D4862C3</key>
+		<dict>
+			<key>containerPortal</key>
+			<string>D41D8CD98F00B204E9800998ECF8427E</string>
+			<key>isa</key>
+			<string>PBXContainerItemProxy</string>
+			<key>proxyType</key>
+			<string>1</string>
+			<key>remoteGlobalIDString</key>
+			<string>B1483D90493F768249EAEFC19D3102FB</string>
+			<key>remoteInfo</key>
+			<string>EUMTouchPointView-EUMTouchPointView</string>
+		</dict>
+		<key>5FBB9341A2F038C32A4426C94A1D0259</key>
+		<dict>
+			<key>buildActionMask</key>
+			<string>2147483647</string>
+			<key>files</key>
+			<array/>
+			<key>isa</key>
+			<string>PBXFrameworksBuildPhase</string>
+			<key>runOnlyForDeploymentPostprocessing</key>
+			<string>0</string>
+		</dict>
+		<key>60F782E9A8CA201EBD88D78126F73CE8</key>
+		<dict>
+			<key>includeInIndex</key>
+			<string>1</string>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.c.h</string>
+			<key>path</key>
+			<string>EUMTouchPointView-umbrella.h</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>622A6D413449AD5DDA534CB2516953D4</key>
+		<dict>
+			<key>buildActionMask</key>
+			<string>2147483647</string>
+			<key>files</key>
+			<array>
+				<string>18F5DDC451BA7D3BEE3D3BE601EDC6FA</string>
+			</array>
+			<key>isa</key>
+			<string>PBXHeadersBuildPhase</string>
+			<key>runOnlyForDeploymentPostprocessing</key>
+			<string>0</string>
+		</dict>
+		<key>63C984D1781459940168B94859131EFD</key>
+		<dict>
+			<key>fileRef</key>
+			<string>3701FFBD4583577D289924A7A0C56178</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>660E725B4E76A1C5906A157DFD2D6F0D</key>
+		<dict>
+			<key>buildActionMask</key>
+			<string>2147483647</string>
+			<key>files</key>
+			<array>
+				<string>0139884306A751067E9E49DD28B10F9B</string>
+			</array>
+			<key>isa</key>
+			<string>PBXHeadersBuildPhase</string>
+			<key>runOnlyForDeploymentPostprocessing</key>
+			<string>0</string>
+		</dict>
+		<key>66632D54E47702A4362DE93236576071</key>
+		<dict>
+			<key>includeInIndex</key>
+			<string>1</string>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.c.h</string>
+			<key>name</key>
+			<string>UITouch+EUMUITouch.h</string>
+			<key>path</key>
+			<string>Pod/Classes/UITouch+EUMUITouch.h</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>69C6933F0BFCA0484351D94B43E774F6</key>
+		<dict>
+			<key>includeInIndex</key>
+			<string>1</string>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>text.script.sh</string>
+			<key>path</key>
+			<string>Pods-NumberPadTests-resources.sh</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>6C9EE9CED8F46410A6CE611071EE443E</key>
+		<dict>
+			<key>fileRef</key>
+			<string>E6021B9B2A21F414ED594CE3EC55409D</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>7153F2BE864268D830F85DA0B3BFE496</key>
+		<dict>
+			<key>includeInIndex</key>
+			<string>1</string>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.c.objc</string>
+			<key>name</key>
+			<string>EUMShowTouchWindow.m</string>
+			<key>path</key>
+			<string>Pod/Classes/EUMShowTouchWindow.m</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>7161CEDB30EA326603B7F96FBB557BF5</key>
+		<dict>
+			<key>buildConfigurations</key>
+			<array>
+				<string>0820ADBE257E2991B7D3E09CEB4FFB4C</string>
+				<string>37023F58BF8FFBF2EA0224F70B61B981</string>
+			</array>
+			<key>defaultConfigurationIsVisible</key>
+			<string>0</string>
+			<key>defaultConfigurationName</key>
+			<string>Release</string>
+			<key>isa</key>
+			<string>XCConfigurationList</string>
+		</dict>
+		<key>7330089DC5711BD7B323BE587AD5AC52</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>80B5DD6231AE54BAEE95FD5DD90E78C9</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>name</key>
+			<string>Pods</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>7416D578CEBC70A02F7A7518365C1331</key>
+		<dict>
+			<key>fileRef</key>
+			<string>CEC22C73C1608DFA5D5D78BDCB218219</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>7528680D05C093AE00B9C0D85C6B0A62</key>
+		<dict>
+			<key>includeInIndex</key>
+			<string>1</string>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.c.objc</string>
+			<key>path</key>
+			<string>Pods-NumberPadTests-dummy.m</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>7A19780785FB2D3D4D974E9D4A67D60A</key>
+		<dict>
+			<key>fileRef</key>
+			<string>F6E1DCA47FAD90C4A07B51F57EC8C27C</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+			<key>settings</key>
+			<dict>
+				<key>ATTRIBUTES</key>
+				<array>
+					<string>Public</string>
+				</array>
+			</dict>
+		</dict>
+		<key>7DB346D0F39D3F0E887471402A8071AB</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>93A4A3777CF96A4AAC1D13BA6DCCEA73</string>
+				<string>BC3CA7F9E30CC8F7E2DD044DD34432FC</string>
+				<string>7330089DC5711BD7B323BE587AD5AC52</string>
+				<string>15CF45868A50972BA817E9627A6CBF4A</string>
+				<string>4B3BDF3E66BC9DCA47CA53603620C6FA</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>80B5DD6231AE54BAEE95FD5DD90E78C9</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>99F45F9D3E52D6F9323AE835D33B37D3</string>
+				<string>7153F2BE864268D830F85DA0B3BFE496</string>
+				<string>F6E1DCA47FAD90C4A07B51F57EC8C27C</string>
+				<string>E6021B9B2A21F414ED594CE3EC55409D</string>
+				<string>66632D54E47702A4362DE93236576071</string>
+				<string>2A9983DC4D423D5D5DBA8EBAE203B828</string>
+				<string>BF31C7FD674922A89A096302E9A8991D</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>name</key>
+			<string>EUMTouchPointView</string>
+			<key>path</key>
+			<string>EUMTouchPointView</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>811022DCE748FEF5A4177A87CCDBB20B</key>
+		<dict>
+			<key>buildActionMask</key>
+			<string>2147483647</string>
+			<key>files</key>
+			<array>
+				<string>C7043DD3302B53D632350156DE462B9E</string>
+			</array>
+			<key>isa</key>
+			<string>PBXSourcesBuildPhase</string>
+			<key>runOnlyForDeploymentPostprocessing</key>
+			<string>0</string>
+		</dict>
+		<key>8307F0818D65A5692CE5ED96BC82B0C8</key>
+		<dict>
+			<key>fileRef</key>
+			<string>2462BE874B8AD73AC9BFA6A56954873A</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>854D00C8B879D1119B36DB0A8766347A</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>4977F968B086E096C005A7D8AA77ECAB</string>
+				<string>2A618847CF471BDA67A6F55621F42BB1</string>
+				<string>1B4A5B64D5F8C9B7AA8C52AAC255E53F</string>
+				<string>297015BA8246659F87394C32A9B7BDC9</string>
+				<string>7528680D05C093AE00B9C0D85C6B0A62</string>
+				<string>4AD89871E516CD768D6C153C02C5F263</string>
+				<string>69C6933F0BFCA0484351D94B43E774F6</string>
+				<string>F1C59F0BA60DD1CC8A0DAFA396A71CB7</string>
+				<string>D0AD8EF5949EC159CEB515437D139995</string>
+				<string>40929D2EAF09AB8687D48D18A6F47497</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>name</key>
+			<string>Pods-NumberPadTests</string>
+			<key>path</key>
+			<string>Target Support Files/Pods-NumberPadTests</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>9300C7D3BC4C1CEB66B0DA0DBFA9C6BE</key>
 		<dict>
 			<key>baseConfigurationReference</key>
 			<string>E0CA0BD2EEE567F14D31E27CADDB6AAA</string>
@@ -391,7 +1054,14 @@
 			<key>name</key>
 			<string>Debug</string>
 		</dict>
-		<key>4977F968B086E096C005A7D8AA77ECAB</key>
+		<key>938B99B7A7563AB11E8F020C36188E73</key>
+		<dict>
+			<key>fileRef</key>
+			<string>2E21F7865F23DEFDDD31F319CEA74BAA</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>938DE3CC1B092147A6C67042E0C1B2AF</key>
 		<dict>
 			<key>includeInIndex</key>
 			<string>1</string>
@@ -400,294 +1070,7 @@
 			<key>lastKnownFileType</key>
 			<string>text.plist.xml</string>
 			<key>path</key>
-			<string>Info.plist</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>4A8693F58CB35F3BB7FB77439CC33FD9</key>
-		<dict>
-			<key>children</key>
-			<array>
-				<string>B118504770E9D7AE6ED34A75CA1B8FCD</string>
-				<string>1D3F1FB0D7A2982374FE71C7E9ECCCEB</string>
-				<string>BDF75E117F3187F10E14129F860A8FE1</string>
-				<string>576B2F7CABCE8C323D48E1AA32623FA3</string>
-				<string>2462BE874B8AD73AC9BFA6A56954873A</string>
-				<string>118D26670A1F8ED50F3B2D89FFD514F9</string>
-				<string>C262D879A72F832B39E5AAB0CA4BA919</string>
-				<string>E7B48B5AEA076BA060B4244929C25BEB</string>
-				<string>E0CA0BD2EEE567F14D31E27CADDB6AAA</string>
-				<string>BB0951F63C18ACE77E69C6816BE0F342</string>
-			</array>
-			<key>isa</key>
-			<string>PBXGroup</string>
-			<key>name</key>
-			<string>Pods-NumberPad</string>
-			<key>path</key>
-			<string>Target Support Files/Pods-NumberPad</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>4AD89871E516CD768D6C153C02C5F263</key>
-		<dict>
-			<key>includeInIndex</key>
-			<string>1</string>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>text.script.sh</string>
-			<key>path</key>
-			<string>Pods-NumberPadTests-frameworks.sh</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>4B3BDF3E66BC9DCA47CA53603620C6FA</key>
-		<dict>
-			<key>children</key>
-			<array>
-				<string>4A8693F58CB35F3BB7FB77439CC33FD9</string>
-				<string>854D00C8B879D1119B36DB0A8766347A</string>
-			</array>
-			<key>isa</key>
-			<string>PBXGroup</string>
-			<key>name</key>
-			<string>Targets Support Files</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>4CFA2A1ED6F535C707F2C090C5690C82</key>
-		<dict>
-			<key>baseConfigurationReference</key>
-			<string>BB0951F63C18ACE77E69C6816BE0F342</string>
-			<key>buildSettings</key>
-			<dict>
-				<key>CODE_SIGN_IDENTITY[sdk=iphoneos*]</key>
-				<string>iPhone Developer</string>
-				<key>CURRENT_PROJECT_VERSION</key>
-				<string>1</string>
-				<key>DEBUG_INFORMATION_FORMAT</key>
-				<string>dwarf-with-dsym</string>
-				<key>DEFINES_MODULE</key>
-				<string>YES</string>
-				<key>DYLIB_COMPATIBILITY_VERSION</key>
-				<string>1</string>
-				<key>DYLIB_CURRENT_VERSION</key>
-				<string>1</string>
-				<key>DYLIB_INSTALL_NAME_BASE</key>
-				<string>@rpath</string>
-				<key>ENABLE_STRICT_OBJC_MSGSEND</key>
-				<string>YES</string>
-				<key>GCC_NO_COMMON_BLOCKS</key>
-				<string>YES</string>
-				<key>INFOPLIST_FILE</key>
-				<string>Target Support Files/Pods-NumberPad/Info.plist</string>
-				<key>INSTALL_PATH</key>
-				<string>$(LOCAL_LIBRARY_DIR)/Frameworks</string>
-				<key>IPHONEOS_DEPLOYMENT_TARGET</key>
-				<string>10.0</string>
-				<key>LD_RUNPATH_SEARCH_PATHS</key>
-				<array>
-					<string>$(inherited)</string>
-					<string>@executable_path/Frameworks</string>
-					<string>@loader_path/Frameworks</string>
-				</array>
-				<key>MACH_O_TYPE</key>
-				<string>staticlib</string>
-				<key>MODULEMAP_FILE</key>
-				<string>Target Support Files/Pods-NumberPad/Pods-NumberPad.modulemap</string>
-				<key>MTL_ENABLE_DEBUG_INFO</key>
-				<string>NO</string>
-				<key>OTHER_LDFLAGS</key>
-				<string></string>
-				<key>OTHER_LIBTOOLFLAGS</key>
-				<string></string>
-				<key>PODS_ROOT</key>
-				<string>$(SRCROOT)</string>
-				<key>PRODUCT_BUNDLE_IDENTIFIER</key>
-				<string>org.cocoapods.${PRODUCT_NAME:rfc1034identifier}</string>
-				<key>PRODUCT_NAME</key>
-				<string>Pods_NumberPad</string>
-				<key>SDKROOT</key>
-				<string>iphoneos</string>
-				<key>SKIP_INSTALL</key>
-				<string>YES</string>
-				<key>TARGETED_DEVICE_FAMILY</key>
-				<string>1,2</string>
-				<key>VERSIONING_SYSTEM</key>
-				<string>apple-generic</string>
-				<key>VERSION_INFO_PREFIX</key>
-				<string></string>
-			</dict>
-			<key>isa</key>
-			<string>XCBuildConfiguration</string>
-			<key>name</key>
-			<string>Release</string>
-		</dict>
-		<key>4E501E2BD31B383415C81DB5888FD864</key>
-		<dict>
-			<key>children</key>
-			<array>
-				<string>95ABFE227925F4E85056B4A1D8F686E5</string>
-				<string>F2D403118B439BCFCD9BFE716531BA4B</string>
-			</array>
-			<key>isa</key>
-			<string>PBXGroup</string>
-			<key>name</key>
-			<string>Products</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>576B2F7CABCE8C323D48E1AA32623FA3</key>
-		<dict>
-			<key>includeInIndex</key>
-			<string>1</string>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>text.plist.xml</string>
-			<key>path</key>
-			<string>Pods-NumberPad-acknowledgements.plist</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>5C1EA3C82C00E0243716C1E3746C72E5</key>
-		<dict>
-			<key>buildConfigurationList</key>
-			<string>1F14C72E8C8E62FD7793DD966C289575</string>
-			<key>buildPhases</key>
-			<array>
-				<string>811022DCE748FEF5A4177A87CCDBB20B</string>
-				<string>D18E472B29326A302BF166CCEA686A82</string>
-				<string>660E725B4E76A1C5906A157DFD2D6F0D</string>
-			</array>
-			<key>buildRules</key>
-			<array/>
-			<key>dependencies</key>
-			<array/>
-			<key>isa</key>
-			<string>PBXNativeTarget</string>
-			<key>name</key>
-			<string>Pods-NumberPadTests</string>
-			<key>productName</key>
-			<string>Pods-NumberPadTests</string>
-			<key>productReference</key>
-			<string>F2D403118B439BCFCD9BFE716531BA4B</string>
-			<key>productType</key>
-			<string>com.apple.product-type.framework</string>
-		</dict>
-		<key>64B4FE35D6BC2C4A30614B42C4310BF4</key>
-		<dict>
-			<key>buildActionMask</key>
-			<string>2147483647</string>
-			<key>files</key>
-			<array>
-				<string>9FD4BDB2E8EF4FA7C35A7BD1CB12B6BC</string>
-			</array>
-			<key>isa</key>
-			<string>PBXSourcesBuildPhase</string>
-			<key>runOnlyForDeploymentPostprocessing</key>
-			<string>0</string>
-		</dict>
-		<key>660E725B4E76A1C5906A157DFD2D6F0D</key>
-		<dict>
-			<key>buildActionMask</key>
-			<string>2147483647</string>
-			<key>files</key>
-			<array>
-				<string>0139884306A751067E9E49DD28B10F9B</string>
-			</array>
-			<key>isa</key>
-			<string>PBXHeadersBuildPhase</string>
-			<key>runOnlyForDeploymentPostprocessing</key>
-			<string>0</string>
-		</dict>
-		<key>69C6933F0BFCA0484351D94B43E774F6</key>
-		<dict>
-			<key>includeInIndex</key>
-			<string>1</string>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>text.script.sh</string>
-			<key>path</key>
-			<string>Pods-NumberPadTests-resources.sh</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>7528680D05C093AE00B9C0D85C6B0A62</key>
-		<dict>
-			<key>includeInIndex</key>
-			<string>1</string>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>sourcecode.c.objc</string>
-			<key>path</key>
-			<string>Pods-NumberPadTests-dummy.m</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>7DB346D0F39D3F0E887471402A8071AB</key>
-		<dict>
-			<key>children</key>
-			<array>
-				<string>93A4A3777CF96A4AAC1D13BA6DCCEA73</string>
-				<string>BC3CA7F9E30CC8F7E2DD044DD34432FC</string>
-				<string>4E501E2BD31B383415C81DB5888FD864</string>
-				<string>4B3BDF3E66BC9DCA47CA53603620C6FA</string>
-			</array>
-			<key>isa</key>
-			<string>PBXGroup</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>811022DCE748FEF5A4177A87CCDBB20B</key>
-		<dict>
-			<key>buildActionMask</key>
-			<string>2147483647</string>
-			<key>files</key>
-			<array>
-				<string>C7043DD3302B53D632350156DE462B9E</string>
-			</array>
-			<key>isa</key>
-			<string>PBXSourcesBuildPhase</string>
-			<key>runOnlyForDeploymentPostprocessing</key>
-			<string>0</string>
-		</dict>
-		<key>854303CAFDD3E0F900E3145FFBC5AB16</key>
-		<dict>
-			<key>buildActionMask</key>
-			<string>2147483647</string>
-			<key>files</key>
-			<array>
-				<string>E85FA056995A4D98F7689FE9402B67D9</string>
-			</array>
-			<key>isa</key>
-			<string>PBXHeadersBuildPhase</string>
-			<key>runOnlyForDeploymentPostprocessing</key>
-			<string>0</string>
-		</dict>
-		<key>854D00C8B879D1119B36DB0A8766347A</key>
-		<dict>
-			<key>children</key>
-			<array>
-				<string>4977F968B086E096C005A7D8AA77ECAB</string>
-				<string>2A618847CF471BDA67A6F55621F42BB1</string>
-				<string>1B4A5B64D5F8C9B7AA8C52AAC255E53F</string>
-				<string>297015BA8246659F87394C32A9B7BDC9</string>
-				<string>7528680D05C093AE00B9C0D85C6B0A62</string>
-				<string>4AD89871E516CD768D6C153C02C5F263</string>
-				<string>69C6933F0BFCA0484351D94B43E774F6</string>
-				<string>F1C59F0BA60DD1CC8A0DAFA396A71CB7</string>
-				<string>D0AD8EF5949EC159CEB515437D139995</string>
-				<string>40929D2EAF09AB8687D48D18A6F47497</string>
-			</array>
-			<key>isa</key>
-			<string>PBXGroup</string>
-			<key>name</key>
-			<string>Pods-NumberPadTests</string>
-			<key>path</key>
-			<string>Target Support Files/Pods-NumberPadTests</string>
+			<string>ResourceBundle-EUMTouchPointView-Info.plist</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
@@ -710,7 +1093,20 @@
 			<key>xcLanguageSpecificationIdentifier</key>
 			<string>xcode.lang.ruby</string>
 		</dict>
-		<key>95ABFE227925F4E85056B4A1D8F686E5</key>
+		<key>94A0A263E3A6D2D7C14C98096EA8CCDD</key>
+		<dict>
+			<key>buildActionMask</key>
+			<string>2147483647</string>
+			<key>files</key>
+			<array>
+				<string>B681CF594387770D0AD92F9BB6379BAB</string>
+			</array>
+			<key>isa</key>
+			<string>PBXFrameworksBuildPhase</string>
+			<key>runOnlyForDeploymentPostprocessing</key>
+			<string>0</string>
+		</dict>
+		<key>950B2D2B2E92821DFBAAB1871FDD25D9</key>
 		<dict>
 			<key>explicitFileType</key>
 			<string>wrapper.framework</string>
@@ -725,12 +1121,54 @@
 			<key>sourceTree</key>
 			<string>BUILT_PRODUCTS_DIR</string>
 		</dict>
-		<key>9FD4BDB2E8EF4FA7C35A7BD1CB12B6BC</key>
+		<key>99F45F9D3E52D6F9323AE835D33B37D3</key>
+		<dict>
+			<key>includeInIndex</key>
+			<string>1</string>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.c.h</string>
+			<key>name</key>
+			<string>EUMShowTouchWindow.h</string>
+			<key>path</key>
+			<string>Pod/Classes/EUMShowTouchWindow.h</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>9E39C31E9B437789218748ADDBE283EB</key>
 		<dict>
 			<key>fileRef</key>
-			<string>2462BE874B8AD73AC9BFA6A56954873A</string>
+			<string>7153F2BE864268D830F85DA0B3BFE496</string>
 			<key>isa</key>
 			<string>PBXBuildFile</string>
+		</dict>
+		<key>A0BF6A4C8BB254F4CE0352C82D4E37DF</key>
+		<dict>
+			<key>fileRef</key>
+			<string>66632D54E47702A4362DE93236576071</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+			<key>settings</key>
+			<dict>
+				<key>ATTRIBUTES</key>
+				<array>
+					<string>Public</string>
+				</array>
+			</dict>
+		</dict>
+		<key>A1CC61DE43CC8C4581FD58B5B39E83E1</key>
+		<dict>
+			<key>buildActionMask</key>
+			<string>2147483647</string>
+			<key>files</key>
+			<array>
+				<string>938B99B7A7563AB11E8F020C36188E73</string>
+			</array>
+			<key>isa</key>
+			<string>PBXResourcesBuildPhase</string>
+			<key>runOnlyForDeploymentPostprocessing</key>
+			<string>0</string>
 		</dict>
 		<key>AE9439C22469D35336242DD983DB5C5F</key>
 		<dict>
@@ -830,6 +1268,69 @@
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
+		<key>B1483D90493F768249EAEFC19D3102FB</key>
+		<dict>
+			<key>buildConfigurationList</key>
+			<string>7161CEDB30EA326603B7F96FBB557BF5</string>
+			<key>buildPhases</key>
+			<array>
+				<string>465C4A847EB148F302E58604C47EC03E</string>
+				<string>5FBB9341A2F038C32A4426C94A1D0259</string>
+				<string>DD24483C400C6E98296B5DF20D972D17</string>
+			</array>
+			<key>buildRules</key>
+			<array/>
+			<key>dependencies</key>
+			<array/>
+			<key>isa</key>
+			<string>PBXNativeTarget</string>
+			<key>name</key>
+			<string>EUMTouchPointView-EUMTouchPointView</string>
+			<key>productName</key>
+			<string>EUMTouchPointView-EUMTouchPointView</string>
+			<key>productReference</key>
+			<string>2E21F7865F23DEFDDD31F319CEA74BAA</string>
+			<key>productType</key>
+			<string>com.apple.product-type.bundle</string>
+		</dict>
+		<key>B1DA2477BB904013D09258965EDC368E</key>
+		<dict>
+			<key>buildActionMask</key>
+			<string>2147483647</string>
+			<key>files</key>
+			<array>
+				<string>232F5D8E34DDBAE711A7F96889A5385B</string>
+				<string>F008ADA94876ECE2C218DA419B41D8FF</string>
+				<string>7A19780785FB2D3D4D974E9D4A67D60A</string>
+				<string>A0BF6A4C8BB254F4CE0352C82D4E37DF</string>
+			</array>
+			<key>isa</key>
+			<string>PBXHeadersBuildPhase</string>
+			<key>runOnlyForDeploymentPostprocessing</key>
+			<string>0</string>
+		</dict>
+		<key>B681CF594387770D0AD92F9BB6379BAB</key>
+		<dict>
+			<key>fileRef</key>
+			<string>CEC22C73C1608DFA5D5D78BDCB218219</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>B9EFE80559EA29B923B1B72E2FF7E02E</key>
+		<dict>
+			<key>explicitFileType</key>
+			<string>wrapper.framework</string>
+			<key>includeInIndex</key>
+			<string>0</string>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>name</key>
+			<string>EUMTouchPointView.framework</string>
+			<key>path</key>
+			<string>EUMTouchPointView.framework</string>
+			<key>sourceTree</key>
+			<string>BUILT_PRODUCTS_DIR</string>
+		</dict>
 		<key>BB0951F63C18ACE77E69C6816BE0F342</key>
 		<dict>
 			<key>includeInIndex</key>
@@ -840,6 +1341,17 @@
 			<string>text.xcconfig</string>
 			<key>path</key>
 			<string>Pods-NumberPad.release.xcconfig</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>BB613C30947C9B304084FD7D070736AC</key>
+		<dict>
+			<key>includeInIndex</key>
+			<string>1</string>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>path</key>
+			<string>EUMTouchPointView.modulemap</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
@@ -856,6 +1368,34 @@
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
+		<key>BC6858A2A9AA16200E79E72082C7DAF0</key>
+		<dict>
+			<key>buildConfigurationList</key>
+			<string>FD2A2400EA9E92515D4C7D076C3B4920</string>
+			<key>buildPhases</key>
+			<array>
+				<string>4E789CB070A2BB6B9AD2BE4E7DC075F2</string>
+				<string>94A0A263E3A6D2D7C14C98096EA8CCDD</string>
+				<string>A1CC61DE43CC8C4581FD58B5B39E83E1</string>
+				<string>B1DA2477BB904013D09258965EDC368E</string>
+			</array>
+			<key>buildRules</key>
+			<array/>
+			<key>dependencies</key>
+			<array>
+				<string>25FC489F28EE3E56C67CF08988984521</string>
+			</array>
+			<key>isa</key>
+			<string>PBXNativeTarget</string>
+			<key>name</key>
+			<string>EUMTouchPointView</string>
+			<key>productName</key>
+			<string>EUMTouchPointView</string>
+			<key>productReference</key>
+			<string>B9EFE80559EA29B923B1B72E2FF7E02E</string>
+			<key>productType</key>
+			<string>com.apple.product-type.framework</string>
+		</dict>
 		<key>BDF75E117F3187F10E14129F860A8FE1</key>
 		<dict>
 			<key>includeInIndex</key>
@@ -866,6 +1406,27 @@
 			<string>text</string>
 			<key>path</key>
 			<string>Pods-NumberPad-acknowledgements.markdown</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>BF31C7FD674922A89A096302E9A8991D</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>BB613C30947C9B304084FD7D070736AC</string>
+				<string>1937978447B0143424AE6535B5BE2F72</string>
+				<string>3701FFBD4583577D289924A7A0C56178</string>
+				<string>D1DDB6DF6CB931825E30EDB2EBFF3F9B</string>
+				<string>60F782E9A8CA201EBD88D78126F73CE8</string>
+				<string>FE544EEC4D52C22A8F99AFBB72FBBACF</string>
+				<string>938DE3CC1B092147A6C67042E0C1B2AF</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>name</key>
+			<string>Support Files</string>
+			<key>path</key>
+			<string>../Target Support Files/EUMTouchPointView</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
@@ -881,6 +1442,66 @@
 			<string>Pods-NumberPad-resources.sh</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
+		</dict>
+		<key>C63575D312F877C632D9957199BFCD66</key>
+		<dict>
+			<key>baseConfigurationReference</key>
+			<string>1937978447B0143424AE6535B5BE2F72</string>
+			<key>buildSettings</key>
+			<dict>
+				<key>CODE_SIGN_IDENTITY[sdk=iphoneos*]</key>
+				<string>iPhone Developer</string>
+				<key>CURRENT_PROJECT_VERSION</key>
+				<string>1</string>
+				<key>DEBUG_INFORMATION_FORMAT</key>
+				<string>dwarf-with-dsym</string>
+				<key>DEFINES_MODULE</key>
+				<string>YES</string>
+				<key>DYLIB_COMPATIBILITY_VERSION</key>
+				<string>1</string>
+				<key>DYLIB_CURRENT_VERSION</key>
+				<string>1</string>
+				<key>DYLIB_INSTALL_NAME_BASE</key>
+				<string>@rpath</string>
+				<key>ENABLE_STRICT_OBJC_MSGSEND</key>
+				<string>YES</string>
+				<key>GCC_NO_COMMON_BLOCKS</key>
+				<string>YES</string>
+				<key>GCC_PREFIX_HEADER</key>
+				<string>Target Support Files/EUMTouchPointView/EUMTouchPointView-prefix.pch</string>
+				<key>INFOPLIST_FILE</key>
+				<string>Target Support Files/EUMTouchPointView/Info.plist</string>
+				<key>INSTALL_PATH</key>
+				<string>$(LOCAL_LIBRARY_DIR)/Frameworks</string>
+				<key>IPHONEOS_DEPLOYMENT_TARGET</key>
+				<string>8.0</string>
+				<key>LD_RUNPATH_SEARCH_PATHS</key>
+				<array>
+					<string>$(inherited)</string>
+					<string>@executable_path/Frameworks</string>
+					<string>@loader_path/Frameworks</string>
+				</array>
+				<key>MODULEMAP_FILE</key>
+				<string>Target Support Files/EUMTouchPointView/EUMTouchPointView.modulemap</string>
+				<key>MTL_ENABLE_DEBUG_INFO</key>
+				<string>NO</string>
+				<key>PRODUCT_NAME</key>
+				<string>EUMTouchPointView</string>
+				<key>SDKROOT</key>
+				<string>iphoneos</string>
+				<key>SKIP_INSTALL</key>
+				<string>YES</string>
+				<key>TARGETED_DEVICE_FAMILY</key>
+				<string>1,2</string>
+				<key>VERSIONING_SYSTEM</key>
+				<string>apple-generic</string>
+				<key>VERSION_INFO_PREFIX</key>
+				<string></string>
+			</dict>
+			<key>isa</key>
+			<string>XCBuildConfiguration</string>
+			<key>name</key>
+			<string>Release</string>
 		</dict>
 		<key>C6E44EF915141CEE82A7E3E5BEAAADE6</key>
 		<dict>
@@ -957,6 +1578,66 @@
 			<key>isa</key>
 			<string>PBXBuildFile</string>
 		</dict>
+		<key>CA513B6558AF9807216EDC22F7623F01</key>
+		<dict>
+			<key>baseConfigurationReference</key>
+			<string>1937978447B0143424AE6535B5BE2F72</string>
+			<key>buildSettings</key>
+			<dict>
+				<key>CODE_SIGN_IDENTITY[sdk=iphoneos*]</key>
+				<string>iPhone Developer</string>
+				<key>CURRENT_PROJECT_VERSION</key>
+				<string>1</string>
+				<key>DEBUG_INFORMATION_FORMAT</key>
+				<string>dwarf</string>
+				<key>DEFINES_MODULE</key>
+				<string>YES</string>
+				<key>DYLIB_COMPATIBILITY_VERSION</key>
+				<string>1</string>
+				<key>DYLIB_CURRENT_VERSION</key>
+				<string>1</string>
+				<key>DYLIB_INSTALL_NAME_BASE</key>
+				<string>@rpath</string>
+				<key>ENABLE_STRICT_OBJC_MSGSEND</key>
+				<string>YES</string>
+				<key>GCC_NO_COMMON_BLOCKS</key>
+				<string>YES</string>
+				<key>GCC_PREFIX_HEADER</key>
+				<string>Target Support Files/EUMTouchPointView/EUMTouchPointView-prefix.pch</string>
+				<key>INFOPLIST_FILE</key>
+				<string>Target Support Files/EUMTouchPointView/Info.plist</string>
+				<key>INSTALL_PATH</key>
+				<string>$(LOCAL_LIBRARY_DIR)/Frameworks</string>
+				<key>IPHONEOS_DEPLOYMENT_TARGET</key>
+				<string>8.0</string>
+				<key>LD_RUNPATH_SEARCH_PATHS</key>
+				<array>
+					<string>$(inherited)</string>
+					<string>@executable_path/Frameworks</string>
+					<string>@loader_path/Frameworks</string>
+				</array>
+				<key>MODULEMAP_FILE</key>
+				<string>Target Support Files/EUMTouchPointView/EUMTouchPointView.modulemap</string>
+				<key>MTL_ENABLE_DEBUG_INFO</key>
+				<string>YES</string>
+				<key>PRODUCT_NAME</key>
+				<string>EUMTouchPointView</string>
+				<key>SDKROOT</key>
+				<string>iphoneos</string>
+				<key>SKIP_INSTALL</key>
+				<string>YES</string>
+				<key>TARGETED_DEVICE_FAMILY</key>
+				<string>1,2</string>
+				<key>VERSIONING_SYSTEM</key>
+				<string>apple-generic</string>
+				<key>VERSION_INFO_PREFIX</key>
+				<string></string>
+			</dict>
+			<key>isa</key>
+			<string>XCBuildConfiguration</string>
+			<key>name</key>
+			<string>Debug</string>
+		</dict>
 		<key>CEC22C73C1608DFA5D5D78BDCB218219</key>
 		<dict>
 			<key>isa</key>
@@ -969,6 +1650,19 @@
 			<string>Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.3.sdk/System/Library/Frameworks/Foundation.framework</string>
 			<key>sourceTree</key>
 			<string>DEVELOPER_DIR</string>
+		</dict>
+		<key>CF2D8095C9E5876DC1CDBCA71426ECAA</key>
+		<dict>
+			<key>buildActionMask</key>
+			<string>2147483647</string>
+			<key>files</key>
+			<array>
+				<string>7416D578CEBC70A02F7A7518365C1331</string>
+			</array>
+			<key>isa</key>
+			<string>PBXFrameworksBuildPhase</string>
+			<key>runOnlyForDeploymentPostprocessing</key>
+			<string>0</string>
 		</dict>
 		<key>D0AD8EF5949EC159CEB515437D139995</key>
 		<dict>
@@ -996,6 +1690,46 @@
 			<key>runOnlyForDeploymentPostprocessing</key>
 			<string>0</string>
 		</dict>
+		<key>D1DDB6DF6CB931825E30EDB2EBFF3F9B</key>
+		<dict>
+			<key>includeInIndex</key>
+			<string>1</string>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.c.h</string>
+			<key>path</key>
+			<string>EUMTouchPointView-prefix.pch</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>D273BBE663AE26A38C2487CF711FEA5E</key>
+		<dict>
+			<key>buildConfigurationList</key>
+			<string>2ECA88EFACAEF0A2C4AB25504A4771F7</string>
+			<key>buildPhases</key>
+			<array>
+				<string>22BA625091EB8B4F86317D9905D2F1B0</string>
+				<string>CF2D8095C9E5876DC1CDBCA71426ECAA</string>
+				<string>622A6D413449AD5DDA534CB2516953D4</string>
+			</array>
+			<key>buildRules</key>
+			<array/>
+			<key>dependencies</key>
+			<array>
+				<string>DCA81B419ABCEB7AD5F4A49857FE2DB5</string>
+			</array>
+			<key>isa</key>
+			<string>PBXNativeTarget</string>
+			<key>name</key>
+			<string>Pods-NumberPad</string>
+			<key>productName</key>
+			<string>Pods-NumberPad</string>
+			<key>productReference</key>
+			<string>950B2D2B2E92821DFBAAB1871FDD25D9</string>
+			<key>productType</key>
+			<string>com.apple.product-type.framework</string>
+		</dict>
 		<key>D41D8CD98F00B204E9800998ECF8427E</key>
 		<dict>
 			<key>attributes</key>
@@ -1022,7 +1756,7 @@
 			<key>mainGroup</key>
 			<string>7DB346D0F39D3F0E887471402A8071AB</string>
 			<key>productRefGroup</key>
-			<string>4E501E2BD31B383415C81DB5888FD864</string>
+			<string>15CF45868A50972BA817E9627A6CBF4A</string>
 			<key>projectDirPath</key>
 			<string></string>
 			<key>projectReferences</key>
@@ -1031,9 +1765,33 @@
 			<string></string>
 			<key>targets</key>
 			<array>
-				<string>0AADA334A4C9CA3565E6AA2598D1BDB2</string>
+				<string>BC6858A2A9AA16200E79E72082C7DAF0</string>
+				<string>B1483D90493F768249EAEFC19D3102FB</string>
+				<string>D273BBE663AE26A38C2487CF711FEA5E</string>
 				<string>5C1EA3C82C00E0243716C1E3746C72E5</string>
 			</array>
+		</dict>
+		<key>DCA81B419ABCEB7AD5F4A49857FE2DB5</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXTargetDependency</string>
+			<key>name</key>
+			<string>EUMTouchPointView</string>
+			<key>target</key>
+			<string>BC6858A2A9AA16200E79E72082C7DAF0</string>
+			<key>targetProxy</key>
+			<string>5C08A00DAF2F0B476DE37327DE8F756A</string>
+		</dict>
+		<key>DD24483C400C6E98296B5DF20D972D17</key>
+		<dict>
+			<key>buildActionMask</key>
+			<string>2147483647</string>
+			<key>files</key>
+			<array/>
+			<key>isa</key>
+			<string>PBXResourcesBuildPhase</string>
+			<key>runOnlyForDeploymentPostprocessing</key>
+			<string>0</string>
 		</dict>
 		<key>E0CA0BD2EEE567F14D31E27CADDB6AAA</key>
 		<dict>
@@ -1048,32 +1806,20 @@
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
-		<key>E567F7BB6F63CFCF5F81B4D0029B0702</key>
+		<key>E6021B9B2A21F414ED594CE3EC55409D</key>
 		<dict>
-			<key>buildActionMask</key>
-			<string>2147483647</string>
-			<key>files</key>
-			<array>
-				<string>1428C0F8012AA3A5DA05D71B275D2407</string>
-			</array>
+			<key>includeInIndex</key>
+			<string>1</string>
 			<key>isa</key>
-			<string>PBXFrameworksBuildPhase</string>
-			<key>runOnlyForDeploymentPostprocessing</key>
-			<string>0</string>
-		</dict>
-		<key>E57A4FEA5B9A97FB327FFE4812A1D3DD</key>
-		<dict>
-			<key>buildConfigurations</key>
-			<array>
-				<string>44887B3BDC2BA16C28E3BECCB46809D3</string>
-				<string>4CFA2A1ED6F535C707F2C090C5690C82</string>
-			</array>
-			<key>defaultConfigurationIsVisible</key>
-			<string>0</string>
-			<key>defaultConfigurationName</key>
-			<string>Release</string>
-			<key>isa</key>
-			<string>XCConfigurationList</string>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.c.objc</string>
+			<key>name</key>
+			<string>EUMTouchPointView.m</string>
+			<key>path</key>
+			<string>Pod/Classes/EUMTouchPointView.m</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
 		</dict>
 		<key>E7B48B5AEA076BA060B4244929C25BEB</key>
 		<dict>
@@ -1088,10 +1834,10 @@
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
-		<key>E85FA056995A4D98F7689FE9402B67D9</key>
+		<key>F008ADA94876ECE2C218DA419B41D8FF</key>
 		<dict>
 			<key>fileRef</key>
-			<string>E7B48B5AEA076BA060B4244929C25BEB</string>
+			<string>60F782E9A8CA201EBD88D78126F73CE8</string>
 			<key>isa</key>
 			<string>PBXBuildFile</string>
 			<key>settings</key>
@@ -1115,20 +1861,47 @@
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
-		<key>F2D403118B439BCFCD9BFE716531BA4B</key>
+		<key>F6E1DCA47FAD90C4A07B51F57EC8C27C</key>
 		<dict>
-			<key>explicitFileType</key>
-			<string>wrapper.framework</string>
 			<key>includeInIndex</key>
-			<string>0</string>
+			<string>1</string>
 			<key>isa</key>
 			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.c.h</string>
 			<key>name</key>
-			<string>Pods_NumberPadTests.framework</string>
+			<string>EUMTouchPointView.h</string>
 			<key>path</key>
-			<string>Pods-NumberPadTests.framework</string>
+			<string>Pod/Classes/EUMTouchPointView.h</string>
 			<key>sourceTree</key>
-			<string>BUILT_PRODUCTS_DIR</string>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>FD2A2400EA9E92515D4C7D076C3B4920</key>
+		<dict>
+			<key>buildConfigurations</key>
+			<array>
+				<string>CA513B6558AF9807216EDC22F7623F01</string>
+				<string>C63575D312F877C632D9957199BFCD66</string>
+			</array>
+			<key>defaultConfigurationIsVisible</key>
+			<string>0</string>
+			<key>defaultConfigurationName</key>
+			<string>Release</string>
+			<key>isa</key>
+			<string>XCConfigurationList</string>
+		</dict>
+		<key>FE544EEC4D52C22A8F99AFBB72FBBACF</key>
+		<dict>
+			<key>includeInIndex</key>
+			<string>1</string>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>text.plist.xml</string>
+			<key>path</key>
+			<string>Info.plist</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
 		</dict>
 	</dict>
 	<key>rootObject</key>
