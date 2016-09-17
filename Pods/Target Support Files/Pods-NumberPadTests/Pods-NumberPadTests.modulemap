@@ -1,0 +1,6 @@
+framework module Pods_NumberPadTests {
+  umbrella header "Pods-NumberPadTests-umbrella.h"
+
+  export *
+  module * { export * }
+}

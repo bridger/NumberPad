@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		162548C69075175B32E4E83C /* Pods_NumberPad.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B41A1C514596C17837BAA477 /* Pods_NumberPad.framework */; };
 		AE064B661A64605A00A10381 /* DigitRecognizerSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE5554C11A5CBBF7007DCF1D /* DigitRecognizerSDK.framework */; };
 		AE064B6B1A64679200A10381 /* Constraints.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE064B6A1A64679200A10381 /* Constraints.swift */; };
 		AE064B6E1A646A6300A10381 /* ConstraintViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE064B6D1A646A6300A10381 /* ConstraintViews.swift */; };
@@ -71,6 +72,7 @@
 		AEC9EED61A3CDC4A002C7B08 /* NumberPadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC9EED51A3CDC4A002C7B08 /* NumberPadTests.swift */; };
 		AECB34FC1A6B1F460034A2AB /* NumberSlideView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AECB34FB1A6B1F460034A2AB /* NumberSlideView.swift */; };
 		AEDB570F1B45CDD10065A4DD /* UIColor+Additions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEDB570E1B45CDD10065A4DD /* UIColor+Additions.swift */; };
+		CBFEFC585E9644E4B6A0EE06 /* Pods_NumberPadTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 996A83325A6442443D7969BE /* Pods_NumberPadTests.framework */; };
 		D028BB4B1D7F2E4000AD98FB /* DigitSampleLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = D028BB4A1D7F2E4000AD98FB /* DigitSampleLibrary.swift */; };
 		D028BB501D7F3B1700AD98FB /* bridger_test.json in Resources */ = {isa = PBXBuildFile; fileRef = D028BB4F1D7F3B1700AD98FB /* bridger_test.json */; };
 		D03685F81D7E1F9100EA667E /* Launch Screen.xib in Resources */ = {isa = PBXBuildFile; fileRef = D03685F71D7E1F9100EA667E /* Launch Screen.xib */; };
@@ -146,6 +148,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5A946C609A15A7CD1F3FE0BD /* Pods-NumberPadTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NumberPadTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-NumberPadTests/Pods-NumberPadTests.debug.xcconfig"; sourceTree = "<group>"; };
+		5F7515C07F342B6FA9F892D9 /* Pods-NumberPad.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NumberPad.debug.xcconfig"; path = "Pods/Target Support Files/Pods-NumberPad/Pods-NumberPad.debug.xcconfig"; sourceTree = "<group>"; };
+		74BC68378BC9B53709631C96 /* Pods-NumberPad.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NumberPad.release.xcconfig"; path = "Pods/Target Support Files/Pods-NumberPad/Pods-NumberPad.release.xcconfig"; sourceTree = "<group>"; };
+		996A83325A6442443D7969BE /* Pods_NumberPadTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NumberPadTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE064B6A1A64679200A10381 /* Constraints.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constraints.swift; sourceTree = "<group>"; };
 		AE064B6D1A646A6300A10381 /* ConstraintViews.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = ConstraintViews.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		AE064B6F1A646FB200A10381 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
@@ -247,6 +253,7 @@
 		AECB34F31A6AEC540034A2AB /* NumberPad-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NumberPad-Bridging-Header.h"; sourceTree = "<group>"; };
 		AECB34FB1A6B1F460034A2AB /* NumberSlideView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = NumberSlideView.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		AEDB570E1B45CDD10065A4DD /* UIColor+Additions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIColor+Additions.swift"; sourceTree = "<group>"; };
+		B41A1C514596C17837BAA477 /* Pods_NumberPad.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NumberPad.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D028BB4A1D7F2E4000AD98FB /* DigitSampleLibrary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DigitSampleLibrary.swift; sourceTree = "<group>"; };
 		D028BB4F1D7F3B1700AD98FB /* bridger_test.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = bridger_test.json; path = Data/bridger_test.json; sourceTree = SOURCE_ROOT; };
 		D03685F71D7E1F9100EA667E /* Launch Screen.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = "Launch Screen.xib"; sourceTree = "<group>"; };
@@ -258,6 +265,7 @@
 		D092123B1D75354000A39091 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		D0A75E371D7A798D00A57F67 /* DigitRecognizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DigitRecognizer.swift; sourceTree = "<group>"; };
 		D0A793B41D788A1200E4A099 /* trainedData.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = trainedData.dat; sourceTree = "<group>"; };
+		FD3B2905E930925ED385BF7E /* Pods-NumberPadTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NumberPadTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-NumberPadTests/Pods-NumberPadTests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -293,6 +301,7 @@
 				AEA7F36E1A7DBFEC008A07E4 /* CoreBluetooth.framework in Frameworks */,
 				AEA7F36C1A7DBFE0008A07E4 /* libc++.dylib in Frameworks */,
 				AE064B661A64605A00A10381 /* DigitRecognizerSDK.framework in Frameworks */,
+				162548C69075175B32E4E83C /* Pods_NumberPad.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -300,12 +309,24 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CBFEFC585E9644E4B6A0EE06 /* Pods_NumberPadTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		32369142A045DAA82AC2A266 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				5F7515C07F342B6FA9F892D9 /* Pods-NumberPad.debug.xcconfig */,
+				74BC68378BC9B53709631C96 /* Pods-NumberPad.release.xcconfig */,
+				5A946C609A15A7CD1F3FE0BD /* Pods-NumberPadTests.debug.xcconfig */,
+				FD3B2905E930925ED385BF7E /* Pods-NumberPadTests.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
 		AE5554621A5CB9D3007DCF1D /* DigitRecognizer */ = {
 			isa = PBXGroup;
 			children = (
@@ -520,6 +541,7 @@
 				AE5554D11A5CBBF7007DCF1D /* DigitRecognizerSDKTests */,
 				AEC9EEBB1A3CDC4A002C7B08 /* Products */,
 				D092123A1D75354000A39091 /* Frameworks */,
+				32369142A045DAA82AC2A266 /* Pods */,
 			);
 			indentWidth = 4;
 			sourceTree = "<group>";
@@ -606,6 +628,8 @@
 				D05CD0211D768684005C5B7D /* MetalKit.framework */,
 				D05CD0221D768684005C5B7D /* MetalPerformanceShaders.framework */,
 				D092123B1D75354000A39091 /* Accelerate.framework */,
+				B41A1C514596C17837BAA477 /* Pods_NumberPad.framework */,
+				996A83325A6442443D7969BE /* Pods_NumberPadTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -685,10 +709,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = AEC9EED91A3CDC4A002C7B08 /* Build configuration list for PBXNativeTarget "NumberPad" */;
 			buildPhases = (
+				74C2F29DF2BC1BFE3B6634EA /* 📦 Check Pods Manifest.lock */,
 				AEC9EEB61A3CDC4A002C7B08 /* Sources */,
 				AEC9EEB71A3CDC4A002C7B08 /* Frameworks */,
 				AEC9EEB81A3CDC4A002C7B08 /* Resources */,
 				AE064B711A64C1AF00A10381 /* Embed Frameworks */,
+				DF40BBBEF51ABF375BBEF8F7 /* 📦 Embed Pods Frameworks */,
+				B15350983684A8EB560E2B7E /* 📦 Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -704,9 +731,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = AEC9EEDC1A3CDC4A002C7B08 /* Build configuration list for PBXNativeTarget "NumberPadTests" */;
 			buildPhases = (
+				3E1F1E0EFE53EF4BAD446AB6 /* 📦 Check Pods Manifest.lock */,
 				AEC9EECB1A3CDC4A002C7B08 /* Sources */,
 				AEC9EECC1A3CDC4A002C7B08 /* Frameworks */,
 				AEC9EECD1A3CDC4A002C7B08 /* Resources */,
+				28B2AF7F01122866CA429086 /* 📦 Embed Pods Frameworks */,
+				214C4DCA372F82149038D448 /* 📦 Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -825,6 +855,99 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		214C4DCA372F82149038D448 /* 📦 Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "📦 Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-NumberPadTests/Pods-NumberPadTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		28B2AF7F01122866CA429086 /* 📦 Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "📦 Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-NumberPadTests/Pods-NumberPadTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		3E1F1E0EFE53EF4BAD446AB6 /* 📦 Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "📦 Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		74C2F29DF2BC1BFE3B6634EA /* 📦 Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "📦 Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		B15350983684A8EB560E2B7E /* 📦 Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "📦 Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-NumberPad/Pods-NumberPad-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		DF40BBBEF51ABF375BBEF8F7 /* 📦 Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "📦 Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-NumberPad/Pods-NumberPad-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		AE55545D1A5CB9D3007DCF1D /* Sources */ = {
@@ -1184,6 +1307,7 @@
 		};
 		AEC9EEDA1A3CDC4A002C7B08 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5F7515C07F342B6FA9F892D9 /* Pods-NumberPad.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -1198,7 +1322,10 @@
 				INFOPLIST_FILE = NumberPad/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				OTHER_LDFLAGS = "-ObjC";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.bridgermaxwell.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "NumberPad/NumberPad-Bridging-Header.h";
@@ -1209,6 +1336,7 @@
 		};
 		AEC9EEDB1A3CDC4A002C7B08 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 74BC68378BC9B53709631C96 /* Pods-NumberPad.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -1223,7 +1351,10 @@
 				INFOPLIST_FILE = NumberPad/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				OTHER_LDFLAGS = "-ObjC";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.bridgermaxwell.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "NumberPad/NumberPad-Bridging-Header.h";
@@ -1235,6 +1366,7 @@
 		};
 		AEC9EEDD1A3CDC4A002C7B08 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5A946C609A15A7CD1F3FE0BD /* Pods-NumberPadTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1256,6 +1388,7 @@
 		};
 		AEC9EEDE1A3CDC4A002C7B08 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = FD3B2905E930925ED385BF7E /* Pods-NumberPadTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				FRAMEWORK_SEARCH_PATHS = (
