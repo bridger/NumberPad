@@ -7,11 +7,19 @@
 //
 
 import UIKit
+import EUMTouchPointView
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-    var window: UIWindow?
+    var window: UIWindow? = {
+        $0.pointerStockColor = UIColor.clear
+        let grayValue: CGFloat = 0.65
+        $0.pointerColor = UIColor(red: grayValue, green: grayValue, blue: grayValue, alpha: 0.8)
+        $0.pointerSize = CGSize(width: 40, height: 40)
+        
+        return $0
+    }(EUMShowTouchWindow(frame: UIScreen.main.bounds))
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey : Any]? = nil) -> Bool {
         // Set up a few more rewrite rules

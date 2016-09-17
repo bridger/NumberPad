@@ -32,7 +32,7 @@ class IntroViewController: UIViewController {
         let backButton = UIButton()
         backButton.setTitle("< Back", for: [])
         backButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 18)
-        backButton.setTitleColor(UIColor.blue, for: [])
+        backButton.setTitleColor(UIColor.backgroundColor(), for: [])
         canvas.view.addAutoLayoutSubview(subview: backButton)
         canvas.view.addHorizontalConstraints(|-6-[backButton])
         canvas.view.addVerticalConstraints(|-15-[backButton])
