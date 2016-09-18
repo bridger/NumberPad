@@ -34,8 +34,8 @@ class IntroViewController: UIViewController {
         backButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 18)
         backButton.setTitleColor(UIColor.backgroundColor(), for: [])
         canvas.view.addAutoLayoutSubview(subview: backButton)
-        canvas.view.addHorizontalConstraints(|-6-[backButton])
-        canvas.view.addVerticalConstraints(|-15-[backButton])
+        canvas.view.addHorizontalConstraints(|-9-[backButton])
+        canvas.view.addVerticalConstraints(|-20-[backButton])
         backButton.addTarget(self, action: #selector(IntroViewController.backPressed), for: .touchUpInside)
         
         return canvas

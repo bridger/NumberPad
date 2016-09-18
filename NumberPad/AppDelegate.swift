@@ -14,9 +14,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow? = {
         $0.pointerStockColor = UIColor.clear
-        let grayValue: CGFloat = 0.65
-        $0.pointerColor = UIColor(red: grayValue, green: grayValue, blue: grayValue, alpha: 0.8)
-        $0.pointerSize = CGSize(width: 40, height: 40)
+        $0.pointerColor = UIColor.textColor().withAlphaComponent(0.8)
+        $0.pointerSize = CGSize(width: 50, height: 50)
         
         return $0
     }(EUMShowTouchWindow(frame: UIScreen.main.bounds))

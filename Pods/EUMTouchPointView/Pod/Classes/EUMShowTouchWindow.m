@@ -58,7 +58,7 @@
             else if (touch.phase == UITouchPhaseCancelled || touch.phase == UITouchPhaseEnded)
             {
                 
-                [UIView animateWithDuration:kAnimationDuration animations:^{
+                [UIView animateWithDuration:kAnimationDuration * 3.5 animations:^{
                     touch.viewTouchPointer.transform = CGAffineTransformMakeScale(kEndScale, kEndScale);
                     touch.viewTouchPointer.alpha = 0;
                 } completion:^(BOOL finished) {
@@ -71,10 +71,7 @@
                 CGRect tFrame = touch.viewTouchPointer.frame;
                 tFrame.origin.x = point.x-self.pointerSize.width/2;
                 tFrame.origin.y = point.y-self.pointerSize.height/2;
-                [UIView animateWithDuration:kAnimationDuration animations:^{
-                    touch.viewTouchPointer.frame = tFrame;
-                    
-                }];
+                touch.viewTouchPointer.frame = tFrame;
             }
         }
     }

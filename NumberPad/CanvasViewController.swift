@@ -50,8 +50,8 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         ghostButton.setTitleColor(UIColor.blue, for: [])
         ghostButton.isHidden = true
         self.view.addAutoLayoutSubview(subview: ghostButton)
-        self.view.addHorizontalConstraints([ghostButton]-6-|)
-        self.view.addVerticalConstraints(|-15-[ghostButton])
+        self.view.addHorizontalConstraints([ghostButton]-9-|)
+        self.view.addVerticalConstraints(|-20-[ghostButton])
         ghostButton.addTarget(self, action: #selector(CanvasViewController.ghostButtonTapped), for: .touchUpInside)
     }
     

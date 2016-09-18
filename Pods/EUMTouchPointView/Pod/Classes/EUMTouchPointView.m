@@ -39,8 +39,8 @@
     }
     
     //// Shadow Declarations
-    UIColor* shadow = [UIColor.blackColor colorWithAlphaComponent: 0.2];
-    CGSize shadowOffset = CGSizeMake(0.1, -0.1);
+    UIColor* shadow = [UIColor.blackColor colorWithAlphaComponent: 0.3];
+    CGSize shadowOffset = CGSizeMake(0.4, -0.4);
     CGFloat shadowBlurRadius = 4;
     
     //// Oval Drawing
