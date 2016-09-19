@@ -20,3 +20,8 @@ Building
 This project has several targets. The main math app is the NumberPad target. There is also a DigitRecognizer target that is for working on the handwriting recognition alone. The DigitRecognizerSDK is a dependency of both of them, and contains the algorithms for the handwriting recognition. It is in a separate target so that the compiler can optimize it indepdently.
 
 Sometimes, when building NumberPad, Xcode will complain that it can't build DigitRecognizerSDK. Building the DigitRecognizer target and then going back to NumberPad seems to fix this issue. `¯\_(ツ)_/¯`
+
+Misc
+---
+
+I am providing code in this repository to you under an open source license. Because this is my personal repository, the license you receive to my code is from me and not from my employer (Facebook).
