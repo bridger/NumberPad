@@ -124,6 +124,14 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
         print("Something went wrong! We couldn't get the size of the equation")
     }
     
+    var color: UIColor? {
+        didSet {
+            // Reset the displayed colors
+            self.isSelected = (self.isSelected)
+            self.hasError = (self.hasError)
+        }
+    }
+    
     var isSelected: Bool = false {
         didSet {
             if self.isSelected {
@@ -131,7 +139,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
                 self.valueLabel.textColor = UIColor.selectedTextColor()
             } else {
                 self.backgroundColor = UIColor.backgroundColor()
-                self.valueLabel.textColor = UIColor.textColor()
+                self.valueLabel.textColor = self.color ?? UIColor.textColor()
             }
             if oldValue != isSelected {
                 updateNameView()
@@ -144,7 +152,7 @@ class ConnectorLabel: UIView, WKScriptMessageHandler {
             if self.hasError {
                 self.layer.borderColor = UIColor.red.cgColor
             } else {
-                self.layer.borderColor = UIColor.textColor().cgColor
+                self.layer.borderColor = self.color?.cgColor ?? UIColor.textColor().cgColor
             }
         }
     }

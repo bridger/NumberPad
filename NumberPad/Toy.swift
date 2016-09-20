@@ -236,20 +236,23 @@ class CircleLayer {
     let circumferenceLayer: CAShapeLayer
     let overshootCircumferenceLayer: CAShapeLayer
     
+    static let diameterColor = UIColor.multiplierInputColor()
+    static let circumferenceColor = UIColor.adderOutputColor()
+    
     init() {
         self.mainLayer = CAShapeLayer()
         self.mainLayer.lineWidth = 4
-        self.mainLayer.strokeColor = UIColor.multiplierInputColor().withAlphaComponent(0.1).cgColor
+        self.mainLayer.strokeColor = CircleLayer.diameterColor.withAlphaComponent(0.1).cgColor
         self.mainLayer.fillColor = nil
         
         self.diameterLayer = CAShapeLayer()
         self.diameterLayer.lineWidth = 4
-        self.diameterLayer.strokeColor = UIColor.multiplierInputColor().cgColor
+        self.diameterLayer.strokeColor = CircleLayer.diameterColor.cgColor
         self.diameterLayer.fillColor = nil
         
         self.circumferenceLayer = CAShapeLayer()
         self.circumferenceLayer.lineWidth = 7
-        self.circumferenceLayer.strokeColor = UIColor.adderOutputColor().cgColor
+        self.circumferenceLayer.strokeColor = CircleLayer.circumferenceColor.cgColor
         self.circumferenceLayer.fillColor = nil
         
         self.overshootCircumferenceLayer = CAShapeLayer()
@@ -485,6 +488,9 @@ class SquareLayer {
     
     var simulationContext: ResolvedValues? = nil
     
+    static let sideColor = UIColor.adderInputColor()
+    static let areaColor = UIColor.multiplierInputColor()
+    
     let darkSidesLayer: CAShapeLayer // Two lines, dark
     let lightSidesLayer: CAShapeLayer // Two lines, light
     let darkAreaLayer: CAShapeLayer // Two lines, dark
@@ -498,29 +504,28 @@ class SquareLayer {
     
     let lineWidth: CGFloat = 4
     init() {
-        let color = UIColor.adderInputColor()
-        let transparentColor = color.withAlphaComponent(0.2)
+        let lightness: CGFloat = 0.2
         
         self.darkSidesLayer = CAShapeLayer()
         self.darkSidesLayer.lineWidth = lineWidth
-        self.darkSidesLayer.strokeColor = color.cgColor
+        self.darkSidesLayer.strokeColor = SquareLayer.sideColor.cgColor
         self.darkSidesLayer.fillColor = nil
         self.darkSidesLayer.lineCap = "round"
         
         self.lightSidesLayer = CAShapeLayer()
         self.lightSidesLayer.lineWidth = lineWidth
-        self.lightSidesLayer.strokeColor = transparentColor.cgColor
+        self.lightSidesLayer.strokeColor = SquareLayer.sideColor.withAlphaComponent(lightness).cgColor
         self.lightSidesLayer.fillColor = nil
         self.lightSidesLayer.lineCap = "round"
         
         self.darkAreaLayer = CAShapeLayer()
         self.darkAreaLayer.lineWidth = lineWidth
-        self.darkAreaLayer.strokeColor = color.cgColor
+        self.darkAreaLayer.strokeColor = SquareLayer.areaColor.cgColor
         self.darkAreaLayer.fillColor = nil
         self.darkAreaLayer.lineCap = "round"
         
         self.lightAreaLayer = CAShapeLayer()
-        self.lightAreaLayer.fillColor = color.cgColor
+        self.lightAreaLayer.fillColor = SquareLayer.areaColor.cgColor
         
         self.darkSidesLayer.addSublayer(self.lightSidesLayer)
         self.darkSidesLayer.addSublayer(self.darkAreaLayer)
@@ -794,6 +799,10 @@ class PythagorasToy : UIView, Toy {
         }
     }
     
+    static let aColor = UIColor.multiplierInputColor()
+    static let bColor = UIColor.adderInputColor()
+    static let cColor = UIColor.exponentBaseColor()
+    
     var spacing: CGFloat = 25
     var topMargin: CGFloat = 80
     override func draw(_ rect: CGRect) {
@@ -825,12 +834,12 @@ class PythagorasToy : UIView, Toy {
             return CGPoint(x: corner.x + size.width, y: corner.y + size.height)
         }
         
+        let aColor = PythagorasToy.aColor.cgColor
+        let bColor = PythagorasToy.bColor.cgColor
+        let cColor = PythagorasToy.cColor.cgColor
         let lightness: CGFloat = 0.25
-        let aColor = UIColor.multiplierInputColor().cgColor
         let aColorLight = aColor.copy(alpha: lightness)!
-        let bColor = UIColor.adderInputColor().cgColor
         let bColorLight = bColor.copy(alpha: lightness)!
-        let cColor = UIColor.exponentBaseColor().cgColor
         let cColorLight = cColor.copy(alpha: lightness)!
         
         let squareSide = a + b

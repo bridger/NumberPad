@@ -58,6 +58,7 @@ class IntroViewController: UIViewController {
         let diameterLabel = ConnectorLabel(connector: diameterConnector)
         diameterLabel.scale = -1
         diameterLabel.name = "diameter"
+        diameterLabel.color = CircleLayer.diameterColor
         diameterLabel.sizeToFit()
         diameterLabel.center = CGPoint(x: self.view.frame.size.width / 2, y: 230)
         
@@ -65,6 +66,7 @@ class IntroViewController: UIViewController {
         let circumferenceLabel = ConnectorLabel(connector: circumferenceConnector)
         circumferenceLabel.scale = -1
         circumferenceLabel.name = "circumference"
+        circumferenceLabel.color = CircleLayer.circumferenceColor
         circumferenceLabel.sizeToFit()
         circumferenceLabel.center = CGPoint(x: self.view.frame.size.width / 2, y: 150)
         
@@ -98,14 +100,14 @@ class IntroViewController: UIViewController {
         let aConnector = Connector()
         let aLabel = ConnectorLabel(connector: aConnector)
         aLabel.scale = -1
-        aLabel.name = "📗"
+        aLabel.color = PythagorasToy.aColor
         aLabel.sizeToFit()
         aLabel.center = CGPoint(x: 60, y: 250)
         
         let bConnector = Connector()
         let bLabel = ConnectorLabel(connector: bConnector)
         bLabel.scale = -1
-        bLabel.name = "🔷"
+        bLabel.color = PythagorasToy.bColor
         bLabel.sizeToFit()
         bLabel.center = CGPoint(x: self.view.bounds.size.width - 60, y: 250)
         
@@ -118,7 +120,7 @@ class IntroViewController: UIViewController {
         let cConnector = Connector()
         let cLabel = ConnectorLabel(connector: cConnector)
         cLabel.scale = -1
-        cLabel.name = "🔶"
+        cLabel.color = PythagorasToy.cColor
         cLabel.sizeToFit()
         cLabel.center = CGPoint(x: self.view.bounds.size.width / 2, y: self.view.bounds.size.height - 300)
         
@@ -141,14 +143,16 @@ class IntroViewController: UIViewController {
         let sideConnector = Connector()
         let sideLabel = ConnectorLabel(connector: sideConnector)
         sideLabel.scale = -1
-        sideLabel.name = "🛢"
+        sideLabel.name = "side"
+        sideLabel.color = SquareLayer.sideColor
         sideLabel.sizeToFit()
         sideLabel.center = CGPoint(x: 60, y: 150)
         
         let squareConnector = Connector()
         let squareLabel = ConnectorLabel(connector: squareConnector)
         squareLabel.scale = 0
-        squareLabel.name = "🔷"
+        squareLabel.name = "area"
+        squareLabel.color = SquareLayer.areaColor
         squareLabel.sizeToFit()
         squareLabel.center = CGPoint(x: self.view.bounds.size.width - 60, y: 150)
         
