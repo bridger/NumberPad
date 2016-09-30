@@ -1085,6 +1085,9 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
     func ghostToy(at point: CGPoint) -> (GhostableToy, ResolvedValues)? {
         for toy in self.toys {
             if let toy = toy as? GhostableToy {
+                guard !toy.ghostsHidden else {
+                    continue
+                }
                 if let resolvedValues = toy.ghostState(at: point) {
                     return (toy, resolvedValues)
                 }
