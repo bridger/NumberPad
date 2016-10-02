@@ -80,11 +80,11 @@ class GraphToy : UIView, GraphingToy {
         let backgroundColor = mainColor.withAlphaComponent(0.1).cgColor
         let minorAxisColor = mainColor.withAlphaComponent(0.2).cgColor
         let majorAxisColor = mainColor.cgColor
-        let functionLineColor = UIColor.functionLineColor().cgColor
+        let functionLineColor = GraphToy.yColor.cgColor
         let majorAxisWidth: CGFloat = 2
         let minorAxisWidth: CGFloat = 1
-        let selectedPointWidth: CGFloat = 2
         let functionLineWidth: CGFloat = 4
+        let selectedPointRadius: CGFloat = 7
         
         let context = UIGraphicsGetCurrentContext()!
         func stroke(path: CGMutablePath, width: CGFloat, color: CGColor) {
@@ -154,16 +154,17 @@ class GraphToy : UIView, GraphingToy {
             context.restoreGState()
         }
         
-        // Draw the crosshairs indicating the current X and Y values
-        if let selectedX = selectedX {
-            let drawingX = CGPoint(x: selectedX, y: 0).applying(graphingToDrawing).x
+        // Draw the dot for the current X and Y values
+        if let selectedX = selectedX, let selectedY = selectedY {
+            let drawingPoint = CGPoint(x: selectedX, y: selectedY).applying(graphingToDrawing)
+
+            let clampedY = drawingPoint.y.clamp(lower: self.bounds.minY, upper: self.bounds.maxY)
             
-            drawLine(start: CGPoint(x: drawingX, y: 0), end: CGPoint(x: drawingX, y: maxY), color: GraphToy.xColor.cgColor, width: selectedPointWidth)
-        }
-        if let selectedY = selectedY {
-            let drawingY = CGPoint(x: 0, y: selectedY).applying(graphingToDrawing).y
+            let ellipseRect = CGRect(x: drawingPoint.x, y: clampedY, width: 0, height: 0).insetBy(dx: -selectedPointRadius, dy: -selectedPointRadius)
             
-            drawLine(start: CGPoint(x: 0, y: drawingY), end: CGPoint(x: maxX, y: drawingY), color: GraphToy.yColor.cgColor, width: selectedPointWidth)
+            context.addEllipse(in: ellipseRect)
+            context.setFillColor(GraphToy.xColor.cgColor)
+            context.fillPath()
         }
     }
     
