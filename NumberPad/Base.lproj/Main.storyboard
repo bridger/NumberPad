@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11185.3" systemVersion="15F34" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="TqI-qv-71v">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11201" systemVersion="16A323" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="TqI-qv-71v">
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11151.4"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11161"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -15,57 +15,73 @@
                         <viewControllerLayoutGuide type="bottom" id="wfy-db-euE"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
+                        <rect key="frame" x="0.0" y="0.0" width="768" height="1024"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="yIV-uG-Pqw">
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="MHM-Zh-wKw">
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3ZE-rA-Zne">
-                                        <state key="normal" image="whiteboard"/>
-                                        <connections>
-                                            <action selector="startSandboxWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="tVe-bN-axl"/>
-                                        </connections>
-                                    </button>
-                                    <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Fpt-yS-Bbt">
-                                        <state key="normal" image="circleToy"/>
-                                        <connections>
-                                            <action selector="startCircumferenceDemoWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="PI5-hh-55P"/>
-                                        </connections>
-                                    </button>
-                                    <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="s1c-Ja-IWn">
-                                        <state key="normal" image="squareToy"/>
-                                        <connections>
-                                            <action selector="startSquareDemoWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="M1M-S6-1K8"/>
-                                        </connections>
-                                    </button>
-                                    <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xAJ-Bx-mXf">
-                                        <state key="normal" image="pythagorean"/>
-                                        <connections>
-                                            <action selector="startPythagoreanDemoWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="uw8-Ng-BmC"/>
-                                        </connections>
-                                    </button>
-                                    <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="66T-Ft-5T1">
-                                        <state key="normal" image="football"/>
-                                        <connections>
-                                            <action selector="startFootballDemoWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ISm-av-1NO"/>
-                                        </connections>
-                                    </button>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="CPf-s0-BZX">
+                                        <subviews>
+                                            <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OG9-s9-z43">
+                                                <state key="normal" image="whiteboard"/>
+                                                <connections>
+                                                    <action selector="startSandboxWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="b8L-nM-kBF"/>
+                                                </connections>
+                                            </button>
+                                            <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6fE-nt-r3b">
+                                                <state key="normal" image="football"/>
+                                                <connections>
+                                                    <action selector="startFootballDemoWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="dfL-SF-VqZ"/>
+                                                </connections>
+                                            </button>
+                                            <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="X4m-Rv-Nbr">
+                                                <state key="normal" image="graph"/>
+                                                <connections>
+                                                    <action selector="startGraphingDemoWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="7wX-oM-pKU"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                        <edgeInsets key="layoutMargins" top="40" left="8" bottom="20" right="8"/>
+                                    </stackView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="yIV-uG-Pqw">
+                                        <subviews>
+                                            <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Fpt-yS-Bbt">
+                                                <state key="normal" image="circleToy"/>
+                                                <connections>
+                                                    <action selector="startCircumferenceDemoWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="PI5-hh-55P"/>
+                                                </connections>
+                                            </button>
+                                            <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="s1c-Ja-IWn">
+                                                <state key="normal" image="squareToy"/>
+                                                <connections>
+                                                    <action selector="startSquareDemoWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="M1M-S6-1K8"/>
+                                                </connections>
+                                            </button>
+                                            <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xAJ-Bx-mXf">
+                                                <state key="normal" image="pythagorean"/>
+                                                <connections>
+                                                    <action selector="startPythagoreanDemoWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="uw8-Ng-BmC"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                        <edgeInsets key="layoutMargins" top="40" left="8" bottom="20" right="8"/>
+                                    </stackView>
                                 </subviews>
-                                <edgeInsets key="layoutMargins" top="40" left="8" bottom="20" right="8"/>
                             </stackView>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="yIV-uG-Pqw" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" id="2JF-uj-hFo"/>
-                            <constraint firstItem="yIV-uG-Pqw" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="2bD-KG-vcT"/>
-                            <constraint firstAttribute="bottom" secondItem="yIV-uG-Pqw" secondAttribute="bottom" id="FGM-Xj-PMg"/>
-                            <constraint firstItem="yIV-uG-Pqw" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="uxO-UM-egW"/>
+                            <constraint firstItem="MHM-Zh-wKw" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="BUV-GK-8vK"/>
+                            <constraint firstItem="MHM-Zh-wKw" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" id="O5r-p8-N4X"/>
+                            <constraint firstItem="MHM-Zh-wKw" firstAttribute="bottom" secondItem="wfy-db-euE" secondAttribute="top" id="dOk-OZ-Ore"/>
+                            <constraint firstAttribute="trailing" secondItem="MHM-Zh-wKw" secondAttribute="trailing" id="z0K-tm-bVF"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="xb8-jL-I5d"/>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="137.5" y="91.9921875"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="4vi-yx-ytN">
@@ -87,6 +103,7 @@
     <resources>
         <image name="circleToy" width="135" height="136"/>
         <image name="football" width="125" height="75"/>
+        <image name="graph" width="150" height="150"/>
         <image name="pythagorean" width="135" height="134"/>
         <image name="squareToy" width="150" height="153"/>
         <image name="whiteboard" width="135" height="135"/>

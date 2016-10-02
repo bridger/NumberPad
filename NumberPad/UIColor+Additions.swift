@@ -9,6 +9,8 @@
 import Foundation
 
 extension UIColor {
+    // Many of these values are from https://paper.fiftythree.com/35827-Seonhwa-Kim/4067324
+    
     class func backgroundColor() -> UIColor {
         return UIColor(red: CGFloat(0.95), green: 0.98, blue: 0.96, alpha: 1.0)
     }
@@ -47,6 +49,14 @@ extension UIColor {
     
     class func exponentResultColor() -> UIColor {
         return UIColor(red: CGFloat(1.0), green: 0.11, blue: 0.11, alpha: 1.0)
+    }
+    
+    class func functionLineColor() -> UIColor {
+        return UIColor(red:0.68, green:0.36, blue:0.70, alpha:1.00)
+    }
+    
+    class func functionLineDarkColor() -> UIColor {
+        return UIColor(red:0.45, green:0.11, blue:0.48, alpha:1.00)
     }
     
     class func errorColor() -> UIColor {

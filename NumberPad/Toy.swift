@@ -9,10 +9,10 @@
 import QuartzCore
 import DigitRecognizerSDK
 
-// This is a function passed into updateGhostState. The toy will call this for various different values
+// This is a function passed into FunctionVisualizerToy update. The toy will call this for various different values
 // for the input connectors and it should return the resolved value for all of the output connectors
 typealias ResolvedValues = [Connector: SimulationContext.ResolvedValue]
-typealias GhostValueResolver = ([Connector: Double]) -> ResolvedValues
+typealias InputResolver = ([Connector: Double]) -> ResolvedValues
 
 // This method is called with the value of the current input connector and a lambda which can solve for
 // the output connector values given
@@ -26,12 +26,22 @@ protocol Toy: class {
     func update(values: ResolvedValues)
 }
 
-protocol GhostableToy: Toy {
-    func updateGhosts(inputStates: [Connector: ConnectorState], resolver: GhostValueResolver)
-    
+// This Toy not only visualizes the current values of the toy, but also
+// visualizes how the outputs change for a range of inputs
+protocol FunctionVisualizerToy: Toy {
+    func update(currentStates: [Connector: ConnectorState], resolver: InputResolver)
+}
+
+protocol GhostableToy: FunctionVisualizerToy {    
     func ghostState(at point: CGPoint) -> ResolvedValues?
 
     var ghostsHidden: Bool { get set }
+}
+
+protocol GraphingToy: FunctionVisualizerToy {
+    func contains(_ point: CGPoint) -> Bool
+
+    func valuesForTap(at point: CGPoint) -> [Connector: Double]
 }
 
 protocol SelectableToy: Toy {
@@ -83,10 +93,10 @@ class MotionToy : UIView, SelectableToy, GhostableToy {
         return [xConnector, yConnector]
     }
     
-    func updateGhosts(inputStates: [Connector : ConnectorState], resolver: GhostValueResolver) {
+    func update(currentStates: [Connector : ConnectorState], resolver: InputResolver) {
         removeAllGhosts()
         
-        guard let driverState = inputStates[self.driverConnector] else {
+        guard let driverState = currentStates[self.driverConnector] else {
             return
         }
         
@@ -397,7 +407,7 @@ class CirclesToy : UIView, GhostableToy {
         }
     }
 
-    func updateGhosts(inputStates: [Connector : ConnectorState], resolver: GhostValueResolver) {
+    func update(currentStates: [Connector : ConnectorState], resolver: InputResolver) {
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         defer { CATransaction.commit() }
@@ -405,7 +415,7 @@ class CirclesToy : UIView, GhostableToy {
         removeAllGhosts()
         
         let driverConnector = self.diameterConnector
-        guard let driverState = inputStates[driverConnector] else {
+        guard let driverState = currentStates[driverConnector] else {
             return
         }
         let driverValue = driverState.Value.DoubleValue
@@ -681,7 +691,7 @@ class SquaresToy : UIView, GhostableToy {
         }
     }
 
-    func updateGhosts(inputStates: [Connector : ConnectorState], resolver: GhostValueResolver) {
+    func update(currentStates: [Connector : ConnectorState], resolver: InputResolver) {
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         defer { CATransaction.commit() }
@@ -689,7 +699,7 @@ class SquaresToy : UIView, GhostableToy {
         removeAllGhosts()
         
         let driverConnector = self.sideConnector
-        guard let driverState = inputStates[driverConnector] else {
+        guard let driverState = currentStates[driverConnector] else {
             return
         }
         let driverValue = driverState.Value.DoubleValue

@@ -87,6 +87,47 @@ class IntroViewController: UIViewController {
         self.navigationController?.pushViewController(canvas, animated: true)
     }
     
+    @IBAction func startGraphingDemo(sender: AnyObject) {
+        
+        let canvas = configureNewCanvas()
+        
+        let twoThirdsHeight = self.view.bounds.size.height * 2 / 3
+        
+        let xConnector = Connector()
+        let xLabel = ConnectorLabel(connector: xConnector)
+        xLabel.scale = -1
+        xLabel.color = GraphToy.xColor
+        xLabel.name = "X"
+        xLabel.sizeToFit()
+        xLabel.center = CGPoint(x: 60, y: twoThirdsHeight)
+        
+        let yConnector = Connector()
+        let yLabel = ConnectorLabel(connector: yConnector)
+        yLabel.scale = -1
+        yLabel.color = GraphToy.yColor
+        yLabel.name = "Y"
+        yLabel.sizeToFit()
+        yLabel.center = CGPoint(x: self.view.bounds.size.width - 60, y: twoThirdsHeight)
+        
+        canvas.addConnectorLabel(label: yLabel, topPriority: false, automaticallyConnect: false)
+        canvas.selectConnectorLabelAndSetToValue(connectorLabel: yLabel, value: 8)
+        
+        let newToy = GraphToy(xConnector: xConnector, yConnector: yConnector)
+        canvas.view.addAutoLayoutSubview(subview: newToy)
+        canvas.view.sendSubview(toBack: newToy)
+        // The graph toy spans the entire width and is half of the height, pinned to the top
+        canvas.view.addHorizontalConstraints(|[newToy]|)
+        canvas.view.addVerticalConstraints(|[newToy])
+        canvas.view.addConstraint(newToy.heightAnchor.constraint(equalTo: canvas.view.heightAnchor, multiplier: 0.5))
+        
+        canvas.toys.append(newToy)
+        
+        canvas.addConnectorLabel(label: xLabel, topPriority: false, automaticallyConnect: false)
+        canvas.selectConnectorLabelAndSetToValue(connectorLabel: xLabel, value: 4)
+        
+        self.navigationController?.pushViewController(canvas, animated: true)
+    }
+    
     @IBAction func startPythagoreanDemo(sender: AnyObject) {
         
         let canvas = configureNewCanvas()

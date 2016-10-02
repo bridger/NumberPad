@@ -410,6 +410,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         case Drag
         case Delete
         case OperateToy
+        case GraphPoke
     }
     
     class TouchInfo {
@@ -421,6 +422,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         var drawConnectionLine: CAShapeLayer?
         var highlightedConnectorPort: (ConstraintView: ConstraintView, ConnectorPort: ConnectorPort)?
         var toy: (Toy: SelectableToy, Offset: CGPoint)?
+        var graph: GraphingToy?
         
         let currentStroke = Stroke()
         
@@ -468,12 +470,14 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             if let selectedToy = self.selectableToy(at: point) {
                 touchInfo.toy = (selectedToy, selectedToy.center - point)
             }
-            if let connectorLabel = self.connectorLabelAtPoint(point: point) {
+            if let connectorLabel = self.connectorLabel(at: point) {
                 touchInfo.connectorLabel = (connectorLabel, connectorLabel.center - point)
-            } else if let (constraintView, connectorPort) = self.connectorPortAtLocation(location: point) {
+            } else if let (constraintView, connectorPort) = self.connectorPort(at: point) {
                 touchInfo.constraintView = (constraintView, constraintView.center - point, connectorPort)
-            } else if let constraintView = self.constraintViewAtPoint(point: point) {
+            } else if let constraintView = self.constraintView(at: point) {
                 touchInfo.constraintView = (constraintView, constraintView.center - point, nil)
+            } else if let graph = self.graph(at: point) {
+                touchInfo.graph = graph
             }
 
             let touchID = touchTracker.id(for: touch)
@@ -517,15 +521,17 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 if touchInfo.classification == nil {
                     if touchInfo.toy != nil {
                         changeTouchToClassification(touchInfo: touchInfo, classification: .OperateToy)
-                    } else if touchInfo.connectorLabel == nil && touchInfo.constraintView == nil {
-                        // If they weren't pointing at anything, then this is definitely a stroke
-                        changeTouchToClassification(touchInfo: touchInfo, classification: .Stroke)
                     } else if touchInfo.connectorLabel != nil || touchInfo.constraintView?.ConnectorPort != nil {
                         // If we have moved significantly before the long press timer fired, then this is a connection draw
                         if touchInfo.initialPoint.distanceTo(point: point) > dragMaxDistance {
                             changeTouchToClassification(touchInfo: touchInfo, classification: .MakeConnection)
                         }
                         // TODO: Maybe it should be a failed gesture if there was no connectorPort?
+                    } else if touchInfo.graph != nil {
+                        changeTouchToClassification(touchInfo: touchInfo, classification: .GraphPoke)
+                    } else if touchInfo.constraintView == nil {
+                        // If they weren't pointing at anything, then this is definitely a stroke
+                        changeTouchToClassification(touchInfo: touchInfo, classification: .Stroke)
                     }
                 }
                 
@@ -600,7 +606,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                                 self.selectedConnectorPort = nil
                             }
                             
-                        } else if let (connectorLabel, _, _) = self.connectionLineAtPoint(point: point) {
+                        } else if let (connectorLabel, _, _) = self.connectionLine(at: point) {
                             let lastInformant = self.lastInformant(for: connectorLabel.connector)
                             
                             if (lastInformant != nil && lastInformant!.WasDependent) {
@@ -619,7 +625,10 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                                 moveConnectorToBottomPriority(connectorLabel: connectorLabel)
                             }
                             updateDisplay(needsSolving: true)
-                        
+                            
+                        } else if let graph = self.graph(at: point) {
+                            self.updateDisplay(values: graph.valuesForTap(at: point), needsSolving: true)
+                            
                         } else {
                             // De-select everything
                             // TODO: What if they were just drawing a point?
@@ -708,6 +717,9 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                     
                 case .OperateToy:
                     updateOperateToyGesture(touchInfo)
+                    
+                case .GraphPoke:
+                    updateGraphPokeGesture(touchInfo)
                 }
             }
         }
@@ -733,6 +745,8 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 
             case .OperateToy:
                 break // Can't undo
+            case .GraphPoke:
+                break // Can't undo
             }
         }
     }
@@ -755,6 +769,9 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 
             case .OperateToy:
                 updateOperateToyGesture(touchInfo)
+                
+            case .GraphPoke:
+                updateGraphPokeGesture(touchInfo)
             }
             
         } else {
@@ -807,6 +824,9 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 
             case .OperateToy:
                 break // Nothing left to do
+                
+            case .GraphPoke:
+                break // Nothing left to do
             }
         } else {
             fatalError("A touchInfo must have a classification to complete the gesture.")
@@ -816,13 +836,13 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
     func completeDeleteGesture(touchInfo: TouchInfo) {
         // Find all the connectors, constraintViews, and connections that fall under the stroke and remove them
         for point in touchInfo.currentStroke.points {
-            if let connectorLabel = self.connectorLabelAtPoint(point: point) {
+            if let connectorLabel = self.connectorLabel(at: point) {
                 if !self.connectorIsForToy(connector: connectorLabel.connector) {
                     self.remove(connectorLabel: connectorLabel)
                 }
-            } else if let constraintView = self.constraintViewAtPoint(point: point) {
+            } else if let constraintView = self.constraintView(at: point) {
                 self.removeConstraintView(constraintView: constraintView)
-            } else if let (_, constraintView, connectorPort) = self.connectionLineAtPoint(point: point, distanceCutoff: 2.0) {
+            } else if let (_, constraintView, connectorPort) = self.connectionLine(at: point, distanceCutoff: 2.0) {
                 constraintView.removeConnector(at: connectorPort)
                 self.needsSolving = true
                 self.needsLayout = true
@@ -841,6 +861,15 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         let point = touchInfo.currentStroke.points.last!
         let newCenter = point + offset
         let values = touchToy.valuesForDrag(to: newCenter)
+        updateDisplay(values: values, needsSolving: true)
+    }
+    
+    func updateGraphPokeGesture(_ touchInfo: TouchInfo) {
+        guard let graph = touchInfo.graph else {
+            fatalError("A touchInfo was classified as GraphPoke, but didn't have a graph.")
+        }
+        let point = touchInfo.currentStroke.points.last!
+        let values = graph.valuesForTap(at: point)
         updateDisplay(values: values, needsSolving: true)
     }
     
@@ -867,7 +896,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         
         var dragLine: CAShapeLayer!
         if let (connectorLabel, _) = touchInfo.connectorLabel {
-            let targetConstraint = connectorPortAtLocation(location: point)
+            let targetConstraint = connectorPort(at: point)
             let labelPoint = connectorLabel.center
             let dependent = lastInformant(for: connectorLabel.connector)?.WasDependent ?? false
             dragLine = createConnectionLayer(startPoint: labelPoint, endPoint: point, color: targetConstraint?.ConnectorPort.color, isDependent: dependent, arrowHeadPosition: nil)
@@ -881,12 +910,12 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             let startPoint = self.scrollView.convert(connectorPort!.center, from: constraintView)
             var endPoint = point
             var dependent = false
-            if let targetConnector = connectorLabelAtPoint(point: point) {
+            if let targetConnector = connectorLabel(at: point) {
                 endPoint = targetConnector.center
                 dependent = lastInformant(for: targetConnector.connector)?.WasDependent ?? false
                 touchInfo.highlightedConnectorPort = nil
             } else {
-                let targetConstraint = connectorPortAtLocation(location: point)
+                let targetConstraint = self.connectorPort(at: point)
                 touchInfo.highlightedConnectorPort = targetConstraint
                 if let (constraintView, connectorPort) = targetConstraint {
                     constraintView.setConnector(port: connectorPort, isHighlighted: true)
@@ -916,10 +945,10 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         var connectionMade = false
         
         if let (connectorLabel, _) = touchInfo.connectorLabel {
-            if let (constraintView, connectorPort) = connectorPortAtLocation(location: point) {
+            if let (constraintView, connectorPort) = connectorPort(at: point) {
                 self.connect(connectorLabel: connectorLabel, constraintView: constraintView, connectorPort: connectorPort)
                 connectionMade = true
-            } else if let destinationConnectorLabel = connectorLabelAtPoint(point: point), destinationConnectorLabel != connectorLabel {
+            } else if let destinationConnectorLabel = self.connectorLabel(at: point), destinationConnectorLabel != connectorLabel {
                 // Try to combine these connector labels
                 if connectorIsForToy(connector: destinationConnectorLabel.connector) {
                     if connectorIsForToy(connector: connectorLabel.connector) {
@@ -935,11 +964,11 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             }
             
         } else if let (constraintView, _, connectorPort) = touchInfo.constraintView {
-            if let connectorLabel = connectorLabelAtPoint(point: point) {
+            if let connectorLabel = connectorLabel(at: point) {
                 self.connect(connectorLabel: connectorLabel, constraintView: constraintView, connectorPort: connectorPort!)
                 connectionMade = true
                 
-            } else if let (secondConstraintView, secondConnectorPort) = connectorPortAtLocation(location: point) {
+            } else if let (secondConstraintView, secondConnectorPort) = self.connectorPort(at: point) {
                 self.connectConstraintViews(firstConstraintView: constraintView, firstConnectorPort: connectorPort!, secondConstraintView: secondConstraintView, secondConnectorPort: secondConnectorPort)
                 
                 connectionMade = true
@@ -1016,7 +1045,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         return newLabel
     }
     
-    func connectorLabelAtPoint(point: CGPoint) -> ConnectorLabel? {
+    func connectorLabel(at point: CGPoint) -> ConnectorLabel? {
         for label in connectorLabels {
             if label.frame.contains(point) {
                 return label
@@ -1025,7 +1054,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         return nil
     }
     
-    func constraintViewAtPoint(point: CGPoint) -> ConstraintView? {
+    func constraintView(at point: CGPoint) -> ConstraintView? {
         for view in constraintViews {
             if view.frame.contains(point) {
                 return view
@@ -1034,7 +1063,18 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         return nil
     }
     
-    func connectorPortAtLocation(location: CGPoint) -> (ConstraintView: ConstraintView, ConnectorPort: ConnectorPort)? {
+    func graph(at point: CGPoint) -> GraphingToy? {
+        for toy in toys {
+            if let toy = toy as? GraphingToy {
+                if toy.contains(point) {
+                    return toy
+                }
+            }
+        }
+        return nil
+    }
+    
+    func connectorPort(at location: CGPoint) -> (ConstraintView: ConstraintView, ConnectorPort: ConnectorPort)? {
         for constraintView in constraintViews {
             let point = constraintView.convert(location, from: self.scrollView)
             if let port = constraintView.connectorPortForDrag(at: point, connectorIsVisible: { self.connectorToLabel[$0] != nil}) {
@@ -1044,7 +1084,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         return nil
     }
     
-    func connectionLineAtPoint(point: CGPoint, distanceCutoff: CGFloat = 12.0) -> (ConnectorLabel: ConnectorLabel, ConstraintView: ConstraintView, ConnectorPort: ConnectorPort)? {
+    func connectionLine(at point: CGPoint, distanceCutoff: CGFloat = 12.0) -> (ConnectorLabel: ConnectorLabel, ConstraintView: ConstraintView, ConnectorPort: ConnectorPort)? {
         // This is a hit-test to see if the user has tapped on a line between a connector and a connectorPort.
         let squaredDistanceCutoff = distanceCutoff * distanceCutoff
         
@@ -1469,7 +1509,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             }
         }
         
-        func updateGhosts(toy: GhostableToy, lastSimulationValues: [Connector: SimulationContext.ResolvedValue]) {
+        func updateFunctionVisualizers(toy: FunctionVisualizerToy, lastSimulationValues: [Connector: SimulationContext.ResolvedValue]) {
             // Now, get the state needed to update the ghosts
             var inputConnectorStates: [Connector: ConnectorState] = [:]
             for inputConnector in toy.inputConnectors() {
@@ -1500,7 +1540,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             })
             allConnectors = allConnectors + Array(pathToOutputConnectors) + outputConnectors
             
-            toy.updateGhosts(inputStates: inputConnectorStates) { (inputValues: [Connector: Double]) -> [Connector : SimulationContext.ResolvedValue] in
+            toy.update(currentStates: inputConnectorStates) { (inputValues: [Connector: Double]) -> [Connector : SimulationContext.ResolvedValue] in
                 // The toy calls this each time it wants to know what the outputs end up being for a given input
                 
                 // Set up the context
@@ -1550,8 +1590,8 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         if let lastSimulationValues = self.lastSimulationValues, ranSolver {
             for toy in self.toys {
                 toy.update(values: lastSimulationValues)
-                if let toy = toy as? GhostableToy {
-                    updateGhosts(toy: toy, lastSimulationValues: lastSimulationValues)
+                if let toy = toy as? FunctionVisualizerToy {
+                    updateFunctionVisualizers(toy: toy, lastSimulationValues: lastSimulationValues)
                 }
             }
             
