@@ -6,6 +6,6 @@
 //  Copyright © 2016 Bridger Maxwell. All rights reserved.
 //
 
-#include <Accelerate/Accelerate.h>
+@import Accelerate;
 
 BNNSFilterParameters createEmptyBNNSFilterParameters();
