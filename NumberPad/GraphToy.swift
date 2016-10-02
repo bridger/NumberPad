@@ -203,7 +203,7 @@ class GraphToy : UIView, GraphingToy {
         let poinInside = point - self.frame.origin
         let graphPoint = poinInside.applying(transformFromDrawingToGraphing())
         
-        return [xConnector: Double(graphPoint.x), yConnector: Double(graphPoint.y)]
+        return [xConnector: Double(graphPoint.x)]
     }
     
     func contains(_ point: CGPoint) -> Bool {

@@ -305,6 +305,12 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         }
     }
     
+    func deselectEverything() {
+        self.selectedConnectorLabel = nil
+        self.selectedConnectorPort = nil
+        self.selectedToy = nil
+    }
+    
     var dependentConnectors: [Connector] {
         get {
             var connectors = [Connector]()
@@ -632,9 +638,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                         } else {
                             // De-select everything
                             // TODO: What if they were just drawing a point?
-                            self.selectedConnectorLabel = nil
-                            self.selectedConnectorPort = nil
-                            self.selectedToy = nil
+                            self.deselectEverything()
                         }
                         
                     } else {
@@ -719,6 +723,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                     updateOperateToyGesture(touchInfo)
                     
                 case .GraphPoke:
+                    self.deselectEverything()
                     updateGraphPokeGesture(touchInfo)
                 }
             }
