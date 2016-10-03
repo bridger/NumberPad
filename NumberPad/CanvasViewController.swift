@@ -724,6 +724,13 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                     
                 case .GraphPoke:
                     self.deselectEverything()
+                    if let outputs = touchInfo.graph?.outputConnectors() {
+                        for output in outputs {
+                            if let connectorLabel = self.connectorToLabel[output] {
+                                moveConnectorToBottomPriority(connectorLabel: connectorLabel)
+                            }
+                        }
+                    }
                     updateGraphPokeGesture(touchInfo)
                 }
             }
@@ -1545,17 +1552,26 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             })
             allConnectors = allConnectors + Array(pathToOutputConnectors) + outputConnectors
             
-            toy.update(currentStates: inputConnectorStates) { (inputValues: [Connector: Double]) -> [Connector : SimulationContext.ResolvedValue] in
+            toy.update(currentStates: inputConnectorStates) { (inputValues: [Connector: Double], variables: [Connector: String]?) -> SimulationContext in
                 // The toy calls this each time it wants to know what the outputs end up being for a given input
                 
                 // Set up the context
                 let simulationContext = SimulationContext(connectorResolvedCallback: { (_, _) in },
                     connectorConflictCallback: { (_, _) in })
                 simulationContext.rewriteExpressions = false
+                simulationContext.shortcutOperations = false
+                
+                func expression(for connector: Connector, value: Double) -> DDExpression {
+                    if let variables = variables, let variableName = variables[connector] {
+                        return DDExpression.variableExpression(withVariable: variableName)
+                    } else {
+                        return constantExpression(number: value)
+                    }
+                }
                 
                 // First the new values on the inputs
                 for (inputConnector, inputValue) in inputValues {
-                    simulationContext.setConnectorValue(connector: inputConnector, value: (DoubleValue: inputValue, Expression: constantExpression(number: inputValue), WasDependent: false, Informant: nil))
+                    simulationContext.setConnectorValue(connector: inputConnector, value: (DoubleValue: inputValue, Expression: expression(for:inputConnector, value:inputValue), WasDependent: false, Informant: nil))
                 }
                 
                 // Go through all the connectors in order and fill in previous values until they are all resolved
@@ -1565,11 +1581,11 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                         continue
                     }
                     if let value = (values[connector] ?? lastSimulationValues[connector]?.DoubleValue) {
-                        simulationContext.setConnectorValue(connector: connector, value: (DoubleValue: value, Expression: constantExpression(number: value), WasDependent: false, Informant: nil))
+                        simulationContext.setConnectorValue(connector: connector, value: (DoubleValue: value, Expression: expression(for:connector, value:value), WasDependent: false, Informant: nil))
                     }
                 }
                 
-                return simulationContext.connectorValues
+                return simulationContext
             }
         }
         

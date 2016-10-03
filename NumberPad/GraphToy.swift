@@ -175,14 +175,23 @@ class GraphToy : UIView, GraphingToy {
         let drawingToGraphing = transformFromDrawingToGraphing()
         var lastPoint: CGPoint?
         let functionLine = CGMutablePath()
+        self.functionLine = nil
         
         // For each X in our bounds, figure out the Y and add the resulting graphPoint to the line
+        let xVariable = "x"
+        let resolvedContext = resolver([self.xConnector: 5], [self.xConnector: xVariable])
+        guard let yExpression = resolvedContext.connectorValues[self.yConnector]?.Expression else {
+            return
+        }
+        
         for drawingX in 0...Int(self.bounds.size.width) {
             let graphX = CGPoint(x: drawingX, y: 0).applying(drawingToGraphing).x
             
-            let values = resolver([self.xConnector: Double(graphX)])
+            var graphYNumber: NSNumber?
+            graphYNumber = try? resolvedContext.mathEvaluator.evaluateExpression(yExpression, withSubstitutions:
+                [ xVariable : constantExpression(number: Double(graphX)) ])
             
-            guard let graphY = values[self.yConnector]?.DoubleValue, graphY.isFinite else {
+            guard let graphY = graphYNumber as? Double, graphY.isFinite else {
                 lastPoint = nil
                 continue
             }

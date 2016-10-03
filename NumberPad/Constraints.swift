@@ -12,6 +12,7 @@ class SimulationContext {
     typealias ResolvedValue = (DoubleValue: Double, Expression: DDExpression, WasDependent: Bool, Informant: Constraint?)
     var connectorValues: [Connector: ResolvedValue] = [:]
     var rewriteExpressions = true
+    var shortcutOperations = true // Allows some operations, like 0 * something = 0 to be calculated without knowing "something"
     
     let connectorResolvedCallback: (Connector, ResolvedValue) -> Void
     let connectorConflictCallback: (Connector, ResolvedValue) -> Void
@@ -289,13 +290,13 @@ class Multiplier : MultiInputOutputConstraint {
             }
         }
         
-        if zeroInputWasDependent != nil && zeroOutputWasDependent == nil && noValueOutputs.count == 1 {
+        if zeroInputWasDependent != nil && zeroOutputWasDependent == nil && noValueOutputs.count == 1 && context.shortcutOperations {
             // If one of the inputs was 0, and we know all of the outputs except 1 and none of them were zero, then the last output must be zero
             // A * B * 0 = D * E * F. We know all outputs except F, and they are nonzero
             // F = 0
             context.setConnectorValue(connector: noValueOutputs[0], value: (0, constantExpression(number: 0), zeroInputWasDependent!, self))
             
-        } else if zeroOutputWasDependent != nil && zeroOutputWasDependent == nil && noValueInputs.count == 1 {
+        } else if zeroOutputWasDependent != nil && zeroOutputWasDependent == nil && noValueInputs.count == 1 && context.shortcutOperations {
             // If one of the outputs was 0, and we know all of the inputs except 1 and none of them were zero, then the last input must be zero
             // A * B * C = D * E * 0. We know all inputs except A, and they are nonzero
             // A = 0
@@ -379,7 +380,7 @@ class Exponent : Constraint {
         if resultValue == nil {
             // result = base ^ exponent
             
-            if exponentValue != nil && exponentValue!.DoubleValue == 0 {
+            if exponentValue != nil && exponentValue!.DoubleValue == 0 && context.shortcutOperations {
                 // If exponent is 0, then result is 1 (unless base is also zero)
                 if baseValue != nil && baseValue!.DoubleValue == 0 {
                     print("Unable to determine result if exponent and base are 0", terminator: "")
@@ -387,7 +388,7 @@ class Exponent : Constraint {
                     context.setConnectorValue(connector: result, value: (1.0, constantExpression(number: 1.0), exponentValue!.WasDependent, self))
                 }
                 
-            } else if baseValue != nil && baseValue!.DoubleValue == 0 {
+            } else if baseValue != nil && baseValue!.DoubleValue == 0 && context.shortcutOperations {
                 // If base is 0, then result is 0 (unless exponent is also zero)
                 context.setConnectorValue(connector: result, value: (0.0, constantExpression(number: 0.0), baseValue!.WasDependent, self))
                 

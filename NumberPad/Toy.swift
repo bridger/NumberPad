@@ -11,8 +11,10 @@ import DigitRecognizerSDK
 
 // This is a function passed into FunctionVisualizerToy update. The toy will call this for various different values
 // for the input connectors and it should return the resolved value for all of the output connectors
+// The second parameter is a mapping of Connectors to variables which will be used in the resolved expressions.
+typealias InputResolver = ([Connector: Double], [Connector: String]?) -> SimulationContext
+
 typealias ResolvedValues = [Connector: SimulationContext.ResolvedValue]
-typealias InputResolver = ([Connector: Double]) -> ResolvedValues
 
 // This method is called with the value of the current input connector and a lambda which can solve for
 // the output connector values given
@@ -113,7 +115,7 @@ class MotionToy : UIView, SelectableToy, GhostableToy {
             let valueOffset = Double(offset) * pow(10.0, Double(driverState.Scale + 1))
             let offsetDriverValue = driverState.Value.DoubleValue + valueOffset
             
-            let ghostValues = resolver([self.driverConnector: offsetDriverValue])
+            let ghostValues = resolver([self.driverConnector: offsetDriverValue], nil).connectorValues
             
             guard let xPosition = ghostValues[self.xConnector]?.DoubleValue,
                 let yPosition = ghostValues[self.yConnector]?.DoubleValue,
@@ -436,7 +438,7 @@ class CirclesToy : UIView, GhostableToy {
                 continue
             }
             
-            let ghostValues = resolver([driverConnector: offsetDriverValue])
+            let ghostValues = resolver([driverConnector: offsetDriverValue], nil).connectorValues
             
             guard let circumference = ghostValues[self.circumferenceConnector]?.DoubleValue,
                 circumference.isFinite else {
@@ -720,7 +722,7 @@ class SquaresToy : UIView, GhostableToy {
                 continue
             }
             
-            let ghostValues = resolver([driverConnector: offsetDriverValue])
+            let ghostValues = resolver([driverConnector: offsetDriverValue], nil).connectorValues
             
             guard let area = ghostValues[self.areaConnector]?.DoubleValue,
                 area.isFinite else {
