@@ -13,11 +13,33 @@ class GraphToy : UIView, GraphingToy {
     let xConnector: Connector
     let yConnector: Connector
     
+    let gridLineView: GridLineView
+    let functionLayer: CAShapeLayer
+    let selectedPointLayer: CAShapeLayer
+    
     init(xConnector: Connector, yConnector: Connector) {
         self.xConnector = xConnector
         self.yConnector = yConnector
         
+        gridLineView = GridLineView(frame: CGRect.zero)
+        functionLayer = CAShapeLayer()
+        selectedPointLayer = CAShapeLayer()
+        
         super.init(frame: CGRect.zero)
+        
+        self.addSubview(gridLineView)
+        gridLineView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        
+        functionLayer.strokeColor = GraphToy.yColor.cgColor
+        functionLayer.fillColor = nil
+        functionLayer.lineCap = "round"
+        functionLayer.lineWidth = 4
+        self.layer.addSublayer(functionLayer)
+        
+        selectedPointLayer.fillColor = GraphToy.xColor.cgColor
+        self.layer.addSublayer(selectedPointLayer)
+        
+        self.clipsToBounds = true
     }
     
     required init(coder aDecoder: NSCoder) {
@@ -45,137 +67,35 @@ class GraphToy : UIView, GraphingToy {
         } else {
             selectedY = nil
         }
-        self.functionLine = nil
-        self.setNeedsDisplay()
-    }
-    
-    let scale: CGFloat = 1 / 16 // This is the scale from drawing to graphing
-    func transformFromDrawingToGraphing() -> CGAffineTransform {
-        // For now, the graphing coordinate system:
-        // The center of the view is 0,0
-        // The y axis gets larger going up
-        // The scale is several drawing points to each graphing point
         
-        var transform = CGAffineTransform.identity
-        
-        // Scale
-        transform = transform.scaledBy(x: scale, y: scale)
-        
-        // Translate from the center
-        transform = transform.translatedBy(x: -bounds.size.width / 2, y: -bounds.size.height / 2)
-        
-        // Flip the y axis
-        transform = transform.scaledBy(x: 1, y: -1)
-        transform = transform.translatedBy(x: 0, y: -bounds.size.height)
-
-        return transform
+        if let selectedX = selectedX, let selectedY = selectedY {
+            let drawingToGraphing = gridLineView.transformFromDrawingToGraphing()
+            let graphingToDrawing = drawingToGraphing.inverted()
+            
+            let drawingPoint = CGPoint(x: selectedX, y: selectedY).applying(graphingToDrawing)
+            
+            let clampedY = drawingPoint.y.clamp(lower: self.bounds.minY, upper: self.bounds.maxY)
+            
+            let selectedPointRadius: CGFloat = 7
+            let ellipseRect = CGRect(x: drawingPoint.x, y: clampedY, width: 0, height: 0).insetBy(dx: -selectedPointRadius, dy: -selectedPointRadius)
+            
+            self.selectedPointLayer.path = CGPath(ellipseIn: ellipseRect, transform: nil)
+        } else {
+            self.selectedPointLayer.path = nil
+        }
     }
     
     static let xColor = UIColor.multiplierInputColor()
     static let yColor = UIColor.adderInputColor()
     
-    override func draw(_ rect: CGRect) {
-        // Draw a grid in the background
-        let mainColor = UIColor.exponentBaseColor();
-        let backgroundColor = mainColor.withAlphaComponent(0.1).cgColor
-        let minorAxisColor = mainColor.withAlphaComponent(0.2).cgColor
-        let majorAxisColor = mainColor.cgColor
-        let functionLineColor = GraphToy.yColor.cgColor
-        let majorAxisWidth: CGFloat = 2
-        let minorAxisWidth: CGFloat = 1
-        let functionLineWidth: CGFloat = 4
-        let selectedPointRadius: CGFloat = 7
-        
-        let context = UIGraphicsGetCurrentContext()!
-        func stroke(path: CGMutablePath, width: CGFloat, color: CGColor) {
-            context.setLineWidth(width)
-            context.setStrokeColor(color)
-            context.addPath(path)
-            context.strokePath()
-        }
-        func drawLine(start: CGPoint, end: CGPoint, color: CGColor, width: CGFloat) {
-            context.move(to: start)
-            context.addLine(to: end)
-            context.setLineWidth(width)
-            context.setStrokeColor(color)
-            context.strokePath()
-        }
-        
-        context.setFillColor(UIColor.white.cgColor)
-        context.fill(self.bounds)
-        
-        context.setFillColor(backgroundColor)
-        context.fill(self.bounds)
-        
-        let drawingToGraphing = transformFromDrawingToGraphing()
-        let graphingToDrawing = drawingToGraphing.inverted()
-        
-        // Draw the minor grid lines
-        let topLeft = CGPoint.zero.applying(drawingToGraphing)
-        let maxX = self.bounds.maxX
-        let maxY = self.bounds.maxY
-        let bottomRight = CGPoint(x: maxX, y: maxY).applying(drawingToGraphing)
-        
-        let minorAxisPaths = CGMutablePath()
-        let majorAxisPaths = CGMutablePath()
-        
-        // Add the vertical axis lines
-        for x in Int(ceil(topLeft.x))...Int(floor(bottomRight.x)) {
-            let drawingX = CGPoint(x: x, y: 0).applying(graphingToDrawing).x
-            
-            let path = x == 0 ? majorAxisPaths : minorAxisPaths
-            path.move(to: CGPoint(x: drawingX, y: 0))
-            path.addLine(to: CGPoint(x: drawingX, y: maxY))
-        }
-        // Add the horizontal axis lines
-        for y in Int(ceil(bottomRight.y))...Int(floor(topLeft.y)) {
-            let drawingY = CGPoint(x: 0, y: y).applying(graphingToDrawing).y
-            
-            let path = y == 0 ? majorAxisPaths : minorAxisPaths
-            path.move(to: CGPoint(x: 0, y: drawingY))
-            path.addLine(to: CGPoint(x: maxX, y: drawingY))
-        }
-        
-        stroke(path: minorAxisPaths, width: minorAxisWidth, color: minorAxisColor)
-        stroke(path: majorAxisPaths, width: majorAxisWidth, color: majorAxisColor)
-        
-        // Draw the function line
-        if let functionLine = self.functionLine {
-            context.saveGState()
-            
-            context.concatenate(graphingToDrawing)
-            context.addPath(functionLine)
-            
-            context.setLineWidth(functionLineWidth * scale)
-            context.setLineCap(.round)
-            context.setStrokeColor(functionLineColor)
-            context.strokePath()
-            
-            context.restoreGState()
-        }
-        
-        // Draw the dot for the current X and Y values
-        if let selectedX = selectedX, let selectedY = selectedY {
-            let drawingPoint = CGPoint(x: selectedX, y: selectedY).applying(graphingToDrawing)
-
-            let clampedY = drawingPoint.y.clamp(lower: self.bounds.minY, upper: self.bounds.maxY)
-            
-            let ellipseRect = CGRect(x: drawingPoint.x, y: clampedY, width: 0, height: 0).insetBy(dx: -selectedPointRadius, dy: -selectedPointRadius)
-            
-            context.addEllipse(in: ellipseRect)
-            context.setFillColor(GraphToy.xColor.cgColor)
-            context.fillPath()
-        }
-    }
-    
-    
-    var functionLine: CGMutablePath? = nil
     func update(currentStates: [Connector: ConnectorState], resolver: InputResolver) {
         
-        let drawingToGraphing = transformFromDrawingToGraphing()
+        let drawingToGraphing = gridLineView.transformFromDrawingToGraphing()
+        var graphingToDrawing = drawingToGraphing.inverted()
+
         var lastPoint: CGPoint?
         let functionLine = CGMutablePath()
-        self.functionLine = nil
+        self.functionLayer.path = nil
         
         // For each X in our bounds, figure out the Y and add the resulting graphPoint to the line
         let xVariable = "x"
@@ -196,7 +116,14 @@ class GraphToy : UIView, GraphingToy {
                 continue
             }
 
-            let newPoint = CGPoint(x: graphX, y: CGFloat(graphY))
+            let newPoint = CGPoint(x: graphX, y: CGFloat(graphY)).applying(graphingToDrawing)
+            let maxDrawableMagnitude: CGFloat = 10000
+            guard newPoint.x.isFinite && newPoint.y.isFinite,
+                abs(newPoint.x) < maxDrawableMagnitude && abs(newPoint.y) < maxDrawableMagnitude else {
+                    lastPoint = nil
+                    continue
+            }
+            
             if lastPoint == nil {
                 functionLine.move(to: newPoint)
             } else {
@@ -204,13 +131,12 @@ class GraphToy : UIView, GraphingToy {
             }
             lastPoint = newPoint
         }
-        self.functionLine = functionLine
-        self.setNeedsDisplay()
+        self.functionLayer.path = functionLine
     }
     
     func valuesForTap(at point: CGPoint) -> [Connector: Double] {
         let poinInside = point - self.frame.origin
-        let graphPoint = poinInside.applying(transformFromDrawingToGraphing())
+        let graphPoint = poinInside.applying(gridLineView.transformFromDrawingToGraphing())
         
         return [xConnector: Double(graphPoint.x)]
     }
@@ -219,3 +145,95 @@ class GraphToy : UIView, GraphingToy {
         return self.frame.contains(point)
     }
 }
+
+class GridLineView: UIView {
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        self.isOpaque = true
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        self.isOpaque = true
+    }
+    
+    let scale: CGFloat = 1 / 16 // This is the scale from drawing to graphing
+    func transformFromDrawingToGraphing() -> CGAffineTransform {
+        // For now, the graphing coordinate system:
+        // The center of the view is 0,0
+        // The y axis gets larger going up
+        // The scale is several drawing points to each graphing point
+        
+        var transform = CGAffineTransform.identity
+        
+        // Scale
+        transform = transform.scaledBy(x: scale, y: scale)
+        
+        // Translate from the center
+        transform = transform.translatedBy(x: -bounds.size.width / 2, y: -bounds.size.height / 2)
+        
+        // Flip the y axis
+        transform = transform.scaledBy(x: 1, y: -1)
+        transform = transform.translatedBy(x: 0, y: -bounds.size.height)
+        
+        return transform
+    }
+    
+    override func draw(_ rect: CGRect) {
+        let mainColor = UIColor.exponentBaseColor();
+        let backgroundColor = mainColor.withAlphaComponent(0.1).cgColor
+        let minorAxisColor = mainColor.withAlphaComponent(0.2).cgColor
+        let majorAxisColor = mainColor.cgColor
+        let majorAxisWidth: CGFloat = 2
+        let minorAxisWidth: CGFloat = 1
+        
+        let context = UIGraphicsGetCurrentContext()!
+        func stroke(path: CGMutablePath, width: CGFloat, color: CGColor) {
+            context.setLineWidth(width)
+            context.setStrokeColor(color)
+            context.addPath(path)
+            context.strokePath()
+        }
+        
+        context.setFillColor(UIColor.white.cgColor)
+        context.fill(self.bounds)
+        
+        context.setFillColor(backgroundColor)
+        context.fill(self.bounds)
+        
+        let drawingToGraphing = transformFromDrawingToGraphing()
+        let graphingToDrawing = drawingToGraphing.inverted()
+        
+        let topLeft = CGPoint.zero.applying(drawingToGraphing)
+        let maxX = self.bounds.maxX
+        let maxY = self.bounds.maxY
+        let bottomRight = CGPoint(x: maxX, y: maxY).applying(drawingToGraphing)
+        
+        let minorAxisPaths = CGMutablePath()
+        let majorAxisPaths = CGMutablePath()
+        
+        // Add the vertical axis lines
+        for x in Int(ceil(topLeft.x))...Int(floor(bottomRight.x)) {
+            let drawingX = CGPoint(x: x, y: 0).applying(graphingToDrawing).x
+            
+            let path = x == 0 ? majorAxisPaths : minorAxisPaths
+            path.move(to: CGPoint(x: drawingX, y: 0))
+            path.addLine(to: CGPoint(x: drawingX, y: maxY))
+        }
+        
+        // Add the horizontal axis lines
+        for y in Int(ceil(bottomRight.y))...Int(floor(topLeft.y)) {
+            let drawingY = CGPoint(x: 0, y: y).applying(graphingToDrawing).y
+            
+            let path = y == 0 ? majorAxisPaths : minorAxisPaths
+            path.move(to: CGPoint(x: 0, y: drawingY))
+            path.addLine(to: CGPoint(x: maxX, y: drawingY))
+        }
+        
+        stroke(path: minorAxisPaths, width: minorAxisWidth, color: minorAxisColor)
+        stroke(path: majorAxisPaths, width: majorAxisWidth, color: majorAxisColor)
+    }
+}
+
+
