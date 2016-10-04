@@ -26,6 +26,7 @@ class GraphToy : UIView, GraphingToy {
         selectedPointLayer = CAShapeLayer()
         
         super.init(frame: CGRect.zero)
+        self.isUserInteractionEnabled = false
         
         self.addSubview(gridLineView)
         gridLineView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
@@ -91,7 +92,7 @@ class GraphToy : UIView, GraphingToy {
     func update(currentStates: [Connector: ConnectorState], resolver: InputResolver) {
         
         let drawingToGraphing = gridLineView.transformFromDrawingToGraphing()
-        var graphingToDrawing = drawingToGraphing.inverted()
+        let graphingToDrawing = drawingToGraphing.inverted()
 
         var lastPoint: CGPoint?
         let functionLine = CGMutablePath()
@@ -144,6 +145,26 @@ class GraphToy : UIView, GraphingToy {
     func contains(_ point: CGPoint) -> Bool {
         return self.frame.contains(point)
     }
+    
+    var graphOffset: CGPoint {
+        get {
+            return gridLineView.offset
+        }
+        set {
+            gridLineView.offset = newValue
+            gridLineView.setNeedsDisplay()
+        }
+    }
+    
+    var graphScale: CGFloat {
+        get {
+            return gridLineView.scale
+        }
+        set {
+            gridLineView.scale = newValue
+            gridLineView.setNeedsLayout()
+        }
+    }
 }
 
 class GridLineView: UIView {
@@ -158,7 +179,8 @@ class GridLineView: UIView {
         self.isOpaque = true
     }
     
-    let scale: CGFloat = 1 / 16 // This is the scale from drawing to graphing
+    var offset: CGPoint = CGPoint.zero
+    var scale: CGFloat = 1 / 16 // This is the scale from drawing to graphing
     func transformFromDrawingToGraphing() -> CGAffineTransform {
         // For now, the graphing coordinate system:
         // The center of the view is 0,0
@@ -172,6 +194,7 @@ class GridLineView: UIView {
         
         // Translate from the center
         transform = transform.translatedBy(x: -bounds.size.width / 2, y: -bounds.size.height / 2)
+        transform = transform.translatedBy(x: -offset.x, y: offset.y)
         
         // Flip the y axis
         transform = transform.scaledBy(x: 1, y: -1)

@@ -44,6 +44,10 @@ protocol GraphingToy: FunctionVisualizerToy {
     func contains(_ point: CGPoint) -> Bool
 
     func valuesForTap(at point: CGPoint) -> [Connector: Double]
+    
+    var graphOffset: CGPoint { get set }
+    
+    var graphScale: CGFloat { get set }
 }
 
 protocol SelectableToy: Toy {

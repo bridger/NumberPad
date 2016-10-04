@@ -9,7 +9,7 @@
 import UIKit
 import DigitRecognizerSDK
 
-class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, NumberSlideViewDelegate, NameCanvasDelegate, UIViewControllerTransitioningDelegate {
+class CanvasViewController: UIViewController, NumberSlideViewDelegate, NameCanvasDelegate, UIViewControllerTransitioningDelegate {
     
     init(digitRecognizer: DigitRecognizer) {
         self.digitRecognizer = digitRecognizer
@@ -409,14 +409,22 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
     }
     
     // MARK: Gestures
-    
     enum GestureClassification {
         case Stroke
         case MakeConnection
         case Drag
         case Delete
-        case OperateToy
-        case GraphPoke
+        case OperateToy(SelectableToy, CGPoint)
+        case GraphPoke(GraphingToy)
+        case GraphPinch(GraphingToy, GraphPinchInfo)
+    }
+    
+    struct GraphPinchInfo {
+        let firstTouchID: TouchID
+        let firstTouchInitialPoint: CGPoint
+        let secondTouchID: TouchID
+        let secondTouchInitialPoint: CGPoint
+        let initialGraphOffset: CGPoint
     }
     
     class TouchInfo {
@@ -429,6 +437,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         var highlightedConnectorPort: (ConstraintView: ConstraintView, ConnectorPort: ConnectorPort)?
         var toy: (Toy: SelectableToy, Offset: CGPoint)?
         var graph: GraphingToy?
+        var secondTouchPoint: CGPoint? // Updated with only for two finger gestures, like GraphPinch
         
         let currentStroke = Stroke()
         
@@ -466,6 +475,7 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             let point = touch.location(in: self.scrollView)
             
             let touchInfo = TouchInfo(initialPoint: point, initialTime: touch.timestamp)
+            let touchID = touchTracker.id(for: touch)
             
             // Grab all points for this touch, including those between display refreshes (from Pencil esp)
             for coalesced in event?.coalescedTouches(for: touch) ?? [] {
@@ -484,9 +494,22 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 touchInfo.constraintView = (constraintView, constraintView.center - point, nil)
             } else if let graph = self.graph(at: point) {
                 touchInfo.graph = graph
+                
+                if let allTouches = event?.allTouches, allTouches.count == 2 {
+                    // This might be a gesture to pinch the graph. If we are the second touch
+                    // we just associate this touch with the first touchID
+                    for otherTouch in allTouches where otherTouch != touch {
+                        let otherTouchID = touchTracker.id(for: otherTouch)
+                        guard let otherTouchInfo = self.touches[otherTouchID],
+                            otherTouchInfo.graph != nil else {
+                                continue
+                        }
+                        let info = GraphPinchInfo(firstTouchID: otherTouchID, firstTouchInitialPoint: otherTouchInfo.initialPoint, secondTouchID: touchID, secondTouchInitialPoint: point, initialGraphOffset: graph.graphOffset)
+                        changeTouchToClassification(touchInfo: otherTouchInfo, classification: .GraphPinch(graph, info))
+                        return
+                    }
+                }
             }
-
-            let touchID = touchTracker.id(for: touch)
             self.touches[touchID] = touchInfo
             
             // Test for a long press, to trigger a drag
@@ -511,7 +534,11 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for touch in touches {
+        guard let allTouches = event?.allTouches else {
+            return
+        }
+        
+        for touch in allTouches {
             let touchID = touchTracker.id(for: touch)
             if let touchInfo = self.touches[touchID] {
                 // Grab all points for this touch, including those between display refreshes (from Pencil esp)
@@ -525,23 +552,35 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 
                 // Assign a classification, only if one doesn't exist
                 if touchInfo.classification == nil {
-                    if touchInfo.toy != nil {
-                        changeTouchToClassification(touchInfo: touchInfo, classification: .OperateToy)
+                    if let (toy, offset) = touchInfo.toy {
+                        changeTouchToClassification(touchInfo: touchInfo, classification: .OperateToy(toy, offset))
                     } else if touchInfo.connectorLabel != nil || touchInfo.constraintView?.ConnectorPort != nil {
                         // If we have moved significantly before the long press timer fired, then this is a connection draw
                         if touchInfo.initialPoint.distanceTo(point: point) > dragMaxDistance {
                             changeTouchToClassification(touchInfo: touchInfo, classification: .MakeConnection)
                         }
                         // TODO: Maybe it should be a failed gesture if there was no connectorPort?
-                    } else if touchInfo.graph != nil {
-                        changeTouchToClassification(touchInfo: touchInfo, classification: .GraphPoke)
+                    } else if let graph =  touchInfo.graph {
+                        changeTouchToClassification(touchInfo: touchInfo, classification: .GraphPoke(graph))
                     } else if touchInfo.constraintView == nil {
                         // If they weren't pointing at anything, then this is definitely a stroke
                         changeTouchToClassification(touchInfo: touchInfo, classification: .Stroke)
                     }
                 }
                 
-                if touchInfo.classification != nil {
+                if let classification = touchInfo.classification {
+                    switch classification {
+                    case .GraphPinch(_, let pinchInfo):
+                        for otherTouch in allTouches {
+                            if touchTracker.id(for: otherTouch) == pinchInfo.secondTouchID {
+                                touchInfo.secondTouchPoint = otherTouch.location(in: self.scrollView)
+                                break
+                            }
+                        }
+                    default:
+                        break
+                    }
+                    
                     updateGestureForTouch(touchInfo: touchInfo)
                 }
             }
@@ -669,6 +708,25 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 }
                 
                 self.touches[touchID] = nil
+            } else {
+                endGraphPinches(withSecondaryTouchID: touchID)
+            }
+        }
+    }
+    
+    func endGraphPinches(withSecondaryTouchID secondaryTouchID: TouchID) {
+        // This touch may have been the secondary touch for a graph pinch
+        for (_, touchInfo) in self.touches {
+            guard let classification = touchInfo.classification else {
+                continue
+            }
+            switch classification {
+            case .GraphPinch(_, let pinchInfo):
+                if pinchInfo.secondTouchID == secondaryTouchID {
+                    changeTouchToClassification(touchInfo: touchInfo, classification: nil)
+                }
+            default:
+                break
             }
         }
     }
@@ -682,57 +740,59 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 touchInfo.phase = .cancelled
                 
                 self.touches[touchID] = nil
+            } else {
+                endGraphPinches(withSecondaryTouchID: touchID)
             }
         }
     }
     
     func changeTouchToClassification(touchInfo: TouchInfo, classification: GestureClassification?) {
-        if touchInfo.classification != classification {
-            if touchInfo.classification != nil {
-                undoEffectsOfGestureInProgress(touchInfo: touchInfo)
-            }
-            
-            touchInfo.classification = classification
-            
-            if let classification = classification {
-                switch classification {
-                case .Stroke:
-                    self.processStrokesCounter += 1
-                    touchInfo.currentStroke.updateLayer()
-                    touchInfo.currentStroke.layer.strokeColor = UIColor.textColor().cgColor
-                    self.scrollView.layer.addSublayer(touchInfo.currentStroke.layer)
+        if touchInfo.classification != nil {
+            undoEffectsOfGestureInProgress(touchInfo: touchInfo)
+        }
+        
+        touchInfo.classification = classification
+        
+        if let classification = classification {
+            switch classification {
+            case .Stroke:
+                self.processStrokesCounter += 1
+                touchInfo.currentStroke.updateLayer()
+                touchInfo.currentStroke.layer.strokeColor = UIColor.textColor().cgColor
+                self.scrollView.layer.addSublayer(touchInfo.currentStroke.layer)
+                
+            case .MakeConnection:
+                updateDrawConnectionGesture(touchInfo: touchInfo)
+                
+            case .Drag:
+                if let (pickedUpView, _) = touchInfo.pickedUpView() {
+                    setViewPickedUp(view: pickedUpView, pickedUp: true)
+                    updateDragGesture(touchInfo: touchInfo)
                     
-                case .MakeConnection:
-                    updateDrawConnectionGesture(touchInfo: touchInfo)
-                    
-                case .Drag:
-                    if let (pickedUpView, _) = touchInfo.pickedUpView() {
-                        setViewPickedUp(view: pickedUpView, pickedUp: true)
-                        updateDragGesture(touchInfo: touchInfo)
-                        
-                    } else {
-                        fatalError("A touchInfo was classified as Drag, but didn't have a connectorLabel or constraintView.")
-                    }
-                    
-                case .Delete:
-                    touchInfo.currentStroke.updateLayer()
-                    touchInfo.currentStroke.layer.strokeColor = UIColor.red.cgColor
-                    self.scrollView.layer.addSublayer(touchInfo.currentStroke.layer)
-                    
-                case .OperateToy:
-                    updateOperateToyGesture(touchInfo)
-                    
-                case .GraphPoke:
-                    self.deselectEverything()
-                    if let outputs = touchInfo.graph?.outputConnectors() {
-                        for output in outputs {
-                            if let connectorLabel = self.connectorToLabel[output] {
-                                moveConnectorToBottomPriority(connectorLabel: connectorLabel)
-                            }
-                        }
-                    }
-                    updateGraphPokeGesture(touchInfo)
+                } else {
+                    fatalError("A touchInfo was classified as Drag, but didn't have a connectorLabel or constraintView.")
                 }
+                
+            case .Delete:
+                touchInfo.currentStroke.updateLayer()
+                touchInfo.currentStroke.layer.strokeColor = UIColor.red.cgColor
+                self.scrollView.layer.addSublayer(touchInfo.currentStroke.layer)
+                
+            case .OperateToy(let toy, let offset):
+                updateOperateToyGesture(touchInfo, toy: toy, offset: offset)
+                
+            case .GraphPoke(let graph):
+                self.deselectEverything()
+                for output in graph.outputConnectors() {
+                    if let connectorLabel = self.connectorToLabel[output] {
+                        moveConnectorToBottomPriority(connectorLabel: connectorLabel)
+                    }
+                }
+                updateGraphPokeGesture(touchInfo, graph: graph)
+                
+            case .GraphPinch:
+                self.scrollView.panGestureRecognizer.isEnabled = false
+                break
             }
         }
     }
@@ -754,7 +814,10 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 }
             case .Delete:
                 touchInfo.currentStroke.layer.removeFromSuperlayer()
-                
+            
+            case .GraphPinch:
+                self.scrollView.panGestureRecognizer.isEnabled = true
+            
             case .OperateToy:
                 break // Can't undo
             case .GraphPoke:
@@ -779,11 +842,14 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
             case .Delete:
                 touchInfo.currentStroke.updateLayer()
                 
-            case .OperateToy:
-                updateOperateToyGesture(touchInfo)
+            case .OperateToy(let toy, let offset):
+                updateOperateToyGesture(touchInfo, toy: toy, offset: offset)
                 
-            case .GraphPoke:
-                updateGraphPokeGesture(touchInfo)
+            case .GraphPoke(let graph):
+                updateGraphPokeGesture(touchInfo, graph: graph)
+                
+            case .GraphPinch(let graph, let pinchInfo):
+                updateGraphPinchGesture(touchInfo, graph: graph, pinchInfo: pinchInfo)
             }
             
         } else {
@@ -834,9 +900,13 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
                 completeDeleteGesture(touchInfo: touchInfo)
                 touchInfo.currentStroke.layer.removeFromSuperlayer()
                 
+                
+            case .GraphPinch:
+                self.scrollView.panGestureRecognizer.isEnabled = true
+                break
+                
             case .OperateToy:
                 break // Nothing left to do
-                
             case .GraphPoke:
                 break // Nothing left to do
             }
@@ -863,26 +933,34 @@ class CanvasViewController: UIViewController, UIGestureRecognizerDelegate, Numbe
         self.updateDisplay()
     }
     
-    func updateOperateToyGesture(_ touchInfo: TouchInfo) {
-        guard let (touchToy, offset) = touchInfo.toy else {
-            fatalError("A touchInfo was classified as OperateToy, but didn't have a toy.")
-        }
-        if self.selectedToy !== touchToy {
-            self.selectedToy = touchToy
+    func updateOperateToyGesture(_ touchInfo: TouchInfo, toy: SelectableToy, offset: CGPoint) {
+        if self.selectedToy !== toy {
+            self.selectedToy = toy
         }
         let point = touchInfo.currentStroke.points.last!
         let newCenter = point + offset
-        let values = touchToy.valuesForDrag(to: newCenter)
+        let values = toy.valuesForDrag(to: newCenter)
         updateDisplay(values: values, needsSolving: true)
     }
     
-    func updateGraphPokeGesture(_ touchInfo: TouchInfo) {
-        guard let graph = touchInfo.graph else {
-            fatalError("A touchInfo was classified as GraphPoke, but didn't have a graph.")
-        }
+    func updateGraphPokeGesture(_ touchInfo: TouchInfo, graph: GraphingToy) {
         let point = touchInfo.currentStroke.points.last!
         let values = graph.valuesForTap(at: point)
         updateDisplay(values: values, needsSolving: true)
+    }
+    
+    func updateGraphPinchGesture(_ touchInfo: TouchInfo, graph: GraphingToy, pinchInfo: GraphPinchInfo) {
+        guard let firstTouchPoint = touchInfo.currentStroke.points.last, let secondTouchPoint = touchInfo.secondTouchPoint else {
+            fatalError("Can't update pinch gesture without recent touch points")
+        }
+        
+        let oldCenter = (pinchInfo.firstTouchInitialPoint + pinchInfo.secondTouchInitialPoint) / 2
+        let newCenter = (firstTouchPoint + secondTouchPoint) / 2
+        let change = newCenter - oldCenter
+        
+        graph.graphOffset = pinchInfo.initialGraphOffset + change
+        // Re-run the solver to re-render the graph
+        self.updateDisplay(needsSolving: true)
     }
     
     func updateDragGesture(touchInfo: TouchInfo) {
