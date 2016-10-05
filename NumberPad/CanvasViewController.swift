@@ -425,6 +425,7 @@ class CanvasViewController: UIViewController, NumberSlideViewDelegate, NameCanva
         let secondTouchID: TouchID
         let secondTouchInitialPoint: CGPoint
         let initialGraphOffset: CGPoint
+        let initialScale: CGFloat
     }
     
     class TouchInfo {
@@ -504,7 +505,7 @@ class CanvasViewController: UIViewController, NumberSlideViewDelegate, NameCanva
                             otherTouchInfo.graph != nil else {
                                 continue
                         }
-                        let info = GraphPinchInfo(firstTouchID: otherTouchID, firstTouchInitialPoint: otherTouchInfo.initialPoint, secondTouchID: touchID, secondTouchInitialPoint: point, initialGraphOffset: graph.graphOffset)
+                        let info = GraphPinchInfo(firstTouchID: otherTouchID, firstTouchInitialPoint: otherTouchInfo.initialPoint, secondTouchID: touchID, secondTouchInitialPoint: point, initialGraphOffset: graph.graphOffset, initialScale: graph.graphScale)
                         changeTouchToClassification(touchInfo: otherTouchInfo, classification: .GraphPinch(graph, info))
                         return
                     }
@@ -954,11 +955,24 @@ class CanvasViewController: UIViewController, NumberSlideViewDelegate, NameCanva
             fatalError("Can't update pinch gesture without recent touch points")
         }
         
-        let oldCenter = (pinchInfo.firstTouchInitialPoint + pinchInfo.secondTouchInitialPoint) / 2
-        let newCenter = (firstTouchPoint + secondTouchPoint) / 2
-        let change = newCenter - oldCenter
+        let oldDistance = pinchInfo.firstTouchInitialPoint.distanceTo(point: pinchInfo.secondTouchInitialPoint)
+        let newDistance = firstTouchPoint.distanceTo(point: secondTouchPoint)
+        let scaleChange = oldDistance / newDistance
+        graph.graphScale = pinchInfo.initialScale * scaleChange
         
-        graph.graphOffset = pinchInfo.initialGraphOffset + change
+        let graphFrame = self.view.convert(graph.frame, to: self.scrollView) // Touch coordinates are in scrollView
+        let graphCenter = graphFrame.center()
+        
+        let oldPinchCenter = (pinchInfo.firstTouchInitialPoint + pinchInfo.secondTouchInitialPoint) / 2
+        let newPinchCenter = (firstTouchPoint + secondTouchPoint) / 2
+        
+        let oldPinchOffsetInGridCoords = (oldPinchCenter - graphCenter) * pinchInfo.initialScale
+        let newPinchOffsetInGridCoords = (newPinchCenter - graphCenter) * graph.graphScale
+        var offsetChange = oldPinchOffsetInGridCoords - newPinchOffsetInGridCoords
+        // Flip the y coordinate
+        offsetChange.y *= -1
+        
+        graph.graphOffset = pinchInfo.initialGraphOffset + offsetChange
         // Re-run the solver to re-render the graph
         self.updateDisplay(needsSolving: true)
     }
@@ -1156,7 +1170,8 @@ class CanvasViewController: UIViewController, NumberSlideViewDelegate, NameCanva
     func graph(at point: CGPoint) -> GraphingToy? {
         for toy in toys {
             if let toy = toy as? GraphingToy {
-                if toy.contains(point) {
+                let toyFrame = self.view.convert(toy.frame, to: self.scrollView)
+                if toyFrame.contains(point) {
                     return toy
                 }
             }

@@ -41,13 +41,13 @@ protocol GhostableToy: FunctionVisualizerToy {
 }
 
 protocol GraphingToy: FunctionVisualizerToy {
-    func contains(_ point: CGPoint) -> Bool
-
     func valuesForTap(at point: CGPoint) -> [Connector: Double]
     
     var graphOffset: CGPoint { get set }
     
     var graphScale: CGFloat { get set }
+    
+    var frame: CGRect { get }
 }
 
 protocol SelectableToy: Toy {

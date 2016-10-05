@@ -142,10 +142,6 @@ class GraphToy : UIView, GraphingToy {
         return [xConnector: Double(graphPoint.x)]
     }
     
-    func contains(_ point: CGPoint) -> Bool {
-        return self.frame.contains(point)
-    }
-    
     var graphOffset: CGPoint {
         get {
             return gridLineView.offset
@@ -179,7 +175,7 @@ class GridLineView: UIView {
         self.isOpaque = true
     }
     
-    var offset: CGPoint = CGPoint.zero
+    var offset: CGPoint = CGPoint.zero // This is the graph coordinates which is at the center
     var scale: CGFloat = 1 / 16 // This is the scale from drawing to graphing
     func transformFromDrawingToGraphing() -> CGAffineTransform {
         // For now, the graphing coordinate system:
@@ -190,11 +186,11 @@ class GridLineView: UIView {
         var transform = CGAffineTransform.identity
         
         // Scale
+        transform = transform.translatedBy(x: offset.x, y: offset.y)
         transform = transform.scaledBy(x: scale, y: scale)
         
         // Translate from the center
         transform = transform.translatedBy(x: -bounds.size.width / 2, y: -bounds.size.height / 2)
-        transform = transform.translatedBy(x: -offset.x, y: offset.y)
         
         // Flip the y axis
         transform = transform.scaledBy(x: 1, y: -1)
