@@ -581,4 +581,139 @@ public class DigitRecognizer {
         dataPointer1 = UnsafeMutableRawPointer(mutating: dataBuffer1)
         dataPointer2 = UnsafeMutableRawPointer(mutating: dataBuffer2)
     }
+    
+    
+    public func strokeIsScribble(_ stroke: [CGPoint]) -> Bool {
+        guard stroke.count > 1 else {
+            return false
+        }
+        
+        // Here are magic values I found by scatter plotting a few samples. This method could
+        // be improved...
+        let intersectionThreshold = 32
+        let lengthToAreaThreshold: CGFloat = 0.055
+        
+        var lengths = Array<CGFloat>(repeating: 0, count: stroke.count - 1)
+        var totalLength: CGFloat = 0
+        var totalArea: CGFloat = 0
+        
+        func doubleTriangleArea(_ a: CGPoint, _ b: CGPoint, _ c: CGPoint) -> CGFloat {
+            return abs(a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y))
+        }
+        
+        let firstPoint = stroke.first!
+        var lastPoint: CGPoint?
+        for (index, point) in stroke.enumerated() {
+            if let lastPoint = lastPoint {
+                let distance = lastPoint.distanceTo(point: point)
+                totalLength += distance
+                lengths[index - 1] = totalLength
+                
+                totalArea += doubleTriangleArea(firstPoint, lastPoint, point)
+            }
+            lastPoint = point
+        }
+        totalArea /= 2
+        
+        if (totalLength / totalArea) <= lengthToAreaThreshold {
+            // A scribble should have a relatively large length compared to its area
+            return false
+        }
+        
+        // A, B, C, D, E, F
+        //   2, 4, 6, 8, 10
+        
+        struct Arc {
+            let stroke: ArraySlice<CGPoint>
+            let lengths: ArraySlice<CGFloat>
+            let startingLength: CGFloat
+        }
+        
+        func split(arc: Arc, midLengthIndex: Int) -> (Arc, Arc) {
+            let arc1 = Arc(stroke: arc.stroke.prefix(through: midLengthIndex),
+                           lengths: arc.lengths.prefix(upTo: midLengthIndex),
+                           startingLength: arc.startingLength)
+            
+            let arc1EndLength = arc.lengths[midLengthIndex - 1]
+            let arc2 = Arc(stroke: arc.stroke.suffix(from: midLengthIndex),
+                           lengths: arc.lengths.suffix(from: midLengthIndex),
+                           startingLength: arc1EndLength)
+            
+            return (arc1, arc2)
+        }
+        
+        func midIndex(_ arc: Arc) -> Int? {
+            guard arc.stroke.count > 2 else {
+                return nil
+            }
+            
+            // Returns nil if the midpoint is the first point
+            let arcLength = arc.lengths.last!
+            let midDistance = (arcLength - arc.startingLength) / 2
+            let midDistancePlusStarting = midDistance + arc.startingLength
+            guard let midLengthIndex = arc.lengths.index(where: { $0 > midDistancePlusStarting}),
+                midLengthIndex > arc.stroke.startIndex else {
+                    return nil
+            }
+            return midLengthIndex
+        }
+        
+        func averageMidpoint(arc: Arc) -> CGPoint {
+            let pointSum = arc.stroke.reduce(CGPoint.zero, +)
+            return pointSum / CGFloat(arc.stroke.count)
+        }
+        /* This is based on an intersection-finding algorithm:
+         1. Chop the curve in half, so you've got two arcs.
+         2. Draw a circle around the midpoint of each arc.  The radius of the circle is L/2, where L is the length of the arc.  (So the arc must lie entirely inside the circle).
+         3. If the circles don't overlap, it is impossible for the two arcs to intersect.  Do nothing.
+         4. If the circles do overlap, it is possible that the arcs intersect.  Chop each arc into two pieces, and recurse: for each of the 4 possible pairs, go back to step 1.
+         In this case, we don't need the actual intersections but how many times the recursion
+         happens, which is an approximation for how intersection-ey a curve is.
+         */
+        func findRecursiveIntersections(arc1: Arc, midIndex1: Int?, arc2: Arc, midIndex2: Int?) -> Int {
+            let point1 = midIndex1 != nil ? arc1.stroke[midIndex1!] : averageMidpoint(arc: arc1)
+            let point2 = midIndex2 != nil ? arc2.stroke[midIndex2!] : averageMidpoint(arc: arc2)
+            
+            
+            let arc1Length = arc1.lengths.last! - arc1.startingLength
+            let arc2Length = arc2.lengths.last! - arc2.startingLength
+            
+            // We imagine that a circle of radius arcLength/2 was drawn around each circle. If those
+            // circles intersect, then the two arcs might intersect. We divide each up into two more
+            // arcs and recurse on each combo.
+            if point1.distanceTo(point: point2) >= (arc1Length + arc2Length) / 2 {
+                // No intersection
+                return 0
+            }
+            
+            if let midIndex1 = midIndex1, let midIndex2 = midIndex2 {
+                let (arc1Left, arc1Right) = split(arc: arc1, midLengthIndex: midIndex1)
+                let arc1LeftMid = midIndex(arc1Left)
+                let arc1RightMid = midIndex(arc1Right)
+                let (arc2Left, arc2Right) = split(arc: arc2, midLengthIndex: midIndex2)
+                let arc2LeftMid = midIndex(arc2Left)
+                let arc2RightMid = midIndex(arc2Right)
+                
+                return (1 +
+                    findRecursiveIntersections(arc1: arc1Left, midIndex1: arc1LeftMid, arc2: arc2Left, midIndex2: arc2LeftMid) +
+                    findRecursiveIntersections(arc1: arc1Left, midIndex1: arc1LeftMid, arc2: arc2Right, midIndex2: arc2RightMid) +
+                    findRecursiveIntersections(arc1: arc1Right, midIndex1: arc1RightMid, arc2: arc2Left, midIndex2: arc2LeftMid) +
+                    findRecursiveIntersections(arc1: arc1Right, midIndex1: arc1RightMid, arc2: arc2Right, midIndex2: arc2RightMid)
+                )
+            } else {
+                // If neither can be split we stop recursing
+                return 1
+            }
+        }
+        
+        let fullArc = Arc(stroke: stroke.suffix(from: 0), lengths: lengths.suffix(from: 0), startingLength: 0)
+        if let fullArcMiddle = midIndex(fullArc) {
+            let (fullArcLeft, fullArcRight) = split(arc: fullArc, midLengthIndex: fullArcMiddle)
+            let intersectionCount = findRecursiveIntersections(arc1: fullArcLeft, midIndex1: midIndex(fullArcLeft), arc2: fullArcRight, midIndex2: midIndex(fullArcRight))
+            
+            return intersectionCount > intersectionThreshold
+        }
+        
+        return false
+    }
 }

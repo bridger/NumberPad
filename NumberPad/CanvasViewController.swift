@@ -578,6 +578,13 @@ class CanvasViewController: UIViewController, NumberSlideViewDelegate, NameCanva
                                 break
                             }
                         }
+                    case .MakeConnection:
+                        fallthrough
+                    case .Stroke:
+                        // See if this was a scribble, which is a delete gesture
+                        if digitRecognizer.strokeIsScribble(touchInfo.currentStroke.points) {
+                            changeTouchToClassification(touchInfo: touchInfo, classification: .Delete)
+                        }
                     default:
                         break
                     }

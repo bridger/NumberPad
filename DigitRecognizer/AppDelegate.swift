@@ -133,7 +133,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         var testWriteCount = 0
         writeloop: for (label, samples) in library {
             guard let byteLabel = self.digitRecognizer.labelStringToByte[label] else {
-                fatalError("Unknown label in library: \(label)")
+                print("Not writing images for unknown label: \(label)")
+                continue
             }
             
             labelToWrite[0] = byteLabel
