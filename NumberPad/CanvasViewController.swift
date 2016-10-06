@@ -791,7 +791,8 @@ class CanvasViewController: UIViewController, NumberSlideViewDelegate, NameCanva
                 }
                 updateGraphPokeGesture(touchInfo, graph: graph)
                 
-            case .GraphPinch:
+            case .GraphPinch(let graph, _):
+                graph.isPinching = true
                 self.scrollView.panGestureRecognizer.isEnabled = false
                 break
             }
@@ -816,7 +817,9 @@ class CanvasViewController: UIViewController, NumberSlideViewDelegate, NameCanva
             case .Delete:
                 touchInfo.currentStroke.layer.removeFromSuperlayer()
             
-            case .GraphPinch:
+            case .GraphPinch(let graph, _):
+                graph.isPinching = false
+                self.updateDisplay(needsSolving: true)
                 self.scrollView.panGestureRecognizer.isEnabled = true
             
             case .OperateToy:
@@ -902,7 +905,9 @@ class CanvasViewController: UIViewController, NumberSlideViewDelegate, NameCanva
                 touchInfo.currentStroke.layer.removeFromSuperlayer()
                 
                 
-            case .GraphPinch:
+            case .GraphPinch(let graph, _):
+                graph.isPinching = false
+                self.updateDisplay(needsSolving: true)
                 self.scrollView.panGestureRecognizer.isEnabled = true
                 break
                 

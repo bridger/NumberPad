@@ -48,6 +48,8 @@ protocol GraphingToy: FunctionVisualizerToy {
     var graphScale: CGFloat { get set }
     
     var frame: CGRect { get }
+    
+    var isPinching: Bool { get set }
 }
 
 protocol SelectableToy: Toy {

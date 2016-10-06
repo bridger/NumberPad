@@ -13,6 +13,9 @@ class GraphToy : UIView, GraphingToy {
     let xConnector: Connector
     let yConnector: Connector
     
+    static let xColor = UIColor.multiplierInputColor()
+    static let yColor = UIColor.adderInputColor()
+    
     let gridLineView: GridLineView
     let functionLayer: CAShapeLayer
     let selectedPointLayer: CAShapeLayer
@@ -86,8 +89,7 @@ class GraphToy : UIView, GraphingToy {
         }
     }
     
-    static let xColor = UIColor.multiplierInputColor()
-    static let yColor = UIColor.adderInputColor()
+    var isPinching: Bool = false
     
     func update(currentStates: [Connector: ConnectorState], resolver: InputResolver) {
         
@@ -105,7 +107,8 @@ class GraphToy : UIView, GraphingToy {
             return
         }
         
-        for drawingX in 0...Int(self.bounds.size.width) {
+        let samplePoints = self.isPinching ? 6 : 1
+        for drawingX in stride(from: 0, through: Int(self.bounds.size.width), by: samplePoints) {
             let graphX = CGPoint(x: drawingX, y: 0).applying(drawingToGraphing).x
             
             var graphYNumber: NSNumber?
